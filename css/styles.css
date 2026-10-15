@@ -90,7 +90,7 @@ a { color: var(--accent-ink); }
 .orb.a { width: 340px; height: 340px; background: #00e69a; top: -120px; right: -80px; }
 .orb.b { width: 260px; height: 260px; background: var(--sun); bottom: -140px; left: 30%; }
 .orb.c { width: 200px; height: 200px; background: #7aa2ff; top: 20%; left: -70px; }
-.hero > * { position: relative; z-index: 1; }
+.hero > :not(.orb) { position: relative; z-index: 1; }
 .hero .kicker { display: inline-flex; gap: 8px; align-items: center; font-size: 12px; font-weight: 700;
   background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .3);
   padding: 5px 12px; border-radius: 30px; }
