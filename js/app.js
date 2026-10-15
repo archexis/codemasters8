@@ -423,7 +423,7 @@
       </div>
       <div class="mapwrap">
         <div><div id="map" role="img" aria-label="Карта объектов"></div></div>
-        <div class="panel mapnote"><b>Карта — только объекты с координатами.</b><br><br><span id="map-note-text"></span></div>
+        <div class="panel mapnote"><b>Карта — только объекты с координатами.</b><br><span style="font-size:12px">Метки: <span style="color:var(--red)">●</span> красная · <span style="color:var(--amber)">●</span> жёлтая · <span style="color:var(--green)">●</span> зелёная зона.</span><br><br><span id="map-note-text"></span></div>
       </div>
       <div class="toolbar">
         <input type="text" id="ov-q" class="search" placeholder="Поиск: название, адрес, застройщик…" value="${esc(overviewFilter.q)}" aria-label="Поиск ЖК">
@@ -633,11 +633,11 @@
         </div>
         <div class="panel" style="padding:16px 18px" id="an-result">
           <h3 class="block" style="padding:0 0 8px">2 · Гипотезы и решение</h3>
-          <div class="empty">Здесь появятся разбор парсера и гипотезы с точными цитатами.<br>Ничего не влияет на балл, пока человек не подтвердит.</div>
+          <div class="empty">Здесь появятся разбор парсера и гипотезы с точными цитатами.<br><br>Как получить результат:<br>1 — вставьте текст слева и нажмите «Запустить анализ»;<br>2 — прочитайте гипотезы с цитатами;<br>3 — подтвердите или отклоните каждую.<br><br>Ничего не влияет на балл, пока человек не подтвердит.</div>
         </div>
       </div>
       <div class="section-t">Живые расчёты A·B·C <small>по текущим данным</small></div>
-      <p style="font-size:12.5px;color:var(--ink-2);margin:0 2px 8px">Обозначения: <b>R1</b> — основания нет (+35) · <b>R2</b> — просят деньги (+25) · <b>R3</b> — реклама стройки (+10). Подробно — на главной в «Правилах скоринга».</p>
+      <p style="font-size:12.5px;color:var(--ink-2);margin:0 2px 8px">Обозначения: <b>R1</b> — нет основания, установлено проверкой (+35) · <b>R2</b> — просят деньги (+25) · <b>R3</b> — реклама стройки (+10). Подробно — на главной в «Правилах скоринга».</p>
       <div class="scen" id="check-scen"></div>
       <div class="section-t">Открытые реестры <small>ручная сверка, результат — в карточку ЖК</small></div>
       <div class="reg-strip" id="check-regs"></div>`;
