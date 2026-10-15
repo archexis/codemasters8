@@ -230,7 +230,7 @@
       off += frac * 100;
       return s;
     }).join("");
-    return `<div style="display:flex;gap:16px;align-items:center"><svg width="90" height="90" viewBox="0 0 90 90" role="img" aria-label="Распределение зон риска">${arcs}<text x="45" y="50" text-anchor="middle" font-size="17" font-weight="800" fill="var(--ink)">${total}</text></svg>
+    return `<div style="display:flex;gap:16px;align-items:center"><svg width="90" height="90" viewBox="0 0 90 90" role="img" aria-label="Распределение зон риска">${arcs}<text x="45" y="46" text-anchor="middle" font-size="17" font-weight="800" fill="var(--ink)">${total}</text><text x="45" y="60" text-anchor="middle" font-size="9" fill="var(--ink-2)">ЖК всего</text></svg>
       <div style="font-size:13px;display:grid;gap:6px"><span><span style="color:var(--red)">●</span> Красная — <b>${counts.red}</b></span><span><span style="color:var(--amber)">●</span> Жёлтая — <b>${counts.yellow}</b></span><span><span style="color:var(--green)">●</span> Зелёная — <b>${counts.green}</b></span></div></div>`;
   }
   function alertsHtml() {
@@ -242,8 +242,15 @@
       for (const f of (zk.factors || []).filter((x) => (x.status === "confirmed" || x.status === "rejected") && x.updatedAt)) items.push({ raw: f.updatedAt || "", at: (f.updatedAt || "").slice(0, 10), text: `${zk.id}: ${f.code} ${f.status === "confirmed" ? "подтверждён" : "отклонён"}${f.reviewer ? ` · ${f.reviewer}` : ""}`, dot: f.status === "confirmed" ? "green" : "amber" });
     }
     items.sort((a, b) => (b.raw < a.raw ? -1 : 1));
-    if (!items.length) return `<div class="empty">Пока тихо — решений и событий нет.</div>`;
-    return items.slice(0, 8).map((i) => `<div class="arow"><time>${esc(i.at || "—")}</time><span class="dot ${i.dot}"></span><span>${esc(i.text)}</span></div>`).join("");
+    const live = items.filter((i) => !/импортирован/i.test(i.text)); // сид-загрузка — не решение и не событие
+    const merged = [];
+    for (const i of live) {
+      const prev = merged[merged.length - 1];
+      if (prev && prev.text === i.text && prev.dot === i.dot) prev.n++;
+      else merged.push({ ...i, n: 1 });
+    }
+    if (!merged.length) return `<div class="empty">Пока тихо — решений и событий нет.</div>`;
+    return merged.slice(0, 8).map((i) => `<div class="arow"><time>${esc(i.at || "—")}</time><span class="dot ${i.dot}"></span><span>${esc(i.text)}${i.n > 1 ? ` · ×${i.n}` : ""}</span></div>`).join("");
   }
   function parserEntitiesHtml(p) {
     if (!p) return "";
@@ -275,7 +282,7 @@
         <div class="hero-grid">
         <div>
         <span class="kicker"><span class="demo-pill">Учебные данные</span> Codemasters 8.0 · Өскемен</span>
-        <h1>Риски долевого строительства — с объяснимыми основаниями</h1>
+        <h1>Риски долевого строительства: объяснимые основания</h1>
         <p class="lead">SAQ QURYLYS собирает объявления, объекты и проверки в одну карточку: парсер находит деньги и сроки дословно, риск считается по фиксированным правилам R1–R6, а решение всегда принимает человек.</p>
         <div class="cta">
           <button class="btn btn-sun" data-go="analyze">Проверить объявление</button>
@@ -292,10 +299,10 @@
         <div class="panel stat"><div class="n" data-count="${state.complexes.length}">0</div><div class="l">ЖК под наблюдением</div><div class="bar"><i style="width:100%;background:var(--accent)"></i></div></div>
         <div class="panel stat"><div class="n" data-count="${counts.red}" style="color:var(--red)">0</div><div class="l">красная зона · приоритет</div><div class="bar"><i style="width:${state.complexes.length ? Math.round(counts.red / state.complexes.length * 100) : 0}%;background:var(--red)"></i></div></div>
         <div class="panel stat"><div class="n" data-count="${counts.yellow}" style="color:var(--amber)">0</div><div class="l">жёлтая зона · проверка</div><div class="bar"><i style="width:${state.complexes.length ? Math.round(counts.yellow / state.complexes.length * 100) : 0}%;background:var(--sun)"></i></div></div>
-        <div class="panel stat"><div class="n" data-count="${allAds().length}">0</div><div class="l">публикаций разобрано</div><div class="bar"><i style="width:100%;background:var(--violet)"></i></div></div>
+        <div class="panel stat"><div class="n" data-count="${allAds().length}">0</div><div class="l">объявлений разобрано</div><div class="bar"><i style="width:100%;background:var(--deep)"></i></div></div>
       </div>
       <div class="grid2">
-        <div class="panel" style="padding:16px 18px"><div class="section-t" style="margin-top:0">Распределение зон <small>вживую</small></div>${donutHtml(counts, state.complexes.length)}</div>
+        <div class="panel" style="padding:16px 18px"><div class="section-t" style="margin-top:0">Распределение зон <small>по текущим данным</small></div>${donutHtml(counts, state.complexes.length)}</div>
         <div class="panel" style="padding:16px 18px"><div class="section-t" style="margin-top:0">Последние изменения <small>журнал решений и события</small></div><div class="alerts">${alertsHtml()}</div></div>
       </div>
 
@@ -496,7 +503,7 @@
     if (mapInstance) { mapInstance.remove(); mapInstance = null; } // повторный рендер (поиск/фильтр) — без «already initialized»
     const map = L.map("map").setView([49.984, 82.614], 12);
     mapInstance = map;
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", { maxZoom: 19, attribution: "© OpenStreetMap · © CARTO" }).addTo(map);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(map);
     const bounds = [];
     const layer = (L.markerClusterGroup ? L.markerClusterGroup({ showCoverageOnHover: false, maxClusterRadius: 48 }) : L.layerGroup()).addTo(map);
     for (const zk of withCoords) {
