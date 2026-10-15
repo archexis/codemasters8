@@ -218,7 +218,7 @@
     const cfg = window.SQ_AI.getConfig();
     $("#ai-status").innerHTML = real
       ? `AI: <span class="engine-badge real">подключён</span> <span style="font-family:var(--mono);font-size:11px">${esc(cfg.model || "")}</span>`
-      : `AI: <span class="engine-badge demo">эвристика · без ключа</span>`;
+      : `AI: <span class="engine-badge demo">учебный разбор</span>`;
   }
 
   // ---------- views ----------
@@ -227,7 +227,7 @@
   function parserEntitiesHtml(p) {
     if (!p) return "";
     const rows = (p.entities || []).slice(0, 12).map((e) => `<tr><td><b>${esc(e.label)}</b></td><td>${esc(e.value)}</td><td><span class="conf ${esc(e.confidence)}">${esc(e.confidence)}</span></td><td class="q">«${esc(e.quote)}»</td></tr>`).join("");
-    return `<div style="margin:12px 0 4px"><span class="engine-badge parser">PARSER · local-parser — настоящий локальный разбор</span></div>
+    return `<div style="margin:12px 0 4px"><span class="engine-badge parser">Разбор текста · локальный парсер</span></div>
     <div style="font-size:12.5px;color:var(--ink-2)">Платёжных предложений: <b>${p.payment.flagged ? "найдены" : "не найдены"}</b> · предложений в тексте: ${p.sentences} · сущностей: ${p.entities.length}</div>
     ${rows ? `<table class="parse-table"><tr><th>Тип</th><th>Значение</th><th>Уверенность</th><th>Цитата</th></tr>${rows}</table>` : `<div class="empty">Сущностей не извлечено.</div>`}`;
   }
@@ -253,7 +253,7 @@
         <div class="orb a"></div><div class="orb b"></div><div class="orb c"></div>
         <div class="hero-grid">
         <div>
-        <span class="kicker"><span class="demo-pill">DEMO · данные вымышлены</span> Codemasters 8.0 · Өскемен</span>
+        <span class="kicker"><span class="demo-pill">Учебные данные</span> Codemasters 8.0 · Өскемен</span>
         <h1>Риски долевого строительства — с объяснимыми основаниями</h1>
         <p class="lead">SAQ QURYLYS собирает объявления, объекты и проверки в одну карточку: парсер находит деньги и сроки дословно, риск считается по фиксированным правилам R1–R6, а решение всегда принимает человек.</p>
         <div class="cta">
@@ -340,9 +340,9 @@
       <div class="panel faq" style="padding:8px 18px 14px">
         <details open><summary>Это юридическое заключение?</summary><p>Нет. SAQ QURYLYS подсвечивает признаки и помогает принять решение, но не устанавливает факт правонарушения и ничего никуда не отправляет автоматически.</p></details>
         <details><summary>Почему платная бронь — это «жёлтый», а не сразу «красный»?</summary><p>Красная зона требует одновременно подтверждённых R1 (основания нет — установлено проверкой) и R2 (деньги просят). Один платёж без проверки основания — жёлтая зона и повод проверить реестры.</p></details>
-        <details><summary>Что делает AI, а что — человек?</summary><p>AI и локальный парсер извлекают только дословные фрагменты и честно помечают режим (real / demo). Фактором риска находка становится после подтверждения аналитиком с источником и датой.</p></details>
+        <details><summary>Что делает AI, а что — человек?</summary><p>AI и локальный парсер извлекают только дословные фрагменты и честно показывают режим (подключён / учебный). Фактором риска находка становится после подтверждения аналитиком с источником и датой.</p></details>
         <details><summary>Откуда данные?</summary><p>Учебные сценарии и объявления к ним вымышлены — у них чип «сценарий» или «учебный пример». Отдельно показаны записи разрешений из открытого набора Ashyq Data (снимок 15.10.2026) с чипом «реестр» — у них нет объявлений и оценок, только номер разрешения и источник.</p></details>
-        <details><summary>Можно подключить настоящую модель?</summary><p>Да: кнопка «Настроить AI» принимает OpenAI-совместимый endpoint и ключ. Ключ хранится только в localStorage браузера и никогда не коммитится. Без ключа работает меченая эвристика.</p></details>
+        <details><summary>Можно подключить настоящую модель?</summary><p>Да: пункт «Подключить AI…» в меню «Сеанс» принимает OpenAI-совместимый адрес и ключ. Ключ хранится только в этом браузере и никогда не коммитится. Без ключа работает встроенный учебный разбор.</p></details>
       </div>
 
       <div class="panel footer"><b>SAQ QURYLYS · не юридический документ.</b> Скоринг детерминирован: максимум 100, только подтверждённые факторы, неизвестность — 0 и «требует проверки». Исходное ТЗ имеет приоритет над дизайном: визуальные изменения не ослабляют обязательные правила.</div>`;
@@ -667,7 +667,7 @@
       runBtn.disabled = true;
       try {
       $("#an-result").innerHTML = `<h3 class="block" style="padding:0 0 8px">2 · Гипотезы и решение</h3>
-        <div><span class="engine-badge parser">PARSER · разбор…</span></div>
+        <div><span class="engine-badge parser">Разбор текста…</span></div>
         <div class="loading-line"></div><div class="loading-line" style="width:72%"></div><div class="loading-line" style="width:48%"></div>`;
       let parsed = null;
       try { parsed = window.SQ_Parser.parseAdText(text); }
@@ -675,7 +675,7 @@
       let res;
       try { res = await window.SQ_AI.analyzeAdText(text, zk.name); }
       catch (err) { $("#an-result").innerHTML += `<div class="empty">Ошибка: ${esc(err.message)}</div>`; return; }
-      const badge = res.realAI ? `<span class="engine-badge real">REAL AI · ${esc(res.engine)}</span>` : `<span class="engine-badge demo">DEMO · ${esc(res.engine)} — не настоящий ИИ</span>`;
+      const badge = res.realAI ? `<span class="engine-badge real">AI подключён · ${esc(res.engine)}</span>` : `<span class="engine-badge demo">Учебный разбор · ${esc(res.engine)}</span>`;
       const hyps = res.hypotheses.length ? res.hypotheses.map((h, i) => `
         <div class="hyp"><b>Гипотеза ${i + 1} → кандидат ${esc(h.candidate_factor || "—")}</b> ${statusChip("hypothesis")}
           <span class="q">«${esc(h.exact_quote)}»</span>
@@ -791,7 +791,7 @@
       box.innerHTML = `<div style="font-size:12.5px">Анализ…</div>`;
       try {
         const res = await window.SQ_AI.analyzeAdText(DEMO_TEXTS[b.dataset.live], getZk(b.dataset.live).name);
-        box.innerHTML = `<div style="margin-top:6px">${res.realAI ? `<span class="engine-badge real">REAL AI</span>` : `<span class="engine-badge demo">DEMO-эвристика</span>`}
+        box.innerHTML = `<div style="margin-top:6px">${res.realAI ? `<span class="engine-badge real">AI подключён</span>` : `<span class="engine-badge demo">Учебный разбор</span>`}
           ${res.hypotheses.length ? res.hypotheses.map((h) => `<div class="hyp"><span class="q">«${esc(h.exact_quote)}»</span><div style="font-size:12.5px">→ кандидат ${esc(h.candidate_factor)} · ${esc(h.explanation)}</div></div>`).join("") : `<div style="font-size:12.5px">Прямых предложений оплаты не найдено.</div>`}</div>`;
       } catch (e) { box.innerHTML = `<div style="font-size:12.5px;color:var(--red)">Ошибка: ${esc(e.message)}</div>`; }
     });
@@ -809,9 +809,9 @@
       <h3 style="font-family:var(--serif);margin:0 0 8px">SAQ QURYLYS · что это</h3>
       <p>Аналитическая система мониторинга рисков в объявлениях о долевом строительстве. Собирает сведения о ЖК, публикациях и проверках в одну карточку, считает объяснимый риск по фиксированным правилам и формирует проверяемый сигнал. Решение всегда принимает человек.</p>
       <div class="section-t">Архитектура</div>
-      <p style="font-size:13.5px"><span style="font-family:var(--mono)">js/data.js</span> — seed (учебные данные + записи реестра) · <span style="font-family:var(--mono)">js/scoring.js</span> — детерминированный движок R1–R6 (ноль зависимостей, покрыт тестами) · <span style="font-family:var(--mono)">js/ai.js</span> — адаптер извлечения гипотез (real LLM при ключе, иначе меченая эвристика) · <span style="font-family:var(--mono)">js/app.js</span> — интерфейс и workflow · состояние — localStorage.</p>
+      <p style="font-size:13.5px"><span style="font-family:var(--mono)">js/data.js</span> — seed (учебные данные + записи реестра) · <span style="font-family:var(--mono)">js/scoring.js</span> — детерминированный движок R1–R6 (ноль зависимостей, покрыт тестами) · <span style="font-family:var(--mono)">js/ai.js</span> — разбор объявлений на гипотезы (настоящая модель при ключе, иначе встроенный учебный разбор) · <span style="font-family:var(--mono)">js/app.js</span> — интерфейс и workflow · состояние — localStorage.</p>
       <div class="section-t">Ограничения (честно)</div>
-      <ul style="font-size:13.5px"><li>Учебные компании, БИНы, адреса и документы вымышлены; совпадения случайны.</li><li>Нет живой интеграции с госреестрами, Telegram или парсингом — только ручной ввод и ссылки.</li><li>Без ключа AI работает меченая эвристика, а не языковая модель (кнопка «Настроить AI»).</li><li>Красная зона требует одновременно R1 и R2; неизвестность никогда не даёт баллов.</li></ul>
+      <ul style="font-size:13.5px"><li>Учебные компании, БИНы, адреса и документы вымышлены; совпадения случайны.</li><li>Нет живой интеграции с госреестрами, Telegram или парсингом — только ручной ввод и ссылки.</li><li>Без ключа AI работает встроенный учебный разбор, а не языковая модель (пункт «Подключить AI…» в меню «Сеанс»).</li><li>Красная зона требует одновременно R1 и R2; неизвестность никогда не даёт баллов.</li></ul>
       <div class="section-t">Путь демонстрации (2–3 минуты)</div>
       <ol style="font-size:13.5px"><li>Обзор: фильтры зон, карта, сортировка по баллу.</li><li>Карточка SQ-002 (сценарий B): факторы, доказательства, журнал.</li><li>Новый анализ: вставить пример → гипотеза с цитатой → подтвердить → балл пересчитан.</li><li>Сигнальная карточка: подтвердить, печать/PDF.</li><li>Сценарии A·B·C: живые расчёты сошлись.</li></ol></div>`;
   }
@@ -858,16 +858,16 @@
   $("#btn-ai-config").onclick = () => {
     const c = window.SQ_AI.getConfig();
     openModal(`<h3>Подключение AI-модели</h3>
-      <p style="font-size:13px;color:var(--ink-2)">OpenAI-совместимый endpoint (например, https://openrouter.ai/api/v1/chat/completions). Ключ хранится только в localStorage этого браузера и никуда не коммитится. Без ключа работает меченая DEMO-эвристика.</p>
+      <p style="font-size:13px;color:var(--ink-2)">Адрес OpenAI-совместимого сервиса и ключ. Ключ хранится только в этом браузере и никуда не коммитится. Без ключа работает встроенный учебный разбор.</p>
       <label class="f">Endpoint<input type="text" id="ai-endpoint" value="${esc(c.endpoint || "https://openrouter.ai/api/v1/chat/completions")}"></label>
       <label class="f" style="margin-top:8px">Model<input type="text" id="ai-model" value="${esc(c.model || "")}" placeholder="например, vendor/model-name"></label>
-      <label class="f" style="margin-top:8px">API key<input type="password" id="ai-key" value="${esc(c.apiKey || "")}" placeholder="оставьте пустым для demo-режима" autocomplete="off"></label>
+      <label class="f" style="margin-top:8px">API key<input type="password" id="ai-key" value="${esc(c.apiKey || "")}" placeholder="оставьте пустым — будет учебный разбор" autocomplete="off"></label>
       <div class="row" style="margin-top:12px"><button class="btn primary" id="ai-save">Сохранить</button><button class="btn danger" id="ai-clear">Отключить AI</button><button class="btn" id="ai-cancel">Закрыть</button></div>`);
     $("#ai-cancel").onclick = closeModal;
-    $("#ai-clear").onclick = () => { window.SQ_AI.saveConfig({}); closeModal(); render(); toast("AI отключён, demo-режим"); };
+    $("#ai-clear").onclick = () => { window.SQ_AI.saveConfig({}); closeModal(); render(); toast("AI отключён, учебный разбор"); };
     $("#ai-save").onclick = () => {
       window.SQ_AI.saveConfig({ endpoint: $("#ai-endpoint").value.trim(), model: $("#ai-model").value.trim(), apiKey: $("#ai-key").value.trim() });
-      closeModal(); render(); toast(window.SQ_AI.hasRealAI() ? "Real AI подключён" : "Сохранено (ключа нет — demo-режим)");
+      closeModal(); render(); toast(window.SQ_AI.hasRealAI() ? "AI подключён" : "Сохранено без ключа — учебный разбор");
     };
   };
 
