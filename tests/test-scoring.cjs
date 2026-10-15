@@ -32,6 +32,13 @@ ok(computeScore([C("R2"), C("R3"), C("R4"), C("R5"), C("R6")]).zone === "yellow"
 ok(computeScore([C("R1"), C("R2"), C("R3"), C("R4"), C("R5"), C("R6")]).score === 100, "cap at 100");
 ok(computeScore([C("R3"), C("R4")]).score === 25 && computeScore([C("R3"), C("R4")]).zone === "yellow", "25 -> yellow boundary");
 ok(computeScore([C("R3"), C("R4"), C("R6")]).score === 30, "30 yellow");
+ok(computeScore([C("R1")]).score === 35 && computeScore([C("R1")]).zone === "yellow", "R1 alone = 35 yellow, never red without R2");
+ok(computeScore([C("R2")]).score === 25 && computeScore([C("R2")]).zone === "yellow", "R2 alone = 25 yellow");
+ok(computeScore([C("R1"), C("R2")]).score === 60 && computeScore([C("R1"), C("R2")]).zone === "red", "R1+R2 = 60 red (minimum red)");
+ok(computeScore([C("R1"), C("R3"), C("R4")]).score === 60 && computeScore([C("R1"), C("R3"), C("R4")]).zone === "yellow", "60 without R2 -> yellow (not red)");
+ok(computeScore([H("R1"), C("R2"), C("R3")]).score === 35 && computeScore([H("R1"), C("R2"), C("R3")]).zone === "yellow", "unconfirmed R1 hypothesis + R2 + R3 = 35 yellow (AI must not score)");
+ok(computeScore([C("R4"), C("R6")]).score === 20 && computeScore([C("R4"), C("R6")]).zone === "green", "20 -> green (below 25)");
+ok(computeScore([C("R5"), C("R3"), C("R6")]).score === 25 && computeScore([C("R5"), C("R3"), C("R6")]).zone === "yellow", "25 -> yellow boundary");
 
 console.log("scenarios A/B/C from seed:");
 const score = (id) => computeScore(COMPLEXES.find((z) => z.id === id).factors);

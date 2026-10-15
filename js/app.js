@@ -114,7 +114,7 @@
   };
   function nav(view, param) {
     state.route = { view, ...param };
-    document.querySelectorAll("#nav button").forEach((b) => b.setAttribute("aria-current", b.dataset.view === view || ((view === "detail" || view === "signal") && b.dataset.view === "overview") ? "page" : "false"));
+    document.querySelectorAll("#nav button").forEach((b) => b.setAttribute("aria-current", b.dataset.view === view || (((view === "detail" || view === "signal" || view === "ads") && b.dataset.view === "overview")) ? "page" : "false"));
     const t = TITLES[view] || TITLES.overview;
     $("#page-title").textContent = t[0]; $("#page-sub").textContent = t[1];
     window.scrollTo(0, 0);
@@ -188,34 +188,59 @@
     for (const zk of state.complexes) counts[scoreOf(zk).zone]++;
     const top = state.complexes.slice().sort((a, b) => scoreOf(b).score - scoreOf(a).score).slice(0, 3);
     const regs = window.SQ_SEED.REGISTRIES || [];
+    const rules = ["R1", "R2", "R3", "R4", "R5", "R6"].map((c) => `<tr><td><b style="font-family:var(--mono)">${c}</b></td><td class="pts">+${FACTOR_META[c].points}</td><td>${esc(FACTOR_META[c].title)}<br><span style="color:var(--ink-2);font-size:12px">${esc(FACTOR_META[c].hint)}</span></td></tr>`).join("");
     page.innerHTML = `
       <div class="hero">
         <div class="orb a"></div><div class="orb b"></div><div class="orb c"></div>
         <span class="kicker"><span class="demo-pill">DEMO · данные вымышлены</span> Codemasters 8.0 · Өскемен</span>
-        <h1>Проверь квартиру <em>до денег</em></h1>
-        <p class="lead">SAQ QURYLYS собирает объявления, объекты и проверки в одну карточку: парсер находит деньги и сроки дословно, риск считается по фиксированным правилам, а решение всегда принимает человек.</p>
+        <h1>Риски долевого строительства — с объяснимыми основаниями</h1>
+        <p class="lead">SAQ QURYLYS собирает объявления, объекты и проверки в одну карточку: парсер находит деньги и сроки дословно, риск считается по фиксированным правилам R1–R6, а решение всегда принимает человек.</p>
         <div class="cta">
           <button class="btn btn-sun" data-go="analyze">Проверить объявление</button>
-          <button class="btn btn-glass" data-go="overview">Смотреть объекты</button>
+          <button class="btn btn-glass" data-go="overview">Открыть рабочую панель</button>
         </div>
       </div>
-      <div class="ticker" aria-hidden="true"><div class="track">
-        <span><b>DEMO</b> платная бронь · депозит · первоначальный взнос · задаток · предоплата · эскроу · гарантия Единого оператора · разрешение МИО · </span>
-        <span><b>DEMO</b> платная бронь · депозит · первоначальный взнос · задаток · предоплата · эскроу · гарантия Единого оператора · разрешение МИО · </span>
-      </div></div>
+      <div class="anchors" aria-label="Разделы страницы">
+        <a href="#l-problem">Проблема</a><a href="#l-how">Как работает</a><a href="#l-rules">Правила R1–R6</a><a href="#l-zones">Зоны</a><a href="#l-cases">Кейсы A·B·C</a><a href="#l-regs">Реестры</a><a href="#l-demo">Демо-путь</a><a href="#l-faq">Вопросы</a>
+      </div>
       <div class="stats">
         <div class="panel stat"><div class="n" data-count="${state.complexes.length}">0</div><div class="l">демо-ЖК под наблюдением</div></div>
         <div class="panel stat bad"><div class="n" data-count="${counts.red}" style="color:var(--red)">0</div><div class="l">красная зона · приоритет</div></div>
         <div class="panel stat warn"><div class="n" data-count="${counts.yellow}" style="color:var(--amber)">0</div><div class="l">жёлтая зона · проверка</div></div>
         <div class="panel stat"><div class="n" data-count="${allAds().length}">0</div><div class="l">публикаций разобрано</div></div>
       </div>
-      <div class="section-t">Как это работает <small>четыре шага из ТЗ</small></div>
-      <div class="steps">
-        <div class="panel step"><div class="num">01</div><b>Обзор</b><p>Объекты города с баллом и зоной, карта только с реальными координатами.</p></div>
-        <div class="panel step"><div class="num">02</div><b>Проверка</b><p>Парсер извлекает деньги, сроки и контакты дословно; гипотезы ждёт человек.</p></div>
-        <div class="panel step"><div class="num">03</div><b>Сигнал</b><p>Факторы, цитаты-доказательства, журнал решений и печать отчёта.</p></div>
-        <div class="panel step"><div class="num">04</div><b>Решение</b><p>Подтвердить или вернуть. Неизвестность никогда не становится обвинением.</p></div>
+
+      <div class="section-t" id="l-problem">Проблема <small>почему объявлений недостаточно</small></div>
+      <div class="kv3">
+        <div class="panel"><div class="big">Деньги раньше документов</div><p class="prose">Платная бронь, депозит или «взнос напрямую» в рекламе строящегося дома — повод проверить правовое основание, а не приговор. Система отделяет формулировки от фактов.</p></div>
+        <div class="panel"><div class="big">Основание бывает разным</div><p class="prose">В Казахстане законны и гарантия Единого оператора, и разрешение МИО. Отсутствие одного документа не доказывает отсутствие другого — <b>неизвестность не даёт баллов</b>.</p></div>
+        <div class="panel"><div class="big">Решение — за человеком</div><p class="prose">AI и парсер выделяют только дословные фрагменты. Фактором риска находка становится <b>после подтверждения аналитиком</b> с источником и датой.</p></div>
       </div>
+
+      <div class="section-t" id="l-how">Как это работает <small>от объявления до решения — за 4 шага</small></div>
+      <div class="lgrid">
+        <div class="scene" id="scene" aria-label="Схема: от объявления к решению">
+          <svg viewBox="0 0 560 320" role="img" aria-hidden="true">
+            <path class="draw" d="M60 260 V120 H200 V260 M60 260 H200 M95 120 V260 M130 120 V260 M165 120 V260 M60 160 H200 M60 200 H200 M200 120 L236 92 M236 92 V70 M222 78 L236 70 L248 80"/>
+            <g class="fade" id="st2"><line x1="250" y1="104" x2="510" y2="104" stroke="#7fe3b8" stroke-width="2"/><circle cx="290" cy="104" r="6" fill="#ffc531"/><circle cx="380" cy="104" r="6" fill="#7fe3b8"/><circle cx="470" cy="104" r="6" fill="#7aa2ff"/><text x="278" y="88" fill="#cfe9db" font-size="11">объявление</text><text x="362" y="88" fill="#cfe9db" font-size="11">осмотр</text><text x="452" y="88" fill="#cfe9db" font-size="11">акт сверки</text></g>
+            <g class="fade" id="st3"><rect x="250" y="130" width="260" height="66" rx="10" fill="rgba(255,255,255,.07)" stroke="#ffc531" stroke-width="1.5"/><text x="264" y="156" fill="#fff" font-size="12.5">«Бронь — 500 000 ₸ в зачёт…»</text><rect x="264" y="166" width="150" height="10" rx="5" fill="#ffc531" opacity=".8"/><text x="264" y="190" fill="#cfe9db" font-size="11">дословный фрагмент, не вывод</text></g>
+            <path class="flow" id="fl1" d="M205 190 C228 190 228 163 248 163"/>
+            <g class="fade" id="st4"><rect x="250" y="212" width="130" height="52" rx="10" fill="rgba(255,255,255,.07)" stroke="#7fe3b8" stroke-width="1.5"/><text x="262" y="233" fill="#fff" font-size="12">акт сверки</text><text x="262" y="250" fill="#cfe9db" font-size="11">источник · дата</text></g>
+            <path class="flow" id="fl2" d="M380 164 V210"/>
+            <g class="fade" id="st5"><rect x="398" y="206" width="140" height="64" rx="10" fill="#f2faf5"/><circle cx="414" cy="226" r="7" fill="#d13438"/><text x="428" y="230" fill="#10201b" font-size="13" font-weight="bold">70/100 · Красная</text><text x="414" y="250" fill="#3d4f48" font-size="11">ждёт решения человека</text></g>
+            <path class="flow" id="fl3" d="M382 238 H396"/>
+            <text x="60" y="286" fill="#9dc2b2" font-size="11">контур объекта · заявленный срок · наблюдение</text>
+          </svg>
+          <div class="storybar"><span class="ph" id="story-ph">01 / 05</span><span id="story-cap">Контур объекта — фиксируем стройку и заявленный срок.</span><span style="flex:1"></span><button class="btn small btn-glass" id="story-skip">Пропустить</button></div>
+        </div>
+        <div class="steps" style="grid-template-columns:1fr 1fr;margin:0">
+          <div class="panel step"><div class="num">01</div><b>Обзор</b><p>Объекты города с баллом и зоной. Карта — только с реальными координатами.</p></div>
+          <div class="panel step"><div class="num">02</div><b>Проверка</b><p>Парсер извлекает деньги, сроки и контакты дословно; гипотезы ждёт человек.</p></div>
+          <div class="panel step"><div class="num">03</div><b>Сигнал</b><p>Факторы, цитаты-доказательства, журнал решений и печать отчёта.</p></div>
+          <div class="panel step"><div class="num">04</div><b>Решение</b><p>Подтвердить или вернуть. Неизвестность никогда не становится обвинением.</p></div>
+        </div>
+      </div>
+
       <div class="section-t">Приоритет сейчас <small>топ по баллу, вживую</small></div>
       <div class="panel">
         ${top.map((zk) => { const s = scoreOf(zk); return `<div class="zkrow" data-zk="${zk.id}" tabindex="0" role="link" aria-label="${esc(zk.name)}, ${s.score} баллов">
@@ -224,17 +249,102 @@
           <div class="hide-m"><span class="meta">${s.score} / 100</span></div>
           <div>${zoneChip(s.zone)}</div></div>`; }).join("")}
       </div>
-      <div class="section-t">Открытые реестры <small>проверено сегодня: 9 открываются, 2 молчат</small></div>
+
+      <div class="section-t" id="l-rules">Правила скоринга R1–R6 <small>строгая версия из ТЗ</small></div>
+      <div class="panel" style="padding:6px 14px 12px">
+        <table class="rules"><tr><th>Фактор</th><th>Баллы</th><th>Что считается</th></tr>${rules}</table>
+        <p class="prose" style="padding:0 4px">Считаются <b>только подтверждённые</b> факторы, итог — не выше 100. Неизвестность даёт <b>0 баллов и пометку «требует проверки»</b>. Гипотезы AI до решения человека на балл не влияют.</p>
+      </div>
+
+      <div class="section-t" id="l-zones">Зоны риска <small>цвет — это правило, а не ощущение</small></div>
+      <div class="zones3">
+        <div class="panel g"><b>Зелёная · 0–24</b><p class="prose">Мониторинг. Пример — кейс C: гарантия подтверждена, обычное объявление, R3 = 10.</p></div>
+        <div class="panel y"><b>Жёлтая · 25–59</b><p class="prose">Проверка. Пример — кейс A: платная бронь + реклама, R2 + R3 = 35. Неизвестное основание — не R1.</p></div>
+        <div class="panel r"><b>Красная · 60+</b><p class="prose">Только при <b>одновременном R1 и R2</b>. Пример — кейс B: R1 + R2 + R3 = 70, но карточка ждёт человека.</p></div>
+      </div>
+
+      <div class="section-t" id="l-cases">Контрольные кейсы A·B·C <small>живые расчёты по текущим данным</small></div>
+      <div class="scen" id="home-scen"></div>
+
+      <div class="section-t" id="l-regs">Открытые реестры <small>ручная сверка, результат — в карточку ЖК</small></div>
       <div class="reg-strip">${regs.map((r) => `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a>`).join("")}</div>
-      <div class="panel" style="padding:16px 18px;margin-top:12px;font-size:13px;color:var(--ink-2)">
-        Все компании, БИНы и адреса вымышлены. Живой интеграции с госреестрами нет — есть честные ссылки и ручная сверка с датой. Красная зона требует одновременно R1 и R2.
-      </div>`;
+      <div class="panel" style="padding:14px 18px;margin-top:10px;font-size:13px;color:var(--ink-2)">
+        Живой интеграции с госреестрами в демо нет — это честно указано. Две ссылки при проверке 15.10.2026 не открылись (кадастровая карта, реестр недобросовестных участников) — сверяйте вручную. Все компании, БИНы и адреса вымышлены.
+      </div>
+
+      <div class="section-t" id="l-demo">Путь демонстрации <small>2–3 минуты</small></div>
+      <div class="panel" style="padding:14px 20px"><ol class="prose" style="margin:0;padding-left:20px">
+        <li>Откройте <b>Объекты</b>: фильтры зон, карта, сортировка по баллу.</li>
+        <li>Зайдите в карточку <b>SQ-002</b> (кейс B): факторы, доказательства, журнал.</li>
+        <li>В <b>Проверке</b> вставьте пример → гипотеза с цитатой → подтвердите → балл пересчитан.</li>
+        <li>В <b>сигнальной карточке</b> подтвердите сигнал и распечатайте отчёт в PDF.</li>
+        <li>В <b>Сценариях</b> проверьте: A = 35, B = 70, C = 10.</li>
+      </ol></div>
+
+      <div class="section-t" id="l-faq">Частые вопросы <small>честно про ограничения</small></div>
+      <div class="panel faq" style="padding:8px 18px 14px">
+        <details open><summary>Это юридическое заключение?</summary><p>Нет. SAQ QURYLYS подсвечивает признаки и помогает принять решение, но не устанавливает факт правонарушения и ничего никуда не отправляет автоматически. Все записи демонстрационные.</p></details>
+        <details><summary>Почему платная бронь — это «жёлтый», а не сразу «красный»?</summary><p>Красная зона требует одновременно подтверждённых R1 (основания нет — установлено проверкой) и R2 (деньги просят). Один платёж без проверки основания — жёлтая зона и повод проверить реестры.</p></details>
+        <details><summary>Что делает AI, а что — человек?</summary><p>AI и локальный парсер извлекают только дословные фрагменты и честно помечают режим (real / demo). Фактором риска находка становится после подтверждения аналитиком с источником и датой.</p></details>
+        <details><summary>Откуда данные?</summary><p>Все 8 ЖК, 13 объявлений, компании, БИНы и адреса вымышлены и помечены DEMO. Совпадения случайны. Реестры — внешние ссылки для ручной сверки.</p></details>
+        <details><summary>Можно подключить настоящую модель?</summary><p>Да: кнопка «Настроить AI» принимает OpenAI-совместимый endpoint и ключ. Ключ хранится только в localStorage браузера и никогда не коммитится. Без ключа работает меченая эвристика.</p></details>
+      </div>
+
+      <div class="panel footer"><b>SAQ QURYLYS · DEMO — не юридический документ.</b> Скоринг детерминирован: минимум 100, только подтверждённые факторы, неизвестность — 0 и «требует проверки». Исходное ТЗ имеет приоритет над дизайном: визуальные изменения не ослабляют обязательные правила.</div>`;
 
     page.querySelectorAll("[data-go]").forEach((b) => b.onclick = () => nav(b.dataset.go));
     page.querySelectorAll("[data-zk]").forEach((el) => {
       el.onclick = () => nav("detail", { zkId: el.dataset.zk });
       el.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") nav("detail", { zkId: el.dataset.zk }); };
     });
+    $("#home-scen").innerHTML = SCENARIOS.map((sc) => {
+      const zk = getZk(sc.id); const s = scoreOf(zk);
+      const ok = s.score === sc.expect.score && s.zone === sc.expect.zone;
+      return `<div class="panel scencard"><h4>Кейс ${sc.letter} · ${esc(sc.title)}</h4>
+        <div class="calc">Ожидание: ${esc(sc.calc)} → ${sc.expect.score}<br>Сейчас: ${s.score} · ${ok ? `<span class="pass">СОВПАДАЕТ</span>` : `<span class="fail">ОТЛИЧАЕТСЯ</span>`}</div>
+        <div class="row"><button class="btn small" data-copen="${sc.id}">Открыть ЖК</button><button class="btn small" data-cgo="analyze">Проверить текст</button></div></div>`;
+    }).join("");
+    page.querySelectorAll("[data-copen]").forEach((b) => b.onclick = () => nav("detail", { zkId: b.dataset.copen }));
+    page.querySelectorAll("[data-cgo]").forEach((b) => b.onclick = () => nav(b.dataset.cgo));
+
+    // First-visit story animation: decorative, skippable, never blocking.
+    try {
+      const scene = $("#scene");
+      const caps = [
+        "Контур объекта — фиксируем стройку и заявленный срок.",
+        "Шкала наблюдения — события и источники с датами.",
+        "Сигналы в тексте — дословные фрагменты, не выводы.",
+        "Связка с доказательствами — каждая гипотеза ждёт человека.",
+        "Карточка риска — балл только из подтверждённого.",
+      ];
+      const groups = ["st2", "st3", "st4", "st5"].map((id) => document.getElementById(id));
+      const flows = ["fl1", "fl2", "fl3"].map((id) => document.getElementById(id));
+      const ph = $("#story-ph"), cap = $("#story-cap");
+      const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const seen = localStorage.getItem("sq_intro_seen") === "1";
+      const finish = () => {
+        scene.classList.add("play");
+        groups.forEach((g) => g && g.classList.add("on"));
+        flows.forEach((f) => f && f.classList.add("on"));
+        if (ph) ph.textContent = "05 / 05";
+        if (cap) cap.textContent = caps[4];
+        try { localStorage.setItem("sq_intro_seen", "1"); } catch {}
+      };
+      const timers = [];
+      if (reduce || seen) { finish(); }
+      else {
+        scene.classList.add("play");
+        const steps = [[900, 0, 0], [2000, 1, 0], [3100, 2, 1], [4200, 3, 2]];
+        steps.forEach(([t, gi, fi], k) => timers.push(setTimeout(() => {
+          if (groups[gi]) groups[gi].classList.add("on");
+          if (flows[fi]) flows[fi].classList.add("on");
+          if (ph) ph.textContent = "0" + (k + 2) + " / 05";
+          if (cap) cap.textContent = caps[k + 1];
+          if (k === steps.length - 1) try { localStorage.setItem("sq_intro_seen", "1"); } catch {}
+        }, t)));
+      }
+      $("#story-skip").onclick = () => { timers.forEach(clearTimeout); finish(); };
+    } catch (e) { /* story is decorative */ }
   }
 
   function vOverview() {
@@ -647,6 +757,12 @@
   }
 
   // ---------- topbar actions ----------
+  const menuBtn = $("#btn-menu");
+  if (menuBtn) menuBtn.onclick = () => {
+    const open = document.body.classList.toggle("nav-open");
+    menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  };
+  $("#nav").addEventListener("click", () => document.body.classList.remove("nav-open"));
   $("#btn-reset").onclick = () => { if (confirm("Сбросить все подтверждения, объявления и сигналы к исходному демо?")) { localStorage.removeItem(LS_STATE); state = loadState(); nav("home"); toast("Демо-данные сброшены"); } };
   $("#btn-ai-config").onclick = () => {
     const c = window.SQ_AI.getConfig();

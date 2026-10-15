@@ -36,6 +36,12 @@ ok(r.entities.some((e) => e.type === "contact" && e.value.startsWith("https://")
 
 for (const e of r.entities) ok(typeof e.quote === "string" && e.quote.length > 0, "quote present: " + e.type);
 
+r = parseAdText("Оплата до заключения договора, остаток потом.");
+ok(r.payment.flagged, "payment before contract flagged");
+
+r = parseAdText("Бронь бесплатная, все платежи только по договору.");
+ok(!r.payment.flagged, "free booking + contract-only clean");
+
 let threw = false;
 try { parseAdText("   "); } catch { threw = true; }
 ok(threw, "empty text throws");
