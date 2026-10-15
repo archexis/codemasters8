@@ -449,6 +449,9 @@
     if (lb.status === "absent-verified") return "основание: отсутствует ✕";
     return "основание: не проверено …";
   }
+  function confLabel(c) {
+    return { high: "высокая", medium: "средняя", low: "низкая", "low-demo": "низкая (учебный разбор)", unknown: "неизвестно" }[c] || c;
+  }
   function sigLabel(st) {
     return { draft: "черновик", pending: "на проверке", confirmed: "подтверждён", returned: "возвращён" }[st] || st;
   }
@@ -668,7 +671,7 @@
         <div class="hyp"><b>Гипотеза ${i + 1} → кандидат ${esc(h.candidate_factor || "—")}</b> ${statusChip("hypothesis")}
           <span class="q">«${esc(h.exact_quote)}»</span>
           <div style="font-size:13px">${esc(h.explanation)}</div>
-          <div style="font-size:12px;color:var(--ink-2)">уверенность: ${esc(h.confidence)} · требует решения человека</div>
+          <div style="font-size:12px;color:var(--ink-2)">уверенность: ${esc(confLabel(h.confidence))} · требует решения человека</div>
           <div class="row" style="margin-top:8px">
             <button class="btn small primary" data-hok="${i}">Подтвердить как ${esc(h.candidate_factor)}</button>
             <button class="btn small danger" data-hno="${i}">Отклонить</button>
