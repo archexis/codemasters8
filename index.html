@@ -26,15 +26,20 @@
       <button data-view="about">О проекте</button>
     </nav>
     <div class="sp"></div>
-    <div class="ai-status" id="ai-status">AI: —</div>
-    <button class="btn small" id="btn-account">Войти</button>
-    <button class="btn small" id="btn-ai-config">Настроить AI</button>
-    <button class="btn small" id="btn-reset">Сбросить</button>
+    <div class="sess">
+      <button class="btn small" id="btn-sess" aria-haspopup="true" aria-expanded="false" aria-controls="sess-menu">Сеанс</button>
+      <div class="sess-menu" id="sess-menu" hidden>
+        <div class="ai-status" id="ai-status">AI: —</div>
+        <button class="btn small" id="btn-account">Войти</button>
+        <button class="btn small" id="btn-ai-config">Настроить AI</button>
+        <button class="btn small" id="btn-reset">Сбросить</button>
+      </div>
+    </div>
   </header>
   <div class="main">
     <div class="pagehead">
       <h2 id="page-title">SAQ QURYLYS</h2>
-      <div class="sub" id="page-sub">Титул · начните с проверки объявления</div>
+      <div class="sub" id="page-sub">Главная · начните с проверки объявления</div>
     </div>
     <main class="page" id="page" aria-live="polite"></main>
   </div>

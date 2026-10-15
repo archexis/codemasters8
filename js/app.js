@@ -28,9 +28,11 @@
     return s;
   }
   function persist() {
-    const factors = {};
-    for (const zk of state.complexes) factors[zk.id] = zk.factors;
-    localStorage.setItem(LS_STATE, JSON.stringify({ factors, userAds: state.userAds, signals: state.signals }));
+    try {
+      const factors = {};
+      for (const zk of state.complexes) factors[zk.id] = zk.factors;
+      localStorage.setItem(LS_STATE, JSON.stringify({ factors, userAds: state.userAds, signals: state.signals }));
+    } catch { toast("Хранилище переполнено: решение показано, но не сохранено"); }
   }
   let state = loadState();
 
@@ -170,6 +172,7 @@
   function render() {
     const r = state.route;
     document.body.dataset.view = r.view;
+    try { setSess(false); } catch {}
     updateCounts(); updateAIStatus();
     if (r.view === "home") vHome();
     else if (r.view === "overview") vOverview();
@@ -300,15 +303,6 @@
           <div class="panel step"><div class="num">03</div><b>Сигнал</b><p>Факторы, цитаты-доказательства, журнал решений и печать отчёта.</p></div>
           <div class="panel step"><div class="num">04</div><b>Решение</b><p>Подтвердить или вернуть. Неизвестность никогда не становится обвинением.</p></div>
         </div>
-      </div>
-
-      <div class="section-t">Приоритет сейчас <small>топ по баллу, вживую</small></div>
-      <div class="panel">
-        ${top.map((zk) => { const s = scoreOf(zk); return `<div class="zkrow" data-zk="${zk.id}" tabindex="0" role="link" aria-label="${esc(zk.name)}, ${s.score} баллов">
-          <div><div class="nm">${esc(zk.name)} ${originChip(zk)}</div><div class="addr">${esc(zk.address)} · ${esc(zk.stage)}</div></div>
-          <div class="hide-m"><div class="scorebar"><i style="width:${s.score}%"></i></div></div>
-          <div class="hide-m"><span class="meta">${s.score} / 100</span></div>
-          <div>${zoneChip(s.zone)}</div></div>`; }).join("")}
       </div>
 
       <div class="section-t" id="l-rules">Правила скоринга R1–R6 <small>строгая версия из ТЗ</small></div>
@@ -664,10 +658,14 @@
     page.querySelectorAll("[data-copen]").forEach((b) => b.onclick = () => nav("detail", { zkId: b.dataset.copen }));
     $("#check-regs").innerHTML = (window.SQ_SEED.REGISTRIES || []).map((r) => `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a>`).join("");
     $("#an-run").onclick = async () => {
+      const runBtn = $("#an-run");
+      if (runBtn.disabled) return;
       const text = $("#an-text").value;
       const zkId = $("#an-zk").value;
       const zk = getZk(zkId);
       if (!text.trim()) { toast("Вставьте текст объявления"); return; }
+      runBtn.disabled = true;
+      try {
       $("#an-result").innerHTML = `<h3 class="block" style="padding:0 0 8px">2 · Гипотезы и решение</h3>
         <div><span class="engine-badge parser">PARSER · разбор…</span></div>
         <div class="loading-line"></div><div class="loading-line" style="width:72%"></div><div class="loading-line" style="width:48%"></div>`;
@@ -719,6 +717,7 @@
         setFactor(zkId, "R3", "confirmed", r + (c ? " · " + c : ""), { adId: id, quote: text.slice(0, 140), source: "Новое объявление " + id });
         persist(); toast(`R3 подтверждён`); nav("detail", { zkId });
       });
+      } finally { runBtn.disabled = false; }
     };
   }
 
@@ -818,6 +817,13 @@
   }
 
   // ---------- topbar actions ----------
+  const sessBtn = $("#btn-sess"), sessMenu = $("#sess-menu");
+  const setSess = (open) => { if (!sessBtn) return; sessMenu.hidden = !open; sessBtn.setAttribute("aria-expanded", open ? "true" : "false"); };
+  if (sessBtn) {
+    sessBtn.onclick = (e) => { e.stopPropagation(); setSess(sessMenu.hidden); };
+    document.addEventListener("click", (e) => { if (!sessMenu.hidden && !e.target.closest(".sess")) setSess(false); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !sessMenu.hidden) { setSess(false); sessBtn.focus(); } });
+  }
   const menuBtn = $("#btn-menu");
   if (menuBtn) menuBtn.onclick = () => {
     const open = document.body.classList.toggle("nav-open");
@@ -855,7 +861,7 @@
       <p style="font-size:13px;color:var(--ink-2)">OpenAI-совместимый endpoint (например, https://openrouter.ai/api/v1/chat/completions). Ключ хранится только в localStorage этого браузера и никуда не коммитится. Без ключа работает меченая DEMO-эвристика.</p>
       <label class="f">Endpoint<input type="text" id="ai-endpoint" value="${esc(c.endpoint || "https://openrouter.ai/api/v1/chat/completions")}"></label>
       <label class="f" style="margin-top:8px">Model<input type="text" id="ai-model" value="${esc(c.model || "")}" placeholder="например, vendor/model-name"></label>
-      <label class="f" style="margin-top:8px">API key<input type="text" id="ai-key" value="${esc(c.apiKey || "")}" placeholder="оставьте пустым для demo-режима"></label>
+      <label class="f" style="margin-top:8px">API key<input type="password" id="ai-key" value="${esc(c.apiKey || "")}" placeholder="оставьте пустым для demo-режима" autocomplete="off"></label>
       <div class="row" style="margin-top:12px"><button class="btn primary" id="ai-save">Сохранить</button><button class="btn danger" id="ai-clear">Отключить AI</button><button class="btn" id="ai-cancel">Закрыть</button></div>`);
     $("#ai-cancel").onclick = closeModal;
     $("#ai-clear").onclick = () => { window.SQ_AI.saveConfig({}); closeModal(); render(); toast("AI отключён, demo-режим"); };
