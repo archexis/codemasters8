@@ -71,6 +71,13 @@
     const labels = { confirmed: "подтверждён", hypothesis: "гипотеза ИИ", rejected: "отклонён", "needs-verification": "нужна проверка" };
     return `<span class="st ${esc(st)}">${labels[st] || esc(st)}</span>`;
   }
+  // Один чип происхождения вместо DEMO-спама: учебные записи и записи реестра различимы везде.
+  function originChip(zk) {
+    if (!zk) return "";
+    if (zk.origin === "public-snapshot") return `<span class="chip">реестр · Ashyq, 15.10.2026</span>`;
+    if (zk.scenario) return `<span class="chip">сценарий ${esc(zk.scenario)}</span>`;
+    return `<span class="chip">учебный пример</span>`;
+  }
   function legalLabel(lb) {
     if (!lb) return "—";
     if (lb.status === "verified" && lb.type === "guarantee") return "Гарантия Единого оператора · проверено";
@@ -122,7 +129,7 @@
   // ---------- router ----------
   const TITLES = {
     home: ["SAQ QURYLYS", "Титул · начните с проверки объявления"],
-    overview: ["Объекты", "Өскемен · 8 демо-ЖК · все совпадения случайны"],
+    overview: ["Объекты", "Өскемен · учебные сценарии и записи реестра разрешений"],
     detail: ["Карточка ЖК", "история · источники · факторы риска"],
     ads: ["Мониторинг рекламы", "все публикации · подозрительные формулировки подсвечены"],
     analyze: ["Проверка", "парсер → гипотезы → решение человека"],
@@ -205,8 +212,8 @@
     const real = window.SQ_AI.hasRealAI();
     const cfg = window.SQ_AI.getConfig();
     $("#ai-status").innerHTML = real
-      ? `AI: <b style="color:#7fd6b2">real</b> · <span style="font-family:var(--mono);font-size:11px">${esc(cfg.model || "")}</span>`
-      : `AI: <b style="color:#ffd97a">demo-режим</b> · эвристика с честной меткой`;
+      ? `AI: <b style="color:var(--green)">подключён</b> · <span style="font-family:var(--mono);font-size:11px">${esc(cfg.model || "")}</span>`
+      : `AI: <b style="color:var(--amber)">эвристика</b> · без ключа`;
   }
 
   // ---------- views ----------
@@ -281,7 +288,7 @@
       <div class="section-t">Приоритет сейчас <small>топ по баллу, вживую</small></div>
       <div class="panel">
         ${top.map((zk) => { const s = scoreOf(zk); return `<div class="zkrow" data-zk="${zk.id}" tabindex="0" role="link" aria-label="${esc(zk.name)}, ${s.score} баллов">
-          <div><div class="nm">${esc(zk.name)} <span class="demo-pill">DEMO</span></div><div class="addr">${esc(zk.address)} · ${esc(zk.stage)}</div></div>
+          <div><div class="nm">${esc(zk.name)} ${originChip(zk)}</div><div class="addr">${esc(zk.address)} · ${esc(zk.stage)}</div></div>
           <div class="hide-m"><div class="scorebar"><i style="width:${s.score}%"></i></div></div>
           <div class="hide-m"><span class="meta">${s.score} / 100</span></div>
           <div>${zoneChip(s.zone)}</div></div>`; }).join("")}
@@ -306,7 +313,7 @@
       <div class="section-t" id="l-regs">Открытые реестры <small>ручная сверка, результат — в карточку ЖК</small></div>
       <div class="reg-strip">${regs.map((r) => `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a>`).join("")}</div>
       <div class="panel" style="padding:14px 18px;margin-top:10px;font-size:13px;color:var(--ink-2)">
-        Живой интеграции с госреестрами в демо нет — это честно указано. Две ссылки при проверке 15.10.2026 не открылись (кадастровая карта, реестр недобросовестных участников) — сверяйте вручную. Все компании, БИНы и адреса вымышлены.
+        Живой интеграции с госреестрами здесь нет — сверяйте вручную, результат фиксируйте в карточке с источником и датой. Две ссылки при проверке 15.10.2026 не открылись (кадастровая карта, реестр недобросовестных участников). Учебные записи вымышлены; записи с чипом «реестр» — из открытого набора Ashyq Data.
       </div>
 
       <div class="section-t" id="l-demo">Путь демонстрации <small>2–3 минуты</small></div>
@@ -320,14 +327,14 @@
 
       <div class="section-t" id="l-faq">Частые вопросы <small>честно про ограничения</small></div>
       <div class="panel faq" style="padding:8px 18px 14px">
-        <details open><summary>Это юридическое заключение?</summary><p>Нет. SAQ QURYLYS подсвечивает признаки и помогает принять решение, но не устанавливает факт правонарушения и ничего никуда не отправляет автоматически. Все записи демонстрационные.</p></details>
+        <details open><summary>Это юридическое заключение?</summary><p>Нет. SAQ QURYLYS подсвечивает признаки и помогает принять решение, но не устанавливает факт правонарушения и ничего никуда не отправляет автоматически.</p></details>
         <details><summary>Почему платная бронь — это «жёлтый», а не сразу «красный»?</summary><p>Красная зона требует одновременно подтверждённых R1 (основания нет — установлено проверкой) и R2 (деньги просят). Один платёж без проверки основания — жёлтая зона и повод проверить реестры.</p></details>
         <details><summary>Что делает AI, а что — человек?</summary><p>AI и локальный парсер извлекают только дословные фрагменты и честно помечают режим (real / demo). Фактором риска находка становится после подтверждения аналитиком с источником и датой.</p></details>
-        <details><summary>Откуда данные?</summary><p>Все 8 ЖК, 13 объявлений, компании, БИНы и адреса вымышлены и помечены DEMO. Совпадения случайны. Реестры — внешние ссылки для ручной сверки.</p></details>
+        <details><summary>Откуда данные?</summary><p>Учебные сценарии и объявления к ним вымышлены — у них чип «сценарий» или «учебный пример». Отдельно показаны записи разрешений из открытого набора Ashyq Data (снимок 15.10.2026) с чипом «реестр» — у них нет объявлений и оценок, только номер разрешения и источник.</p></details>
         <details><summary>Можно подключить настоящую модель?</summary><p>Да: кнопка «Настроить AI» принимает OpenAI-совместимый endpoint и ключ. Ключ хранится только в localStorage браузера и никогда не коммитится. Без ключа работает меченая эвристика.</p></details>
       </div>
 
-      <div class="panel footer"><b>SAQ QURYLYS · DEMO — не юридический документ.</b> Скоринг детерминирован: минимум 100, только подтверждённые факторы, неизвестность — 0 и «требует проверки». Исходное ТЗ имеет приоритет над дизайном: визуальные изменения не ослабляют обязательные правила.</div>`;
+      <div class="panel footer"><b>SAQ QURYLYS · не юридический документ.</b> Скоринг детерминирован: максимум 100, только подтверждённые факторы, неизвестность — 0 и «требует проверки». Исходное ТЗ имеет приоритет над дизайном: визуальные изменения не ослабляют обязательные правила.</div>`;
 
     page.querySelectorAll("[data-go]").forEach((b) => b.onclick = () => nav(b.dataset.go));
     page.querySelectorAll("[data-zk]").forEach((el) => {
@@ -398,7 +405,7 @@
 
     page.innerHTML = `
       <div class="stats">
-        <div class="panel stat"><div class="n">${state.complexes.length}</div><div class="l">демо-ЖК под наблюдением</div></div>
+        <div class="panel stat"><div class="n">${state.complexes.length}</div><div class="l">объектов под наблюдением</div></div>
         <div class="panel stat"><div class="n" style="color:var(--red)">${counts.red}</div><div class="l">красная зона · приоритет</div></div>
         <div class="panel stat"><div class="n" style="color:var(--amber)">${counts.yellow}</div><div class="l">жёлтая зона · проверка</div></div>
         <div class="panel stat"><div class="n" style="color:var(--green)">${counts.green}</div><div class="l">зелёная зона · мониторинг</div></div>
@@ -418,7 +425,7 @@
           const s = scoreOf(zk); const ads = adsOf(zk.id);
           const color = s.zone === "red" ? "var(--red)" : s.zone === "yellow" ? "var(--amber)" : "var(--green)";
           return `<div class="zkrow" data-zk="${zk.id}" tabindex="0" role="link" aria-label="${esc(zk.name)}, ${s.score} баллов, ${zoneLabel(s.zone)} зона">
-            <div><div class="nm">${esc(zk.name)} <span class="demo-pill">DEMO</span>${zk.scenario ? ` <span class="chip">сценарий ${zk.scenario}</span>` : ""}</div>
+            <div><div class="nm">${esc(zk.name)} ${originChip(zk)}</div>
               <div class="addr">${esc(zk.address)} · ${esc(zk.stage)}</div>
               <div class="meta">${zk.id} · ${esc(zk.developer)} · объявлений: ${ads.length} · ${esc(legalShort(zk.legalBasis))}</div></div>
             <div class="hide-m"><div class="scorebar" aria-hidden="true"><i style="width:${s.score}%;background:${color}"></i></div>
@@ -491,10 +498,10 @@
       </div>
       <div class="detail-head">
         <div class="panel">
-          <div style="padding:16px 18px 0"><h3 style="font-family:var(--serif);margin:0;font-size:22px">${esc(zk.name)} <span class="demo-pill">DEMO</span></h3>
-          <div style="color:var(--ink-2);font-size:13px">${esc(zk.city)} · ${esc(zk.address)}</div></div>
+          <div style="padding:16px 18px 0"><h3 style="font-family:var(--serif);margin:0;font-size:22px">${esc(zk.name)} ${originChip(zk)}</h3>
+          <div style="color:var(--ink-2);font-size:13px">${esc(zk.city)} · ${esc(zk.address)}${zk.geoApprox ? ` <span class="chip">координаты приблизительные</span>` : ""}</div></div>
           <dl class="kv">
-            <dt>Застройщик / БИН</dt><dd>${esc(zk.developer)} · <span style="font-family:var(--mono)">${esc(zk.bin)}</span> <span class="chip">вымышлены</span></dd>
+            <dt>Застройщик / БИН</dt><dd>${esc(zk.developer)}${zk.bin ? ` · <span style="font-family:var(--mono)">${esc(zk.bin)}</span>` : ""} ${zk.origin === "public-snapshot" ? `<span class="chip">наименование из реестра</span>` : `<span class="chip">учебный пример</span>`}</dd>
             <dt>Этап строительства</dt><dd>${esc(zk.stage)}</dd>
             <dt>Готовность</dt><dd>заявлено ${zk.readinessClaimed ?? "—"}% · подтверждено ${zk.readinessConfirmed ?? "—"}%
               <span class="rbar" aria-hidden="true"><i class="claim" style="width:${zk.readinessClaimed || 0}%"></i><i class="conf" style="width:${zk.readinessConfirmed || 0}%"></i></span>
@@ -538,9 +545,9 @@
       <div class="section-t">Связанные объявления · ${ads.length}</div>
       <div class="panel">
         ${ads.length ? ads.map((a) => `
-          <div class="factor"><div class="fh"><b>${esc(a.id)}</b> <span class="chip">${esc(a.platform)}</span> <span class="chip">${esc(a.account)}</span> <span class="chip">${esc(a.date)}</span> ${a.userAdded ? `<span class="chip">добавлено аналитиком</span>` : `<span class="chip">демо-снимок</span>`}</div>
+          <div class="factor"><div class="fh"><b>${esc(a.id)}</b> <span class="chip">${esc(a.platform)}</span> <span class="chip">${esc(a.account)}</span> <span class="chip">${esc(a.date)}</span> ${a.userAdded ? `<span class="chip">добавлено аналитиком</span>` : `<span class="chip">снимок</span>`}</div>
           <div class="adtext" style="margin-top:6px">${highlight(a.text)}</div>
-          <div class="src-link"><a href="${esc(a.url)}" target="_blank" rel="noopener">Источник (демо-ссылка)</a> · снято ${esc(a.captureAt)}</div></div>`).join("")
+          <div class="src-link"><a href="${esc(a.url)}" target="_blank" rel="noopener">Источник</a> · снято ${esc(a.captureAt)}</div></div>`).join("")
           : `<div class="empty">Объявлений пока нет. Добавьте первое через «Новый анализ».</div>`}
       </div>
 
@@ -593,7 +600,7 @@
           <div style="display:grid;gap:10px">
             <label class="f">Связанный ЖК<select id="an-zk">${opts}</select></label>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-              <label class="f">Площадка<input type="text" id="an-platform" value="Krisha (демо)" maxlength="80"></label>
+              <label class="f">Площадка<input type="text" id="an-platform" value="Krisha" maxlength="80"></label>
               <label class="f">Аккаунт<input type="text" id="an-account" value="@analyst_inbox" maxlength="80"></label>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -610,7 +617,7 @@
               <button class="preset" data-preset="SQ-002"><b>Кейс B · депозит</b><span>основания нет → ?</span></button>
               <button class="preset" data-preset="SQ-003"><b>Кейс C · гарантия</b><span>чистое объявление → ?</span></button>
             </div>
-            <div style="font-size:12px;color:var(--ink-2);margin-top:6px">Пресеты подставляют демо-текст и объект. Живые расчёты A·B·C — ниже.</div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:6px">Пресеты подставляют пример текста и объект. Живые расчёты A·B·C — ниже.</div>
           </div>
         </div>
         <div class="panel" style="padding:16px 18px" id="an-result">
@@ -714,9 +721,9 @@
       </div>
       <div class="panel signal" id="signal-card">
         <div class="shead">
-          <div style="font-size:11.5px;letter-spacing:.09em;color:var(--ink-3)">SAQ QURYLYS · СИГНАЛЬНАЯ КАРТОЧКА · <b>DEMO — НЕ ЮРИДИЧЕСКИЙ ДОКУМЕНТ</b></div>
+          <div style="font-size:11.5px;letter-spacing:.09em;color:var(--ink-3)">SAQ QURYLYS · СИГНАЛЬНАЯ КАРТОЧКА · <b>НЕ ЮРИДИЧЕСКИЙ ДОКУМЕНТ</b></div>
           <h3>${esc(zk.name)} — ${s.score}/100 · ${zoneLabel(s.zone)} зона</h3>
-          <div style="font-size:13px;color:var(--ink-2)">${esc(zk.id)} · ${esc(zk.address)} · ${esc(zk.developer)} · БИН <span style="font-family:var(--mono)">${esc(zk.bin)}</span> (вымышлены)</div>
+          <div style="font-size:13px;color:var(--ink-2)">${esc(zk.id)} · ${esc(zk.address)} · ${esc(zk.developer)}${zk.bin ? ` · БИН <span style="font-family:var(--mono)">${esc(zk.bin)}</span>` : ""} ${originChip(zk)}</div>
           <div style="margin-top:6px">${zoneChip(s.zone)} <span class="chip">статус: ${esc(sigLabel(sig.status))}</span> ${zk.scenario ? `<span class="chip">сценарий ${zk.scenario}</span>` : ""}</div>
         </div>
         <div class="sig-grid">
@@ -732,7 +739,7 @@
         </div>
         <div class="log"><div class="section-t">Журнал решений</div>
           ${sig.history.length ? `<table><tr><th>Дата</th><th>Аналитик</th><th>Переход</th><th>Комментарий</th></tr>${sig.history.map((h) => `<tr><td style="font-family:var(--mono)">${esc(h.at.slice(0, 16).replace("T", " "))}</td><td>${esc(h.reviewer)}</td><td>${esc(h.from)} → <b>${esc(h.to)}</b></td><td>${esc(h.comment || "—")}</td></tr>`).join("")}</table>` : `<div style="font-size:13px;color:var(--ink-2)">Решений пока нет — сигнал в статусе «черновик».</div>`}
-          <div style="font-size:12px;color:var(--ink-3);margin-top:10px">Система подсвечивает признаки и помогает принять решение, но не устанавливает факт правонарушения и не отправляет материалы в госорганы автоматически. Все записи демонстрационные.</div>
+          <div style="font-size:12px;color:var(--ink-3);margin-top:10px">Система подсвечивает признаки и помогает принять решение, но не устанавливает факт правонарушения и не отправляет материалы в госорганы автоматически. Учебные записи вымышлены; записи реестра — из открытого набора Ashyq Data.</div>
         </div>
       </div>`;
     $("#sg-back").onclick = () => nav("detail", { zkId });
@@ -777,7 +784,7 @@
   function vRegistries() {
     const regs = window.SQ_SEED.REGISTRIES;
     page.innerHTML = `<div class="panel" style="padding:6px 18px 14px"><div class="section-t">Открытые реестры и базы данных РК · внешние ссылки</div>
-      <p style="font-size:13px;color:var(--ink-2)">В демо живой интеграции с реестрами нет — это честно указано. Список нужен аналитику для ручной сверки; результат сверки фиксируется в карточке ЖК с источником и датой.</p>
+      <p style="font-size:13px;color:var(--ink-2)">Живой интеграции с реестрами здесь нет. Список нужен аналитику для ручной сверки; результат сверки фиксируется в карточке ЖК с источником и датой.</p>
       ${(regs || []).map((r) => `<div style="padding:8px 0;border-top:1px solid var(--line);font-size:13.5px"><a href="${esc(r.url)}" target="_blank" rel="noopener"><b>${esc(r.name)}</b></a><br><span style="color:var(--ink-2);font-size:12.5px">${esc(r.note)} · ${esc(r.url)}</span></div>`).join("")}</div>`;
   }
 
@@ -786,9 +793,9 @@
       <h3 style="font-family:var(--serif);margin:0 0 8px">SAQ QURYLYS · что это</h3>
       <p>Аналитическая система мониторинга рисков в объявлениях о долевом строительстве. Собирает сведения о ЖК, публикациях и проверках в одну карточку, считает объяснимый риск по фиксированным правилам и формирует проверяемый сигнал. Решение всегда принимает человек.</p>
       <div class="section-t">Архитектура</div>
-      <p style="font-size:13.5px"><span style="font-family:var(--mono)">js/data.js</span> — seed (демо-данные) · <span style="font-family:var(--mono)">js/scoring.js</span> — детерминированный движок R1–R6 (ноль зависимостей, покрыт тестами) · <span style="font-family:var(--mono)">js/ai.js</span> — адаптер извлечения гипотез (real LLM при ключе, иначе меченая эвристика) · <span style="font-family:var(--mono)">js/app.js</span> — интерфейс и workflow · состояние — localStorage.</p>
+      <p style="font-size:13.5px"><span style="font-family:var(--mono)">js/data.js</span> — seed (учебные данные + записи реестра) · <span style="font-family:var(--mono)">js/scoring.js</span> — детерминированный движок R1–R6 (ноль зависимостей, покрыт тестами) · <span style="font-family:var(--mono)">js/ai.js</span> — адаптер извлечения гипотез (real LLM при ключе, иначе меченая эвристика) · <span style="font-family:var(--mono)">js/app.js</span> — интерфейс и workflow · состояние — localStorage.</p>
       <div class="section-t">Ограничения (честно)</div>
-      <ul style="font-size:13.5px"><li>Все компании, БИНы, адреса и документы вымышлены; совпадения случайны.</li><li>Нет живой интеграции с госреестрами, Telegram или парсингом — только ручной ввод и ссылки.</li><li>Без ключа AI работает меченая эвристика, а не языковая модель (кнопка «Настроить AI»).</li><li>Красная зона требует одновременно R1 и R2; неизвестность никогда не даёт баллов.</li></ul>
+      <ul style="font-size:13.5px"><li>Учебные компании, БИНы, адреса и документы вымышлены; совпадения случайны.</li><li>Нет живой интеграции с госреестрами, Telegram или парсингом — только ручной ввод и ссылки.</li><li>Без ключа AI работает меченая эвристика, а не языковая модель (кнопка «Настроить AI»).</li><li>Красная зона требует одновременно R1 и R2; неизвестность никогда не даёт баллов.</li></ul>
       <div class="section-t">Путь демонстрации (2–3 минуты)</div>
       <ol style="font-size:13.5px"><li>Обзор: фильтры зон, карта, сортировка по баллу.</li><li>Карточка SQ-002 (сценарий B): факторы, доказательства, журнал.</li><li>Новый анализ: вставить пример → гипотеза с цитатой → подтвердить → балл пересчитан.</li><li>Сигнальная карточка: подтвердить, печать/PDF.</li><li>Сценарии A·B·C: живые расчёты сошлись.</li></ol></div>`;
   }
@@ -800,11 +807,13 @@
     menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
   };
   $("#nav").addEventListener("click", () => document.body.classList.remove("nav-open"));
+  const brandHome = $("#brand-home");
+  if (brandHome) brandHome.onclick = () => { document.body.classList.remove("nav-open"); nav("home"); };
   $("#btn-account").onclick = () => {
     const s = getSession();
     if (!s.name) {
       openModal(`<h3>Вход · тестовый доступ</h3>
-        <p class="acct-meta">Настоящей авторизации в демо нет: сервера, паролей и личных кабинетов не существует. Укажите имя аналитика — оно будет подписывать решения в журнале. Ничего кроме имени не хранится.</p>
+        <p class="acct-meta">Настоящей авторизации здесь нет: сервера, паролей и личных кабинетов не существует. Укажите имя аналитика — оно будет подписывать решения в журнале. Ничего кроме имени не хранится.</p>
         <label class="f">Имя аналитика<input type="text" id="m-login" maxlength="60" placeholder="например, А. Аналитик"></label>
         <div class="err" id="m-login-err" role="alert"></div>
         <div class="row" style="margin-top:12px"><button class="btn primary" id="m-login-ok">Войти</button><button class="btn" id="m-login-cancel">Отмена</button></div>`);
@@ -822,7 +831,7 @@
       $("#m-logout").onclick = () => { clearSession(); closeModal(); toast("Вы вышли из тестового доступа"); };
     }
   };
-  $("#btn-reset").onclick = () => { if (confirm("Сбросить все подтверждения, объявления и сигналы к исходному демо?")) { localStorage.removeItem(LS_STATE); state = loadState(); nav("home"); toast("Демо-данные сброшены"); } };
+  $("#btn-reset").onclick = () => { if (confirm("Сбросить все подтверждения, объявления и сигналы к исходному состоянию?")) { localStorage.removeItem(LS_STATE); state = loadState(); nav("home"); toast("Всё сброшено к исходному состоянию"); } };
   $("#btn-ai-config").onclick = () => {
     const c = window.SQ_AI.getConfig();
     openModal(`<h3>Подключение AI-модели</h3>

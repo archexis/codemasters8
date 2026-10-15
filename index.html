@@ -13,13 +13,10 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 </head>
 <body>
-<div class="shell">
-  <aside class="side" id="side" aria-label="Навигация">
-    <div class="brand">
-      <h1>SAQ <span>QURYLYS</span></h1>
-      <p>сақ · мониторинг рисков долевого строительства</p>
-      <p style="margin-top:8px"><span class="demo-pill">DEMO · данные вымышлены</span></p>
-    </div>
+<div class="shell topnav">
+  <header class="top no-print">
+    <button class="btn small only-m" id="btn-menu" aria-expanded="false" aria-controls="nav">Меню</button>
+    <button class="brand-mini" id="brand-home" aria-label="SAQ QURYLYS — на главную">SAQ <span>QURYLYS</span></button>
     <nav class="nav" id="nav" aria-label="Разделы">
       <button data-view="home" aria-current="page">Главная</button>
       <button data-view="overview">Объекты <span class="cnt" id="cnt-zk"></span></button>
@@ -28,22 +25,16 @@
       <button data-view="registries">Реестры</button>
       <button data-view="about">О проекте</button>
     </nav>
-    <div class="foot">
-      <div id="ai-status">AI: —</div>
-      <div style="margin-top:6px">Не устанавливает факт правонарушения. Решение — за человеком.</div>
-    </div>
-  </aside>
+    <div class="sp"></div>
+    <div class="ai-status" id="ai-status">AI: —</div>
+    <button class="btn small" id="btn-account">Войти</button>
+    <button class="btn small" id="btn-ai-config">Настроить AI</button>
+    <button class="btn small" id="btn-reset">Сбросить</button>
+  </header>
   <div class="main">
-    <div class="topbar no-print">
-      <button class="btn small only-m" id="btn-menu" aria-expanded="false" aria-controls="side">Меню</button>
-      <div>
-        <h2 id="page-title">SAQ QURYLYS</h2>
-        <div class="sub" id="page-sub">Титул · начните с проверки объявления</div>
-      </div>
-      <div class="sp"></div>
-      <button class="btn small" id="btn-account">Войти</button>
-      <button class="btn small" id="btn-ai-config">Настроить AI</button>
-      <button class="btn small" id="btn-reset">Сбросить демо</button>
+    <div class="pagehead">
+      <h2 id="page-title">SAQ QURYLYS</h2>
+      <div class="sub" id="page-sub">Титул · начните с проверки объявления</div>
     </div>
     <main class="page" id="page" aria-live="polite"></main>
   </div>
