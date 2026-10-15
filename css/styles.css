@@ -67,7 +67,14 @@ a { color: var(--accent-ink); }
   display: grid; gap: 8px; background: var(--card); border: 1px solid var(--line);
   border-radius: 12px; box-shadow: var(--shadow); padding: 12px; min-width: 220px; }
 .sess-menu[hidden] { display: none; }
+.sess-menu:not([hidden]) { animation: menuIn .18s cubic-bezier(.16, 1, .3, 1); }
+@keyframes menuIn { from { opacity: 0; transform: translateY(-6px); } }
 .sess-menu .ai-status { white-space: normal; }
+.btn:active { transform: scale(.97); }
+@keyframes hypIn { from { opacity: 0; transform: translateY(8px); } }
+.hyp { animation: hypIn .3s cubic-bezier(.16, 1, .3, 1) both; }
+.hyp:nth-of-type(2) { animation-delay: .08s; }
+.hyp:nth-of-type(3) { animation-delay: .16s; }
 .demo-pill {
   display: inline-block; font-size: 12px; font-weight: 700;
   background: rgba(255, 255, 255, .16); color: #fff;

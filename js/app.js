@@ -136,9 +136,7 @@
     ads: ["Мониторинг рекламы", "все публикации · подозрительные формулировки подсвечены"],
     analyze: ["Проверка", "парсер → гипотезы → решение человека"],
     signal: ["Сигнальная карточка", "факторы · доказательства · статус проверки"],
-    scenarios: ["Контрольные сценарии", "A · B · C — живые расчёты по текущим данным"],
     registries: ["Открытые реестры РК", "внешние источники · живой интеграции в демо нет"],
-    about: ["О проекте", "архитектура · ограничения · путь демонстрации"],
   };
   function routeFromHash(h) {
     const m = /^#\/(\w+)(?:\/([\w-]+))?/.exec(String(h || ""));
@@ -180,9 +178,7 @@
     else if (r.view === "ads") vAds();
     else if (r.view === "analyze") vAnalyze(r.prefill);
     else if (r.view === "signal") vSignal(r.zkId);
-    else if (r.view === "scenarios") vScenarios();
     else if (r.view === "registries") vRegistries();
-    else if (r.view === "about") vAbout();
     else vOverview();
     postRender();
   }
@@ -265,7 +261,7 @@
         </div>
       </div>
       <div class="anchors" aria-label="Разделы страницы">
-        <a href="#l-problem">Проблема</a><a href="#l-how">Как работает</a><a href="#l-rules">Правила R1–R6</a><a href="#l-zones">Зоны</a><a href="#l-cases">Кейсы A·B·C</a><a href="#l-regs">Реестры</a><a href="#l-demo">Демо-путь</a><a href="#l-faq">Вопросы</a>
+        <a href="#l-problem">Проблема</a><a href="#l-how">Как работает</a><a href="#l-rules">Правила R1–R6</a><a href="#l-zones">Зоны</a><a href="#l-cases">Кейсы A·B·C</a><a href="#l-regs">Реестры</a><a href="#l-faq">Вопросы</a>
       </div>
       <div class="stats">
         <div class="panel stat"><div class="n" data-count="${state.complexes.length}">0</div><div class="l">демо-ЖК под наблюдением</div></div>
@@ -326,15 +322,6 @@
       <div class="panel" style="padding:14px 18px;margin-top:10px;font-size:13px;color:var(--ink-2)">
         Живой интеграции с госреестрами здесь нет — сверяйте вручную, результат фиксируйте в карточке с источником и датой. Две ссылки при проверке 15.10.2026 не открылись (кадастровая карта, реестр недобросовестных участников). Учебные записи вымышлены; записи с чипом «реестр» — из открытого набора Ashyq Data.
       </div>
-
-      <div class="section-t" id="l-demo">Путь демонстрации <small>2–3 минуты</small></div>
-      <div class="panel" style="padding:14px 20px"><ol class="prose" style="margin:0;padding-left:20px">
-        <li>Откройте <b>Объекты</b>: фильтры зон, карта, сортировка по баллу.</li>
-        <li>Зайдите в карточку <b>SQ-002</b> (кейс B): факторы, доказательства, журнал.</li>
-        <li>В <b>Проверке</b> вставьте пример → гипотеза с цитатой → подтвердите → балл пересчитан.</li>
-        <li>В <b>сигнальной карточке</b> подтвердите сигнал и распечатайте отчёт в PDF.</li>
-        <li>В <b>Сценариях</b> проверьте: A = 35, B = 70, C = 10.</li>
-      </ol></div>
 
       <div class="section-t" id="l-faq">Частые вопросы <small>честно про ограничения</small></div>
       <div class="panel faq" style="padding:8px 18px 14px">
@@ -775,46 +762,11 @@
     "SQ-002": "Продажа квартир на этапе котлована! Депозит 1 000 000 тенге для фиксации цены, остаток в рассрочку от застройщика.",
     "SQ-003": "Открыты продажи в строящемся доме, сдача — IV квартал 2026. Оформление строго по договору с гарантией Единого оператора, оплата через эскроу.",
   };
-  function vScenarios() {
-    page.innerHTML = `<p style="color:var(--ink-2);font-size:13.5px;max-width:70ch">Контрольные кейсы из ТЗ считаются <b>вживую</b> по текущим данным (учитываются ваши подтверждения/отклонения). Кнопка «Проверить вживую» прогоняет текст через AI-адаптер и показывает гипотезы.</p>
-    <div class="scen">${SCENARIOS.map((sc) => {
-        const zk = getZk(sc.id); const s = scoreOf(zk);
-        const ok = s.score === sc.expect.score && s.zone === sc.expect.zone;
-        return `<div class="panel scencard"><h4>Кейс ${sc.letter} · ${esc(sc.title)}</h4>
-          <div class="calc">Ожидание: ${esc(sc.calc)} → ${sc.expect.score}, ${zoneLabel(sc.expect.zone)}<br>Сейчас: ${s.score}, ${zoneLabel(s.zone)} · ${ok ? `<span class="pass">СОВПАДАЕТ</span>` : `<span class="fail">ОТЛИЧАЕТСЯ (данные меняли?)</span>`}</div>
-          <div style="font-size:12.5px;color:var(--ink-2)">${esc(sc.note)}</div>
-          <div class="row"><button class="btn small" data-open="${sc.id}">Открыть ЖК</button><button class="btn small" data-live="${sc.id}">Проверить вживую</button></div>
-          <div id="live-${sc.id}"></div></div>`;
-      }).join("")}</div>`;
-    page.querySelectorAll("[data-open]").forEach((b) => b.onclick = () => nav("detail", { zkId: b.dataset.open }));
-    page.querySelectorAll("[data-live]").forEach((b) => b.onclick = async () => {
-      const box = $("#live-" + b.dataset.live);
-      box.innerHTML = `<div style="font-size:12.5px">Анализ…</div>`;
-      try {
-        const res = await window.SQ_AI.analyzeAdText(DEMO_TEXTS[b.dataset.live], getZk(b.dataset.live).name);
-        box.innerHTML = `<div style="margin-top:6px">${res.realAI ? `<span class="engine-badge real">AI подключён</span>` : `<span class="engine-badge demo">Учебный разбор</span>`}
-          ${res.hypotheses.length ? res.hypotheses.map((h) => `<div class="hyp"><span class="q">«${esc(h.exact_quote)}»</span><div style="font-size:12.5px">→ кандидат ${esc(h.candidate_factor)} · ${esc(h.explanation)}</div></div>`).join("") : `<div style="font-size:12.5px">Прямых предложений оплаты не найдено.</div>`}</div>`;
-      } catch (e) { box.innerHTML = `<div style="font-size:12.5px;color:var(--red)">Ошибка: ${esc(e.message)}</div>`; }
-    });
-  }
-
   function vRegistries() {
     const regs = window.SQ_SEED.REGISTRIES;
     page.innerHTML = `<div class="panel" style="padding:6px 18px 14px"><div class="section-t">Открытые реестры и базы данных РК · внешние ссылки</div>
       <p style="font-size:13px;color:var(--ink-2)">Живой интеграции с реестрами здесь нет. Список нужен аналитику для ручной сверки; результат сверки фиксируется в карточке ЖК с источником и датой.</p>
       ${(regs || []).map((r) => `<div style="padding:8px 0;border-top:1px solid var(--line);font-size:13.5px"><a href="${esc(r.url)}" target="_blank" rel="noopener"><b>${esc(r.name)}</b></a><br><span style="color:var(--ink-2);font-size:12.5px">${esc(r.note)} · ${esc(r.url)}</span></div>`).join("")}</div>`;
-  }
-
-  function vAbout() {
-    page.innerHTML = `<div class="panel" style="padding:18px 22px;max-width:80ch">
-      <h3 style="font-family:var(--serif);margin:0 0 8px">SAQ QURYLYS · что это</h3>
-      <p>Аналитическая система мониторинга рисков в объявлениях о долевом строительстве. Собирает сведения о ЖК, публикациях и проверках в одну карточку, считает объяснимый риск по фиксированным правилам и формирует проверяемый сигнал. Решение всегда принимает человек.</p>
-      <div class="section-t">Архитектура</div>
-      <p style="font-size:13.5px"><span style="font-family:var(--mono)">js/data.js</span> — seed (учебные данные + записи реестра) · <span style="font-family:var(--mono)">js/scoring.js</span> — детерминированный движок R1–R6 (ноль зависимостей, покрыт тестами) · <span style="font-family:var(--mono)">js/ai.js</span> — разбор объявлений на гипотезы (настоящая модель при ключе, иначе встроенный учебный разбор) · <span style="font-family:var(--mono)">js/app.js</span> — интерфейс и workflow · состояние — localStorage.</p>
-      <div class="section-t">Ограничения (честно)</div>
-      <ul style="font-size:13.5px"><li>Учебные компании, БИНы, адреса и документы вымышлены; совпадения случайны.</li><li>Нет живой интеграции с госреестрами, Telegram или парсингом — только ручной ввод и ссылки.</li><li>Без ключа AI работает встроенный учебный разбор, а не языковая модель (пункт «Подключить AI…» в меню «Сеанс»).</li><li>Красная зона требует одновременно R1 и R2; неизвестность никогда не даёт баллов.</li></ul>
-      <div class="section-t">Путь демонстрации (2–3 минуты)</div>
-      <ol style="font-size:13.5px"><li>Обзор: фильтры зон, карта, сортировка по баллу.</li><li>Карточка SQ-002 (сценарий B): факторы, доказательства, журнал.</li><li>Новый анализ: вставить пример → гипотеза с цитатой → подтвердить → балл пересчитан.</li><li>Сигнальная карточка: подтвердить, печать/PDF.</li><li>Сценарии A·B·C: живые расчёты сошлись.</li></ol></div>`;
   }
 
   // ---------- topbar actions ----------
