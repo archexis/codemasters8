@@ -97,7 +97,7 @@
   function refreshAccount() {
     const b = $("#btn-account"); if (!b) return;
     const s = getSession();
-    b.textContent = s.name ? ("👤 " + s.name) : "Войти";
+    b.textContent = s.name ? s.name : "Войти";
   }
   function setSession(name) {
     const s = { name, at: new Date().toISOString() };
@@ -220,6 +220,31 @@
   // ---------- views ----------
   let overviewFilter = { q: "", zone: "all" };
 
+  function donutHtml(counts, total) {
+    const C = 2 * Math.PI * 34;
+    const segs = [["red", counts.red, "var(--red)"], ["amber", counts.yellow, "var(--sun)"], ["green", counts.green, "var(--green)"]];
+    let off = 25;
+    const arcs = segs.map(([k, v, col]) => {
+      const frac = total ? v / total : 0;
+      const s = `<circle cx="45" cy="45" r="34" fill="none" stroke="${col}" stroke-width="13" stroke-dasharray="${(frac * C).toFixed(1)} ${C.toFixed(1)}" stroke-dashoffset="${(-off * C / 100).toFixed(1)}" transform="rotate(-90 45 45)"/>`;
+      off += frac * 100;
+      return s;
+    }).join("");
+    return `<div style="display:flex;gap:16px;align-items:center"><svg width="90" height="90" viewBox="0 0 90 90" role="img" aria-label="Распределение зон риска">${arcs}<text x="45" y="50" text-anchor="middle" font-size="17" font-weight="800" fill="var(--ink)">${total}</text></svg>
+      <div style="font-size:13px;display:grid;gap:6px"><span><span style="color:var(--red)">●</span> Красная — <b>${counts.red}</b></span><span><span style="color:var(--amber)">●</span> Жёлтая — <b>${counts.yellow}</b></span><span><span style="color:var(--green)">●</span> Зелёная — <b>${counts.green}</b></span></div></div>`;
+  }
+  function alertsHtml() {
+    const items = [];
+    for (const zk of state.complexes) {
+      const sig = getSignal(zk.id);
+      for (const h of (sig.history || [])) items.push({ raw: h.at || h.date || "", at: (h.at || "").slice(0, 10), text: `${zk.id}: ${sigLabel(h.from)} → ${h.to === "confirmed" ? "подтверждён" : h.to === "returned" ? "возвращён" : h.to}${h.reviewer ? ` · ${h.reviewer}` : ""}`, dot: h.to === "confirmed" ? "green" : h.to === "returned" ? "amber" : "blue" });
+      for (const e of (zk.events || []).slice(-2)) items.push({ raw: e.date || "", at: (e.date || "").slice(0, 10), text: `${zk.id}: ${e.text}`, dot: "blue" });
+      for (const f of (zk.factors || []).filter((x) => (x.status === "confirmed" || x.status === "rejected") && x.updatedAt)) items.push({ raw: f.updatedAt || "", at: (f.updatedAt || "").slice(0, 10), text: `${zk.id}: ${f.code} ${f.status === "confirmed" ? "подтверждён" : "отклонён"}${f.reviewer ? ` · ${f.reviewer}` : ""}`, dot: f.status === "confirmed" ? "green" : "amber" });
+    }
+    items.sort((a, b) => (b.raw < a.raw ? -1 : 1));
+    if (!items.length) return `<div class="empty">Пока тихо — решений и событий нет.</div>`;
+    return items.slice(0, 8).map((i) => `<div class="arow"><time>${esc(i.at || "—")}</time><span class="dot ${i.dot}"></span><span>${esc(i.text)}</span></div>`).join("");
+  }
   function parserEntitiesHtml(p) {
     if (!p) return "";
     const rows = (p.entities || []).slice(0, 12).map((e) => `<tr><td><b>${esc(e.label)}</b></td><td>${esc(e.value)}</td><td><span class="conf ${esc(e.confidence)}">${esc(e.confidence)}</span></td><td class="q">«${esc(e.quote)}»</td></tr>`).join("");
@@ -264,10 +289,14 @@
         <a href="#l-problem">Проблема</a><a href="#l-how">Как работает</a><a href="#l-rules">Правила R1–R6</a><a href="#l-zones">Зоны</a><a href="#l-cases">Кейсы A·B·C</a><a href="#l-regs">Реестры</a><a href="#l-faq">Вопросы</a>
       </div>
       <div class="stats">
-        <div class="panel stat"><div class="n" data-count="${state.complexes.length}">0</div><div class="l">демо-ЖК под наблюдением</div></div>
-        <div class="panel stat bad"><div class="n" data-count="${counts.red}" style="color:var(--red)">0</div><div class="l">красная зона · приоритет</div></div>
-        <div class="panel stat warn"><div class="n" data-count="${counts.yellow}" style="color:var(--amber)">0</div><div class="l">жёлтая зона · проверка</div></div>
-        <div class="panel stat"><div class="n" data-count="${allAds().length}">0</div><div class="l">публикаций разобрано</div></div>
+        <div class="panel stat"><div class="n" data-count="${state.complexes.length}">0</div><div class="l">ЖК под наблюдением</div><div class="bar"><i style="width:100%;background:var(--accent)"></i></div></div>
+        <div class="panel stat"><div class="n" data-count="${counts.red}" style="color:var(--red)">0</div><div class="l">красная зона · приоритет</div><div class="bar"><i style="width:${state.complexes.length ? Math.round(counts.red / state.complexes.length * 100) : 0}%;background:var(--red)"></i></div></div>
+        <div class="panel stat"><div class="n" data-count="${counts.yellow}" style="color:var(--amber)">0</div><div class="l">жёлтая зона · проверка</div><div class="bar"><i style="width:${state.complexes.length ? Math.round(counts.yellow / state.complexes.length * 100) : 0}%;background:var(--sun)"></i></div></div>
+        <div class="panel stat"><div class="n" data-count="${allAds().length}">0</div><div class="l">публикаций разобрано</div><div class="bar"><i style="width:100%;background:var(--violet)"></i></div></div>
+      </div>
+      <div class="grid2">
+        <div class="panel" style="padding:16px 18px"><div class="section-t" style="margin-top:0">Распределение зон <small>вживую</small></div>${donutHtml(counts, state.complexes.length)}</div>
+        <div class="panel" style="padding:16px 18px"><div class="section-t" style="margin-top:0">Последние изменения <small>журнал решений и события</small></div><div class="alerts">${alertsHtml()}</div></div>
       </div>
 
       <div class="section-t" id="l-problem">Проблема <small>почему объявлений недостаточно</small></div>
@@ -467,14 +496,16 @@
     if (mapInstance) { mapInstance.remove(); mapInstance = null; } // повторный рендер (поиск/фильтр) — без «already initialized»
     const map = L.map("map").setView([49.984, 82.614], 12);
     mapInstance = map;
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© OpenStreetMap" }).addTo(map);
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", { maxZoom: 19, attribution: "© OpenStreetMap · © CARTO" }).addTo(map);
     const bounds = [];
+    const layer = (L.markerClusterGroup ? L.markerClusterGroup({ showCoverageOnHover: false, maxClusterRadius: 48 }) : L.layerGroup()).addTo(map);
     for (const zk of withCoords) {
       const s = scoreOf(zk);
       const icon = L.divIcon({ className: "", html: `<span class="pin ${s.zone}"></span>`, iconSize: [18, 18], iconAnchor: [9, 9], popupAnchor: [0, -10] });
-      const m = L.marker([zk.lat, zk.lng], { icon }).addTo(map);
+      const m = L.marker([zk.lat, zk.lng], { icon });
       m.bindPopup(`<b>${esc(zk.name)}</b><br>${s.score} баллов · ${esc(zoneLabel(s.zone))}`);
       m.on("click", () => nav("detail", { zkId: zk.id }));
+      layer.addLayer(m);
       bounds.push([zk.lat, zk.lng]);
     }
     if (bounds.length > 1) map.fitBounds(bounds, { padding: [24, 24] });
@@ -559,7 +590,9 @@
         <div><div class="section-t">Источники и фиксация</div><div class="panel timeline">
           ${(zk.sources || []).map((e) => `<div><time>${esc(e.date)}</time><span>${esc(e.title)}</span></div>`).join("") || `<div class="empty">Нет источников.</div>`}
         </div></div>
-      </div>`;
+      </div>
+      <div class="section-t">Хронология риска <small>события и решения по датам</small></div>
+      <div class="panel" style="padding:14px 18px"><div class="tline">${tlineHtml(zk, sig)}</div></div>`;
 
     $("#d-back").onclick = () => nav("overview");
     $("#d-signal").onclick = () => nav("signal", { zkId });
@@ -712,6 +745,15 @@
     };
   }
 
+  function tlineHtml(zk, sig) {
+    const items = [];
+    for (const e of (zk.events || [])) items.push({ d: (e.date || "").slice(0, 10), t: e.text, k: "" });
+    for (const h of ((sig && sig.history) || [])) items.push({ d: (h.at || "").slice(0, 10), t: `${sigLabel(h.from)} → ${h.to === "confirmed" ? "сигнал подтверждён" : h.to === "returned" ? "сигнал возвращён" : h.to}${h.reviewer ? ` · ${h.reviewer}` : ""}`, k: h.to === "confirmed" ? "bad" : h.to === "returned" ? "warn" : "" });
+    for (const f of (zk.factors || []).filter((x) => x.status === "confirmed" && x.updatedAt)) items.push({ d: (f.updatedAt || "").slice(0, 10), t: `${f.code} подтверждён${f.reviewer ? ` · ${f.reviewer}` : ""}`, k: f.code === "R1" || f.code === "R2" ? "bad" : "warn" });
+    items.sort((a, b) => (a.d < b.d ? -1 : 1));
+    if (!items.length) return `<div class="empty">Событий пока нет.</div>`;
+    return items.map((i) => `<div class="tev ${i.k}"><time>${esc(i.d || "—")}</time><br>${esc(i.t)}</div>`).join("");
+  }
   function vSignal(zkId) {
     const zk = getZk(zkId);
     if (!zk) { page.innerHTML = `<div class="panel empty">Объект не найден.</div>`; return; }
