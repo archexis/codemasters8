@@ -1,5 +1,9 @@
-// SAQ QURYLYS — demo seed data. ALL RECORDS FICTIONAL, label DEMO.
-// No real companies, BINs, addresses or persons. Oskemen coords approximate.
+// SAQ QURYLYS — seed data with per-record provenance.
+// origin 'scenario': synthetic contrast fixtures for A/B/C + extras (clearly marked).
+// origin 'public-snapshot': real rows from the open Ashyq Data set
+// "Объекты с долевым участием в жилищном строительстве" (CSV, обновлён 12.10.2026),
+// retrieved 2026-10-15. Presence in the set is a permit-number record, NOT a legal verdict.
+// Coordinates for snapshot rows: approximate Nominatim geocoding, marked as such.
 (function () {
   const T = (s) => s; // dates as ISO strings
   const COMPLEXES = [
@@ -196,19 +200,111 @@
   ];
 
   const REGISTRIES = [
-    { name: "Жилищный портал КЖК (homeportal.kz)", url: "https://homeportal.kz", note: "Разрешения МИО и гарантии КЖК" },
-    { name: "E-License (elicense.kz)", url: "https://elicense.kz", note: "Проверка разрешительных документов" },
-    { name: "Qazreestr (qazreestr.kz)", url: "https://qazreestr.kz", note: "Реестр долевого строительства" },
-    { name: "eQurylys — реестр стройорганизаций", url: "https://reestr.equrylys.kz/organizations", note: "Реестр строительных организаций" },
-    { name: "eGov — проверка юрлиц", url: "https://egov.kz", note: "Проверка юридических лиц" },
-    { name: "КГД — налоговая задолженность", url: "https://kgd.gov.kz", note: "Задолженность по налогам" },
-    { name: "Реестр субъектов предпринимательства", url: "https://rsp.gov.kz", note: "Статус субъекта" },
+    { name: "Жилищный портал КЖК (homeportal.kz)", url: "https://homeportal.kz", note: "Разрешения МИО и гарантии КЖК · открывается (проверено 15.10.2026)" },
+    { name: "E-License (elicense.kz)", url: "https://elicense.kz", note: "Проверка разрешительных документов · открывается, медленно (проверено 15.10.2026)" },
+    { name: "Qazreestr (qazreestr.kz)", url: "https://qazreestr.kz", note: "Реестр долевого строительства · открывается (проверено 15.10.2026)" },
+    { name: "eQurylys — реестр стройорганизаций", url: "https://reestr.equrylys.kz/organizations", note: "Реестр строительных организаций · открывается (проверено 15.10.2026)" },
+    { name: "eGov — проверка юрлиц", url: "https://egov.kz", note: "Проверка юридических лиц · открывается (проверено 15.10.2026)" },
+    { name: "КГД — налоговая задолженность", url: "https://kgd.gov.kz", note: "Задолженность по налогам · открывается (проверено 15.10.2026)" },
+    { name: "Реестр субъектов предпринимательства", url: "https://rsp.gov.kz", note: "Статус субъекта · открывается (проверено 15.10.2026)" },
     { name: "Публичная кадастровая карта", url: "https://map.gov4c.kz/egkn/", note: "Кадастровые данные · при проверке 15.10.2026 не открылась" },
-    { name: "Открытые данные РК", url: "https://data.egov.kz", note: "Наборы открытых данных" },
+    { name: "Открытые данные РК", url: "https://data.egov.kz", note: "Наборы открытых данных · открывается (проверено 15.10.2026)" },
     { name: "Реестр недобросовестных участников госзакупок", url: "https://procurement.gov.kz/ru/registry/rnu", note: "Проверка репутации · при проверке 15.10.2026 не открылся" },
-    { name: "Ashyq Data — разрешения на привлечение денег дольщиков", url: "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8", note: "Открытый набор разрешений МИО" },
+    { name: "Ashyq Data — разрешения на привлечение денег дольщиков", url: "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8", note: "Открытый набор разрешений МИО · открывается (проверено 15.10.2026)" },
   ];
 
-  if (typeof module !== "undefined" && module.exports) module.exports = { COMPLEXES, ADS, REGISTRIES };
-  if (typeof window !== "undefined") window.SQ_SEED = { COMPLEXES, ADS, REGISTRIES };
+  const ASHYQ_URL = "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8";
+  const RETRIEVED = "2026-10-15";
+  const GEO_NOTE = "Координаты приблизительные: геокодирование Nominatim/OSM по адресу из набора, 15.10.2026. Не заменяет кадастровые данные.";
+  // Real rows: object_name / builder / permit number / dates → registry id, address, legalBasis.
+  const REAL_COMPLEXES = [
+    {
+      id: "SQ-R01", origin: "public-snapshot", registryId: "3741",
+      name: "ЖК «Жаным»", city: "Өскемен / Усть-Каменогорск",
+      address: "пр. Есенберлина, 92", lat: 49.89745, lng: 82.60153, geoApprox: true,
+      developer: "ТОО «Biryuza Development»", bin: null,
+      authOrg: "ТОО «УК Шанырак Строй»",
+      stage: "Сроки по реестру: 2023-07-24 — 2025-03-21", readinessClaimed: null, readinessConfirmed: null,
+      readinessSources: [],
+      legalBasis: { type: "mio-permit", status: "verified", source: "Ashyq Data: номер ДПГ-23-16-068/155, запись id 3741", checkedAt: RETRIEVED },
+      note: "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов). Номер в наборе не является юридическим выводом.",
+      factors: [],
+      events: [{ date: RETRIEVED, text: "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)." }],
+      sources: [{ title: "Ashyq Data · Объекты с долевым участием · запись id 3741", date: RETRIEVED, url: ASHYQ_URL }],
+    },
+    {
+      id: "SQ-R02", origin: "public-snapshot", registryId: "4989",
+      name: "Золотой квадрат, Пятно 1", city: "Өскемен / Усть-Каменогорск",
+      address: "ул. Кайсенова, участок 55/1", lat: 49.94539, lng: 82.62387, geoApprox: true,
+      developer: "ТОО «НАУАН Корп»", bin: null,
+      authOrg: "ТОО «SA-Инжиниринг»",
+      stage: "Сроки по реестру: 2025-06-01 — 2026-07-31", readinessClaimed: null, readinessConfirmed: null,
+      readinessSources: [],
+      legalBasis: { type: "mio-permit", status: "verified", source: "Ashyq Data: номер ДПГ-25-16-078/194, запись id 4989", checkedAt: RETRIEVED },
+      note: "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов).",
+      factors: [],
+      events: [{ date: RETRIEVED, text: "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)." }],
+      sources: [{ title: "Ashyq Data · Объекты с долевым участием · запись id 4989", date: RETRIEVED, url: ASHYQ_URL }],
+    },
+    {
+      id: "SQ-R03", origin: "public-snapshot", registryId: "6176",
+      name: "ЖК «ASYLYM», Пятно 1", city: "Өскемен / Усть-Каменогорск",
+      address: "ул. Кокжал Барака, 18б", lat: 49.89637, lng: 82.60913, geoApprox: true,
+      developer: "ТОО «EKM COMPANY»", bin: null,
+      authOrg: "ТОО «EKM Invest»",
+      stage: "Сроки по реестру: 2025-08-15 — 2026-05-15", readinessClaimed: null, readinessConfirmed: null,
+      readinessSources: [],
+      legalBasis: { type: "mio-permit", status: "verified", source: "Ashyq Data: номер ДПГ-25-16-082/200, запись id 6176", checkedAt: RETRIEVED },
+      note: "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов).",
+      factors: [],
+      events: [{ date: RETRIEVED, text: "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)." }],
+      sources: [{ title: "Ashyq Data · Объекты с долевым участием · запись id 6176", date: RETRIEVED, url: ASHYQ_URL }],
+    },
+    {
+      id: "SQ-R04", origin: "public-snapshot", registryId: "6078",
+      name: "ЖК Orda, Здание 1", city: "Өскемен / Усть-Каменогорск",
+      address: "ул. Кокжал Барака, 19а", lat: 49.88952, lng: 82.61521, geoApprox: true,
+      developer: "ТОО «СЕО GROUP»", bin: null,
+      authOrg: "ТОО «ВОСТОК СТРОЙАЛЬЯНС»",
+      stage: "Сроки по реестру: 2024-10-17 — 2027-02-28", readinessClaimed: null, readinessConfirmed: null,
+      readinessSources: [],
+      legalBasis: { type: "mio-permit", status: "verified", source: "Ashyq Data: номер 1383/МҚЗТ-С-331, запись id 6078", checkedAt: RETRIEVED },
+      note: "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов).",
+      factors: [],
+      events: [{ date: RETRIEVED, text: "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)." }],
+      sources: [{ title: "Ashyq Data · Объекты с долевым участием · запись id 6078", date: RETRIEVED, url: ASHYQ_URL }],
+    },
+    {
+      id: "SQ-R05", origin: "public-snapshot", registryId: "6516",
+      name: "Tumar Towers Oskemen, Здание 1", city: "Өскемен / Усть-Каменогорск",
+      address: "пр. Победы, 2", lat: 49.95009, lng: 82.6168, geoApprox: true,
+      developer: "ТОО «TUMAR Group»", bin: null,
+      authOrg: "ТОО «Baiterek Invest»",
+      stage: "Сроки по реестру: 2025-02-04 — 2026-07-04", readinessClaimed: null, readinessConfirmed: null,
+      readinessSources: [],
+      legalBasis: { type: "mio-permit", status: "verified", source: "Ashyq Data: номер KZ26VWE00002487, запись id 6516", checkedAt: RETRIEVED },
+      note: "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов).",
+      factors: [],
+      events: [{ date: RETRIEVED, text: "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)." }],
+      sources: [{ title: "Ashyq Data · Объекты с долевым участием · запись id 6516", date: RETRIEVED, url: ASHYQ_URL }],
+    },
+    {
+      id: "SQ-R06", origin: "public-snapshot", registryId: "5495",
+      name: "ЖК «AINALAIYN», Пятно 1", city: "Өскемен / Усть-Каменогорск",
+      address: "пр. Есенберлина, участок 2", lat: 49.89128, lng: 82.59565, geoApprox: true,
+      developer: "ТОО «АА2А»", bin: null,
+      authOrg: "ТОО «АА2А Invest»",
+      stage: "Сроки по реестру: 2024-10-24 — 2025-12-31", readinessClaimed: null, readinessConfirmed: null,
+      readinessSources: [],
+      legalBasis: { type: "mio-permit", status: "verified", source: "Ashyq Data: номер KZ40VWE00002526, запись id 5495", checkedAt: RETRIEVED },
+      note: "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов).",
+      factors: [],
+      events: [{ date: RETRIEVED, text: "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)." }],
+      sources: [{ title: "Ashyq Data · Объекты с долевым участием · запись id 5495", date: RETRIEVED, url: ASHYQ_URL }],
+    },
+  ];
+  const COMPLEXES_ALL = COMPLEXES.map((z) => ({ origin: "scenario", ...z })).concat(REAL_COMPLEXES);
+
+  if (typeof module !== "undefined" && module.exports) module.exports = { COMPLEXES: COMPLEXES_ALL, ADS, REGISTRIES, REAL_COMPLEXES, GEO_NOTE, ASHYQ_URL, RETRIEVED };
+  if (typeof window !== "undefined") window.SQ_SEED = { COMPLEXES: COMPLEXES_ALL, ADS, REGISTRIES, GEO_NOTE, ASHYQ_URL, RETRIEVED };
 })();

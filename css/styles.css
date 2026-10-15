@@ -19,7 +19,8 @@
   --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
   --sans: "Manrope", -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --serif: Georgia, "Times New Roman", serif;
-  --display: "Unbounded", "Manrope", -apple-system, "Segoe UI", sans-serif;
+  --display: "Manrope", -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --hero: "Unbounded", "Manrope", -apple-system, "Segoe UI", sans-serif;
   --r: 14px;
   --shadow: 0 10px 30px rgba(6, 46, 38, .10);
 }
@@ -46,7 +47,7 @@ a { color: var(--accent-ink); }
   border-right: 1px solid rgba(127, 227, 184, .18);
 }
 .brand { padding: 2px 10px 14px; border-bottom: 1px solid rgba(127, 227, 184, .22); margin-bottom: 12px; }
-.brand h1 { font-family: var(--display); font-size: 20px; margin: 0; letter-spacing: .02em; }
+.brand h1 { font-family: var(--hero); font-size: 20px; margin: 0; letter-spacing: .02em; }
 .brand h1 span {
   background: linear-gradient(90deg, var(--mint), var(--sun));
   -webkit-background-clip: text; background-clip: text; color: transparent;
@@ -92,16 +93,15 @@ a { color: var(--accent-ink); }
   background: linear-gradient(120deg, #04241e 0%, #07473a 45%, #0a6b52 75%, #00a37a 100%);
   padding: 44px 40px; box-shadow: var(--shadow); isolation: isolate;
 }
-.orb { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .55; z-index: 0; pointer-events: none; }
-.orb.a { width: 340px; height: 340px; background: #00e69a; top: -120px; right: -80px; animation: drift 11s ease-in-out infinite alternate; }
-.orb.b { width: 260px; height: 260px; background: var(--sun); bottom: -140px; left: 30%; animation: drift 13s ease-in-out infinite alternate-reverse; }
-.orb.c { width: 200px; height: 200px; background: #7aa2ff; top: 20%; left: -70px; animation: drift 15s ease-in-out infinite alternate; }
-@keyframes drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(46px, 30px) scale(1.12); } }
+.orb { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .38; z-index: 0; pointer-events: none; }
+.orb.a { width: 340px; height: 340px; background: #00e69a; top: -120px; right: -80px; }
+.orb.b { width: 260px; height: 260px; background: var(--sun); bottom: -140px; left: 30%; }
+.orb.c { width: 200px; height: 200px; background: #7aa2ff; top: 20%; left: -70px; }
 .hero > * { position: relative; z-index: 1; }
 .hero .kicker { display: inline-flex; gap: 8px; align-items: center; font-size: 12px; font-weight: 700;
   background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .3);
   padding: 5px 12px; border-radius: 30px; }
-.hero h1 { font-family: var(--display); font-size: clamp(30px, 4.6vw, 54px); line-height: 1.04; margin: 14px 0 10px; }
+.hero h1 { font-family: var(--hero); font-size: clamp(28px, 4.2vw, 50px); line-height: 1.06; margin: 14px 0 10px; letter-spacing: 0; }
 .hero h1 em { font-style: normal; background: linear-gradient(90deg, var(--sun), #ff9d5c); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .hero p.lead { font-size: 16px; max-width: 62ch; color: #dff5e9; margin: 0 0 20px; }
 .hero .cta { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -110,12 +110,7 @@ a { color: var(--accent-ink); }
 .btn-glass { background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .45); color: #fff; font-weight: 700; }
 .btn-glass:hover { background: rgba(255, 255, 255, .2); }
 
-/* ticker */
-.ticker { overflow: hidden; border-radius: 14px; border: 1px solid var(--line); background: var(--deep); color: #d9f5e7; margin-top: 12px; }
-.ticker .track { display: inline-flex; gap: 34px; white-space: nowrap; padding: 10px 18px; animation: tick 30s linear infinite; font-size: 12.5px; }
-.ticker b { color: var(--sun); }
-@keyframes tick { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-
+/* ticker removed: visual noise without analytic value */
 /* buttons / inputs */
 .btn {
   font: inherit; font-size: 13.5px; font-weight: 600; border-radius: 10px; padding: 9px 15px; cursor: pointer;

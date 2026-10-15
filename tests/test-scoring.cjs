@@ -6,7 +6,7 @@ const { computeScore } = require("../js/scoring.js");
 // stub browser globals, then load seed
 global.window = {};
 require("../js/data.js");
-const { COMPLEXES, ADS } = global.window.SQ_SEED;
+const { COMPLEXES, ADS, REGISTRIES } = global.window.SQ_SEED;
 
 let n = 0;
 const ok = (cond, name) => { n++; assert.ok(cond, "FAIL: " + name); console.log("  ok " + n + " · " + name); };
@@ -54,13 +54,25 @@ ok(!COMPLEXES.find((z) => z.id === "SQ-003").factors.some((f) => f.code === "R1"
 console.log("seed integrity:");
 ok(COMPLEXES.length >= 8, ">= 8 complexes, got " + COMPLEXES.length);
 ok(ADS.length >= 12, ">= 12 ads, got " + ADS.length);
-ok(COMPLEXES.every((z) => z.demo === true), "all complexes marked demo");
+ok(COMPLEXES.every((z) => z.origin === "scenario" || z.origin === "public-snapshot"), "every complex has provenance origin");
+const real = COMPLEXES.filter((z) => z.origin === "public-snapshot");
+ok(real.length >= 5, ">= 5 public-snapshot rows, got " + real.length);
+ok(real.every((z) => z.legalBasis && z.legalBasis.status === "verified" && /Ashyq Data/.test(z.legalBasis.source || "")), "snapshots carry registry permit source");
+ok(real.every((z) => z.retrieved !== undefined || (z.sources || []).some((s) => /Ashyq Data/.test(s.title || ""))), "snapshots traceable to Ashyq dataset");
+ok(real.every((z) => computeScore(z.factors).score === 0), "snapshots score 0 (no ads attached, nothing to judge)");
+ok(["SQ-001", "SQ-002", "SQ-003"].every((id) => COMPLEXES.find((z) => z.id === id).origin === "scenario"), "A/B/C stay labeled scenarios");
 ok(ADS.every((a) => COMPLEXES.some((z) => z.id === a.zkId)), "every ad links to a known ZK");
-ok(COMPLEXES.every((z) => ADS.some((a) => a.zkId === z.id) || z.id === "SQ-004"), "every ZK (except control SQ-004) has >= 1 ad");
-ok(COMPLEXES.filter((z) => typeof z.lat === "number").length >= 7, "coords present, at most one missing");
+ok(COMPLEXES.every((z) => ADS.some((a) => a.zkId === z.id) || z.id === "SQ-004" || z.origin === "public-snapshot"), "every scenario ZK (except control SQ-004) has >= 1 ad; snapshots need none");
+ok(COMPLEXES.filter((z) => typeof z.lat === "number").length >= 13, "coords present (scenarios + geocoded snapshots)");
 ok(COMPLEXES.some((z) => typeof z.lat !== "number"), "one ZK without coords (map honesty case)");
-ok(new Set(COMPLEXES.map((z) => z.bin)).size === COMPLEXES.length, "BINs unique");
+ok(new Set(COMPLEXES.map((z) => z.bin).filter(Boolean)).size === COMPLEXES.filter((z) => z.bin).length, "BINs unique where present (snapshots carry hashed BINs -> null)");
 ok(!/(?<!вымышлен)(?<!демо)(?<!DEMO)(Астана|Алматы)/i.test(JSON.stringify(COMPLEXES)), "no real-city claims beyond demo framing");
+
+console.log("registries (organizer list):");
+const REG_HOSTS = ["homeportal.kz", "elicense.kz", "qazreestr.kz", "reestr.equrylys.kz", "egov.kz", "kgd.gov.kz", "rsp.gov.kz", "map.gov4c.kz", "data.egov.kz", "procurement.gov.kz", "ashyq.data.gov.kz"];
+ok(Array.isArray(REGISTRIES) && REGISTRIES.length >= 11, ">= 11 registry links, got " + (REGISTRIES || []).length);
+for (const h of REG_HOSTS) ok(REGISTRIES.some((r) => (r.url || "").includes(h)), "registry present: " + h);
+ok(REGISTRIES.every((r) => r.name && r.url && r.note), "every registry has name + url + note");
 
 console.log("AI demo-heuristic (labeled, negation-aware):");
 global.localStorage = { getItem: () => null, setItem: () => {} };
