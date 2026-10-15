@@ -60,11 +60,13 @@
   $("#modal-bg").addEventListener("click", (e) => { if (e.target.id === "modal-bg") closeModal(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
 
-  const PAY_RE = /(брон[ьи]|депозит|первоначальн\w*\s+взнос|задато[кч]|предоплат|аванс|взнос|рассрочк\w*\s+от\s+застройщика|оплат\w*\s+(напрямую|до\s+заключения|до\s+договора))/gi;
+  // Подсветка строится из тех же шаблонов, что и эвристика (единый источник истины).
+  const PAY_RE = new RegExp("(" + (window.SQ_AI.PATTERN_SOURCES || ["брон[ьи]"]).join("|") + ")", "gi");
   function highlight(text) {
     return esc(text).replace(PAY_RE, "<mark>$1</mark>");
   }
-  function zoneChip(zone) { return `<span class="zone ${zone}">${zoneLabel(zone)}</span>`; }
+  const ZONE_KZ = { green: "жасыл", yellow: "сары", red: "қызыл" };
+  function zoneChip(zone) { return `<span class="zone ${zone}">${zoneLabel(zone)} <i>· ${ZONE_KZ[zone] || ""}</i></span>`; }
   function statusChip(st) {
     const labels = { confirmed: "подтверждён", hypothesis: "гипотеза ИИ", rejected: "отклонён", "needs-verification": "нужна проверка" };
     return `<span class="st ${esc(st)}">${labels[st] || esc(st)}</span>`;
@@ -77,13 +79,15 @@
     return "Не проверено · нужна проверка";
   }
 
+  const LS_REVIEWER = "sq_reviewer_v1";
   function askReviewer(actionLabel, cb) {
+    const last = localStorage.getItem(LS_REVIEWER) || "analyst";
     openModal(`<h3>${esc(actionLabel)}</h3>
-      <label class="f">Аналитик (фиксируется в журнале)<input type="text" id="m-reviewer" value="analyst" maxlength="60"></label>
+      <label class="f">Аналитик (фиксируется в журнале)<input type="text" id="m-reviewer" value="${esc(last)}" maxlength="60"></label>
       <label class="f" style="margin-top:8px">Комментарий (необязательно)<input type="text" id="m-comment" maxlength="240" placeholder="основание решения"></label>
       <div class="row" style="margin-top:12px"><button class="btn primary" id="m-ok">Записать</button><button class="btn" id="m-cancel">Отмена</button></div>`);
     $("#m-cancel").onclick = closeModal;
-    $("#m-ok").onclick = () => { const r = $("#m-reviewer").value.trim() || "analyst"; const c = $("#m-comment").value.trim(); closeModal(); cb(r, c); };
+    $("#m-ok").onclick = () => { const r = $("#m-reviewer").value.trim() || "analyst"; const c = $("#m-comment").value.trim(); localStorage.setItem(LS_REVIEWER, r); closeModal(); cb(r, c); };
   }
 
   // ---------- factor review ----------
@@ -182,7 +186,7 @@
           return `<div class="zkrow" data-zk="${zk.id}" tabindex="0" role="link" aria-label="${esc(zk.name)}, ${s.score} баллов, ${zoneLabel(s.zone)} зона">
             <div><div class="nm">${esc(zk.name)} <span class="demo-pill">DEMO</span>${zk.scenario ? ` <span class="chip">сценарий ${zk.scenario}</span>` : ""}</div>
               <div class="addr">${esc(zk.address)} · ${esc(zk.stage)}</div>
-              <div class="meta">${zk.id} · ${esc(zk.developer)} · объявлений: ${ads.length}</div></div>
+              <div class="meta">${zk.id} · ${esc(zk.developer)} · объявлений: ${ads.length} · ${esc(legalShort(zk.legalBasis))}</div></div>
             <div class="hide-m"><div class="scorebar" aria-hidden="true"><i style="width:${s.score}%;background:${color}"></i></div>
               <div class="meta" style="margin-top:4px">${s.score} / 100 · подтверждено: ${s.confirmed.join(", ") || "—"}</div></div>
             <div class="hide-m"><span class="meta">сигнал: ${esc(sigLabel(getSignal(zk.id).status))}</span></div>
@@ -200,10 +204,17 @@
     initMap(list);
   }
 
+  function legalShort(lb) {
+    if (!lb) return "основание: —";
+    if (lb.status === "verified") return `основание: ${lb.type === "guarantee" ? "гарантия ✓" : lb.type === "mio-permit" ? "разрешение МИО ✓" : "проверено ✓"}`;
+    if (lb.status === "absent-verified") return "основание: отсутствует ✕";
+    return "основание: не проверено …";
+  }
   function sigLabel(st) {
     return { draft: "черновик", pending: "на проверке", confirmed: "подтверждён", returned: "возвращён" }[st] || st;
   }
 
+  let mapInstance = null;
   function initMap(list) {
     const withCoords = list.filter((z) => typeof z.lat === "number" && typeof z.lng === "number");
     const missing = list.length - withCoords.length;
@@ -211,15 +222,21 @@
       ? `Показано меток: ${withCoords.length} из ${list.length}. Без координат (${missing}) на карту не ставятся — это честное поведение, а не ошибка.`
       : `Показано меток: ${withCoords.length} из ${list.length}.`;
     if (typeof L === "undefined") { $("#map").innerHTML = `<div class="empty">Карта недоступна офлайн (CDN Leaflet не загрузился). Список выше — полный.</div>`; return; }
+    if (mapInstance) { mapInstance.remove(); mapInstance = null; } // повторный рендер (поиск/фильтр) — без «already initialized»
     const map = L.map("map").setView([49.984, 82.614], 12);
+    mapInstance = map;
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© OpenStreetMap" }).addTo(map);
     const colors = { red: "#b3271e", yellow: "#9a6206", green: "#1d7a4f" };
+    const bounds = [];
     for (const zk of withCoords) {
       const s = scoreOf(zk);
       const m = L.circleMarker([zk.lat, zk.lng], { radius: 9, color: colors[s.zone], fillColor: colors[s.zone], fillOpacity: 0.85, weight: 2 }).addTo(map);
       m.bindPopup(`<b>${esc(zk.name)}</b><br>${s.score} баллов · ${esc(zoneLabel(s.zone))}`);
       m.on("click", () => nav("detail", { zkId: zk.id }));
+      bounds.push([zk.lat, zk.lng]);
     }
+    if (bounds.length > 1) map.fitBounds(bounds, { padding: [24, 24] });
+    else if (bounds.length === 1) map.setView(bounds[0], 13);
   }
 
   function vDetail(zkId) {
@@ -245,7 +262,9 @@
           <dl class="kv">
             <dt>Застройщик / БИН</dt><dd>${esc(zk.developer)} · <span style="font-family:var(--mono)">${esc(zk.bin)}</span> <span class="chip">вымышлены</span></dd>
             <dt>Этап строительства</dt><dd>${esc(zk.stage)}</dd>
-            <dt>Готовность</dt><dd>заявлено ${zk.readinessClaimed ?? "—"}% · подтверждено ${zk.readinessConfirmed ?? "—"}%</dd>
+            <dt>Готовность</dt><dd>заявлено ${zk.readinessClaimed ?? "—"}% · подтверждено ${zk.readinessConfirmed ?? "—"}%
+              <span class="rbar" aria-hidden="true"><i class="claim" style="width:${zk.readinessClaimed || 0}%"></i><i class="conf" style="width:${zk.readinessConfirmed || 0}%"></i></span>
+              <span style="font-size:11.5px;color:var(--ink-3)">серая — заявлено · зелёная — подтверждено</span></dd>
             <dt>Правовое основание</dt><dd><b>${esc(legalLabel(zk.legalBasis))}</b><br><span style="font-size:12.5px;color:var(--ink-2)">${esc(zk.legalBasis.source)} · ${esc(zk.legalBasis.checkedAt)}</span></dd>
             <dt>Заметка аналитика</dt><dd>${esc(zk.note || "—")}</dd>
           </dl>
@@ -389,18 +408,19 @@
           <button class="btn small" id="an-save-plain">Сохранить как обычное объявление</button>
           <button class="btn small" id="an-confirm-r3">Подтвердить R3 вручную</button>
         </div>`;
-      const saveAd = (withR2) => askReviewer("Сохранить объявление и решение", (r, c) => {
+      const saveAd = (idx) => askReviewer("Сохранить объявление и решение", (r, c) => {
         const id = "AD-U" + String(state.userAds.length + 1).padStart(2, "0");
         state.userAds.unshift({
           id, zkId, platform: $("#an-platform").value, account: $("#an-account").value,
           date: $("#an-date").value || "2026-10-15", url: $("#an-url").value, text,
           captureAt: new Date().toISOString().slice(0, 10), userAdded: true,
         });
-        if (withR2) setFactor(zkId, withR2, "confirmed", r + (c ? " · " + c : ""), { adId: id, quote: res.hypotheses[0].exact_quote, source: "Новое объявление " + id });
-        persist(); toast(`Объявление ${id} сохранено${withR2 ? ", " + withR2 + " подтверждён" : ""}`);
+        const hyp = idx != null ? res.hypotheses[idx] : null;
+        if (hyp) setFactor(zkId, hyp.candidate_factor, "confirmed", r + (c ? " · " + c : ""), { adId: id, quote: hyp.exact_quote, source: "Новое объявление " + id });
+        persist(); toast(`Объявление ${id} сохранено${hyp ? ", " + hyp.candidate_factor + " подтверждён" : ""}`);
         nav("detail", { zkId });
       });
-      page.querySelectorAll("[data-hok]").forEach((b) => b.onclick = () => saveAd(res.hypotheses[+b.dataset.hok].candidate_factor));
+      page.querySelectorAll("[data-hok]").forEach((b) => b.onclick = () => saveAd(+b.dataset.hok));
       page.querySelectorAll("[data-hno]").forEach((b) => b.onclick = () => { b.closest(".hyp").querySelector(".row").innerHTML = `<span class="st rejected">отклонён</span> <span style="font-size:12px;color:var(--ink-2)">решение зафиксировано локально, на балл не влияет</span>`; toast("Гипотеза отклонена"); });
       $("#an-save-plain").onclick = () => saveAd(null);
       $("#an-confirm-r3").onclick = () => askReviewer("Подтвердить R3 вручную", (r, c) => {
@@ -430,7 +450,7 @@
         <div class="shead">
           <div style="font-size:11.5px;letter-spacing:.09em;color:var(--ink-3)">SAQ QURYLYS · СИГНАЛЬНАЯ КАРТОЧКА · <b>DEMO — НЕ ЮРИДИЧЕСКИЙ ДОКУМЕНТ</b></div>
           <h3>${esc(zk.name)} — ${s.score}/100 · ${zoneLabel(s.zone)} зона</h3>
-          <div style="font-size:13px;color:var(--ink-2)">${esc(zk.address)} · ${esc(zk.developer)} · БИН <span style="font-family:var(--mono)">${esc(zk.bin)}</span> (вымышлены)</div>
+          <div style="font-size:13px;color:var(--ink-2)">${esc(zk.id)} · ${esc(zk.address)} · ${esc(zk.developer)} · БИН <span style="font-family:var(--mono)">${esc(zk.bin)}</span> (вымышлены)</div>
           <div style="margin-top:6px">${zoneChip(s.zone)} <span class="chip">статус: ${esc(sigLabel(sig.status))}</span> ${zk.scenario ? `<span class="chip">сценарий ${zk.scenario}</span>` : ""}</div>
         </div>
         <div class="sig-grid">

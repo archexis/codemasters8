@@ -15,38 +15,58 @@
     return !!(c && c.apiKey && c.endpoint && c.model);
   }
 
+  // Источники шаблонов экспортируются для подсветки в UI (единый источник истины).
+  // Внутренние группы — только (?:…), чтобы внешняя обёртка для <mark> была $1.
+  // Важно: \w НЕ покрывает кириллицу/қазақша — используем явный класс [а-яёәіңғүұқөһ].
+  const CYR = "а-яёәіңғүұқөһ";
   const PAY_PATTERNS = [
-    /брон[ьи]/i, /депозит/i, /первоначальн\w*\s+взнос/i, /задато[кч]/i,
-    /предоплат/i, /аванс/i, /взнос/i, /рассрочк\w*\s+от\s+застройщика/i,
-    /оплат\w*\s+(напрямую|до\s+заключения|до\s+договора)/i,
-    /резерв\w*.{0,30}плат/i, /фиксиру\w*.{0,30}цен/i,
+    /брон[ьи]/i, /депозит/i,
+    new RegExp("первоначальн[" + CYR + "]*\\s+взнос", "i"),
+    /задато[кч]/i, /предоплат/i, /аванс/i, /взнос/i,
+    new RegExp("рассрочк[" + CYR + "]*\\s+от\\s+застройщика", "i"),
+    new RegExp("оплат[" + CYR + "]*\\s+(?:напрямую|до\\s+заключения|до\\s+договора)", "i"),
+    new RegExp("резерв[" + CYR + "]*.{0,30}плат", "i"),
+    new RegExp("фиксиру[" + CYR + "]*.{0,30}цен", "i"),
+    new RegExp("договор(?:\\s+[" + CYR + "]+){0,3}\\s+бронирования", "i"),
+    // Қазақша формулировки
+    /төлем/i, /бронда/i, /бастапқы\s+жарна/i, /жарна/i,
+    /алдын ала.{0,25}(?:төле|төлем|жарна|ақы)/i, /ақы\s+төлеу/i,
   ];
 
-  const NEG_RE = /никак|без |не |нет |отсутств|только по договору|через эскроу/i;
+  // Отрицание действует в пределах одного предложения: «Взнос 2 млн. Бронь бесплатная.»
+  // взнос — находка, бронь — нет. Межпредложенческие «очистки» запрещены.
+  const NEG_WORDS_RE = /никак|без |не |нет |отсутств|только по договору|эскроу|тегін|жоқ|бесплатн|без оплат|(?:^|\D)0\s*тенге/i;
+  // «не через эскроу» / «эскроу жоқ» — отягчает, а не очищает: такую «очистку» запрещаем.
+  const ESCROW_DENIED_RE = /не\s+(?:через\s+)?эскроу|без\s+эскроу|эскроу\s+жоқ/i;
+
+  function sentenceFlagged(sent) {
+    for (const re of PAY_PATTERNS) {
+      if (!re.test(sent)) continue;
+      if (ESCROW_DENIED_RE.test(sent)) return { flagged: true };
+      if (NEG_WORDS_RE.test(sent)) continue; // отрицание в том же предложении — не находка
+      return { flagged: true };
+    }
+    return { flagged: false, negated: NEG_WORDS_RE.test(sent) };
+  }
 
   function heuristicAnalyze(text) {
     const findings = [];
     let negatedOnly = false;
-    for (const re of PAY_PATTERNS) {
-      const m = text.match(re);
-      if (m) {
-        const start = Math.max(0, (m.index || 0) - 50);
-        const before = text.slice(start, m.index || 0);
-        if (NEG_RE.test(before)) { negatedOnly = true; continue; } // «без предоплаты», «никаких взносов» — не находка
-        const after = text.slice((m.index || 0) + m[0].length, (m.index || 0) + m[0].length + 30);
-        if (/бесплатн|без оплат|(?:^|\D)0\s*тенге/i.test(after)) { negatedOnly = true; continue; } // «бронь бесплатная» — не находка
-        const i = Math.max(0, (m.index || 0) - 60);
-        const quote = text.slice(i, (m.index || 0) + m[0].length + 80).trim();
+    const sentences = String(text).split(/(?<=[.!?…\n])\s+/).map((s) => s.trim()).filter(Boolean);
+    for (const sent of sentences) {
+      const r = sentenceFlagged(sent);
+      if (r.flagged) {
         findings.push({
           payment_offer_detected: true,
           candidate_factor: "R2",
-          exact_quote: quote,
+          exact_quote: sent.length > 280 ? sent.slice(0, 280).trim() + "…" : sent,
           explanation: "Эвристика DEMO: найдена формулировка про платёж до/вне договора. Требует проверки человеком.",
           confidence: "low-demo",
           needs_human_review: true,
         });
-        break;
+        break; // первая находка — достаточно для гипотезы; остальное решает человек
       }
+      if (r.negated) negatedOnly = true;
     }
     return {
       engine: "demo-heuristic",
@@ -102,6 +122,6 @@
     return heuristicAnalyze(text);
   }
 
-  if (typeof window !== "undefined") window.SQ_AI = { analyzeAdText, getConfig, saveConfig, hasRealAI, heuristicAnalyze };
+  if (typeof window !== "undefined") window.SQ_AI = { analyzeAdText, getConfig, saveConfig, hasRealAI, heuristicAnalyze, PATTERN_SOURCES: PAY_PATTERNS.map((r) => r.source) };
   if (typeof module !== "undefined" && module.exports) module.exports = {};
 })();

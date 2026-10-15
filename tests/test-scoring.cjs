@@ -62,15 +62,24 @@ const H_AN = global.window.SQ_AI.heuristicAnalyze;
 const aiCases = [
   ["paid booking flagged", "Бронь квартиры — всего 500 000 тенге, сумма в зачёт!", true],
   ["deposit flagged", "Депозит 1 000 000 тенге для фиксации цены.", true],
-  ["negated взноcы clean", "Оплата через эскроу. Никаких взносов до договора!", false],
+  ["reservation agreement flagged", "Задаток 800 000 тенге, договор бронирования.", true],
+  ["negated взносы clean", "Оплата через эскроу. Никаких взносов до договора!", false],
   ["free booking clean", "Бронь бесплатная, все платежи только по договору.", false],
   ["mixed: free + paid", "Бронь бесплатная. Первоначальный взнос 2 000 000 тенге напрямую застройщику.", true],
+  ["escrow payment clean", "Взнос через эскроу по договору.", false],
+  ["denied escrow flagged", "Оплата напрямую застройщику, не через эскроу.", true],
+  ["KZ booking flagged", "Пәтер брондау — 500 000 теңге, бағаны бекіту үшін!", true],
+  ["KZ advance payment flagged", "Алдын ала төлем 1 000 000 теңге застройщикке.", true],
+  ["KZ negated clean", "Төлем тек шарт бойынша, алдын ала төлем жоқ. Брондау тегін!", false],
+  ["KZ no-escrow flagged", "Эскроу жоқ, төлем қолма-қол кассирге.", true],
+  ["cyrillic suffix оплата (\\w-trap regression)", "Оплата напрямую застройщику.", true],
+  ["cyrillic suffix первоначальный", "Первоначальный взнос застройщику до договора.", true],
 ];
 for (const [name, text, exp] of aiCases) {
   const r = H_AN(text);
   ok((r.hypotheses.length > 0) === exp, name);
   ok(r.realAI === false && /demo/i.test(r.engine), name + " labeled demo");
-  if (r.hypotheses.length) ok(text.includes(r.hypotheses[0].exact_quote), name + " quote is verbatim substring");
+  if (r.hypotheses.length) ok(text.includes(r.hypotheses[0].exact_quote.replace(/…$/, "")), name + " quote is verbatim substring");
 }
 
 console.log("\nPASS · " + n + " checks");
