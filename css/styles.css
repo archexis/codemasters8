@@ -337,6 +337,8 @@ h3.block { font-family: var(--display); font-size: 16px; margin: 0; padding: 14p
 .faq p { margin: 6px 0 2px; font-size: 13.5px; color: var(--ink-2); }
 .footer { margin-top: 26px; padding: 18px 20px; font-size: 12.5px; color: var(--ink-2); }
 .footer b { color: var(--ink); }
+.err { color: var(--red); font-size: 12.5px; min-height: 18px; margin-top: 6px; }
+.acct-meta { font-size: 13px; color: var(--ink-2); }
 
 @media (max-width: 1020px) {
   .shell { grid-template-columns: 1fr; }

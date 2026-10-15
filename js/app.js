@@ -80,8 +80,27 @@
   }
 
   const LS_REVIEWER = "sq_reviewer_v1";
+  const LS_SESSION = "sq_session_v1";
+  function getSession() {
+    try { return JSON.parse(localStorage.getItem(LS_SESSION) || "null") || {}; }
+    catch { return {}; }
+  }
+  function refreshAccount() {
+    const b = $("#btn-account"); if (!b) return;
+    const s = getSession();
+    b.textContent = s.name ? ("👤 " + s.name) : "Войти";
+  }
+  function setSession(name) {
+    const s = { name, at: new Date().toISOString() };
+    localStorage.setItem(LS_SESSION, JSON.stringify(s));
+    localStorage.setItem(LS_REVIEWER, name);
+    refreshAccount();
+    return s;
+  }
+  function clearSession() { localStorage.removeItem(LS_SESSION); refreshAccount(); }
   function askReviewer(actionLabel, cb) {
-    const last = localStorage.getItem(LS_REVIEWER) || "analyst";
+    const sess = getSession();
+    const last = sess.name || localStorage.getItem(LS_REVIEWER) || "analyst";
     openModal(`<h3>${esc(actionLabel)}</h3>
       <label class="f">Аналитик (фиксируется в журнале)<input type="text" id="m-reviewer" value="${esc(last)}" maxlength="60"></label>
       <label class="f" style="margin-top:8px">Комментарий (необязательно)<input type="text" id="m-comment" maxlength="240" placeholder="основание решения"></label>
@@ -112,14 +131,32 @@
     registries: ["Открытые реестры РК", "внешние источники · живой интеграции в демо нет"],
     about: ["О проекте", "архитектура · ограничения · путь демонстрации"],
   };
-  function nav(view, param) {
+  function routeFromHash(h) {
+    const m = /^#\/(\w+)(?:\/([\w-]+))?/.exec(String(h || ""));
+    if (!m || !TITLES[m[1]]) return null;
+    if (m[1] === "detail" || m[1] === "signal") return m[2] ? { view: m[1], zkId: m[2] } : null;
+    if (m[1] === "analyze") return m[2] ? { view: m[1], prefill: { zkId: m[2] } } : { view: m[1] };
+    return { view: m[1] };
+  }
+  let suppressHash = false;
+  function nav(view, param, push) {
     state.route = { view, ...param };
     document.querySelectorAll("#nav button").forEach((b) => b.setAttribute("aria-current", b.dataset.view === view || (((view === "detail" || view === "signal" || view === "ads") && b.dataset.view === "overview")) ? "page" : "false"));
     const t = TITLES[view] || TITLES.overview;
     $("#page-title").textContent = t[0]; $("#page-sub").textContent = t[1];
     window.scrollTo(0, 0);
+    if (push !== false) {
+      const r = state.route;
+      const h = "#/" + r.view + (r.zkId ? "/" + r.zkId : (r.prefill && r.prefill.zkId ? "/" + r.prefill.zkId : ""));
+      if (window.location.hash !== h) { suppressHash = true; window.location.hash = h; }
+    }
     render();
   }
+  window.addEventListener("hashchange", () => {
+    if (suppressHash) { suppressHash = false; return; }
+    const r = routeFromHash(window.location.hash);
+    if (r) nav(r.view, r, false);
+  });
   $("#nav").addEventListener("click", (e) => { const b = e.target.closest("button[data-view]"); if (b) nav(b.dataset.view); });
 
   function render() {
@@ -763,6 +800,28 @@
     menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
   };
   $("#nav").addEventListener("click", () => document.body.classList.remove("nav-open"));
+  $("#btn-account").onclick = () => {
+    const s = getSession();
+    if (!s.name) {
+      openModal(`<h3>Вход · тестовый доступ</h3>
+        <p class="acct-meta">Настоящей авторизации в демо нет: сервера, паролей и личных кабинетов не существует. Укажите имя аналитика — оно будет подписывать решения в журнале. Ничего кроме имени не хранится.</p>
+        <label class="f">Имя аналитика<input type="text" id="m-login" maxlength="60" placeholder="например, А. Аналитик"></label>
+        <div class="err" id="m-login-err" role="alert"></div>
+        <div class="row" style="margin-top:12px"><button class="btn primary" id="m-login-ok">Войти</button><button class="btn" id="m-login-cancel">Отмена</button></div>`);
+      $("#m-login-cancel").onclick = closeModal;
+      $("#m-login-ok").onclick = () => {
+        const v = $("#m-login").value.trim();
+        if (v.length < 2) { $("#m-login-err").textContent = "Введите имя: минимум 2 символа."; $("#m-login").focus(); return; }
+        setSession(v); closeModal(); toast("Вы вошли как " + v + " (тестовый доступ)");
+      };
+    } else {
+      openModal(`<h3>Аккаунт · тестовый доступ</h3>
+        <p class="acct-meta">Аналитик: <b>${esc(s.name)}</b><br>Вход: ${esc((s.at || "").slice(0, 16).replace("T", " "))}<br>Это локальная подпись решений, а не настоящий аккаунт.</p>
+        <div class="row" style="margin-top:12px"><button class="btn danger" id="m-logout">Выйти</button><button class="btn" id="m-acct-close">Закрыть</button></div>`);
+      $("#m-acct-close").onclick = closeModal;
+      $("#m-logout").onclick = () => { clearSession(); closeModal(); toast("Вы вышли из тестового доступа"); };
+    }
+  };
   $("#btn-reset").onclick = () => { if (confirm("Сбросить все подтверждения, объявления и сигналы к исходному демо?")) { localStorage.removeItem(LS_STATE); state = loadState(); nav("home"); toast("Демо-данные сброшены"); } };
   $("#btn-ai-config").onclick = () => {
     const c = window.SQ_AI.getConfig();
@@ -780,5 +839,7 @@
     };
   };
 
+  try { const r0 = routeFromHash(window.location.hash); if (r0) state.route = r0; } catch {}
+  refreshAccount();
   render();
 })();
