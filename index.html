@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SAQ QURYLYS — мониторинг рисков долевого строительства · DEMO</title>
 <meta name="description" content="SAQ QURYLYS: аналитическая система мониторинга рисков в объявлениях о долевом строительстве жилья в Казахстане. Демонстрационный MVP.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e7c5b'/%3E%3Ctext x='16' y='23' font-size='17' text-anchor='middle' fill='white' font-family='Georgia'%3ES%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2300a37a'/%3E%3Ctext x='16' y='23' font-size='17' text-anchor='middle' fill='white' font-family='Georgia'%3ES%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Unbounded:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 </head>
@@ -18,12 +21,9 @@
       <p style="margin-top:8px"><span class="demo-pill">DEMO · данные вымышлены</span></p>
     </div>
     <nav class="nav" id="nav" aria-label="Разделы">
-      <button data-view="overview" aria-current="page">Обзор <span class="cnt" id="cnt-zk"></span></button>
-      <button data-view="ads">Объявления <span class="cnt" id="cnt-ads"></span></button>
-      <button data-view="analyze">Новый анализ</button>
-      <button data-view="scenarios">Сценарии A·B·C</button>
-      <button data-view="registries">Реестры РК</button>
-      <button data-view="about">О проекте</button>
+      <button data-view="home" aria-current="page">Главная</button>
+      <button data-view="overview">Объекты <span class="cnt" id="cnt-zk"></span></button>
+      <button data-view="analyze">Проверка <span class="cnt" id="cnt-ads"></span></button>
     </nav>
     <div class="foot">
       <div id="ai-status">AI: —</div>
@@ -33,8 +33,8 @@
   <div class="main">
     <div class="topbar no-print">
       <div>
-        <h2 id="page-title">Обзор объектов</h2>
-        <div class="sub" id="page-sub">Өскемен · 8 демо-ЖК · все совпадения случайны</div>
+        <h2 id="page-title">SAQ QURYLYS</h2>
+        <div class="sub" id="page-sub">Титул · начните с проверки объявления</div>
       </div>
       <div class="sp"></div>
       <button class="btn small" id="btn-ai-config">Настроить AI</button>
@@ -52,6 +52,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="js/scoring.js"></script>
 <script src="js/data.js"></script>
+<script src="js/parser.js"></script>
 <script src="js/ai.js"></script>
 <script src="js/app.js"></script>
 </body>

@@ -13,7 +13,7 @@
 
   function loadState() {
     const seed = window.SQ_SEED;
-    let s = { complexes: deepClone(seed.COMPLEXES), userAds: [], signals: {}, route: { view: "overview" } };
+    let s = { complexes: deepClone(seed.COMPLEXES), userAds: [], signals: {}, route: { view: "home" } };
     try {
       const raw = JSON.parse(localStorage.getItem(LS_STATE) || "null");
       if (raw) {
@@ -102,10 +102,11 @@
 
   // ---------- router ----------
   const TITLES = {
-    overview: ["Обзор объектов", "Өскемен · 8 демо-ЖК · все совпадения случайны"],
+    home: ["SAQ QURYLYS", "Титул · начните с проверки объявления"],
+    overview: ["Объекты", "Өскемен · 8 демо-ЖК · все совпадения случайны"],
     detail: ["Карточка ЖК", "история · источники · факторы риска"],
     ads: ["Мониторинг рекламы", "все публикации · подозрительные формулировки подсвечены"],
-    analyze: ["Новый анализ", "текст объявления → гипотезы ИИ → решение человека"],
+    analyze: ["Проверка", "парсер → гипотезы → решение человека"],
     signal: ["Сигнальная карточка", "факторы · доказательства · статус проверки"],
     scenarios: ["Контрольные сценарии", "A · B · C — живые расчёты по текущим данным"],
     registries: ["Открытые реестры РК", "внешние источники · живой интеграции в демо нет"],
@@ -113,7 +114,7 @@
   };
   function nav(view, param) {
     state.route = { view, ...param };
-    document.querySelectorAll("#nav button").forEach((b) => b.setAttribute("aria-current", b.dataset.view === view || (view === "detail" && b.dataset.view === "overview") || (view === "signal" && b.dataset.view === "overview") ? "page" : "false"));
+    document.querySelectorAll("#nav button").forEach((b) => b.setAttribute("aria-current", b.dataset.view === view || ((view === "detail" || view === "signal") && b.dataset.view === "overview") ? "page" : "false"));
     const t = TITLES[view] || TITLES.overview;
     $("#page-title").textContent = t[0]; $("#page-sub").textContent = t[1];
     window.scrollTo(0, 0);
@@ -124,20 +125,44 @@
   function render() {
     const r = state.route;
     updateCounts(); updateAIStatus();
-    if (r.view === "overview") return vOverview();
-    if (r.view === "detail") return vDetail(r.zkId);
-    if (r.view === "ads") return vAds();
-    if (r.view === "analyze") return vAnalyze(r.prefill);
-    if (r.view === "signal") return vSignal(r.zkId);
-    if (r.view === "scenarios") return vScenarios();
-    if (r.view === "registries") return vRegistries();
-    if (r.view === "about") return vAbout();
-    return vOverview();
+    if (r.view === "home") vHome();
+    else if (r.view === "overview") vOverview();
+    else if (r.view === "detail") vDetail(r.zkId);
+    else if (r.view === "ads") vAds();
+    else if (r.view === "analyze") vAnalyze(r.prefill);
+    else if (r.view === "signal") vSignal(r.zkId);
+    else if (r.view === "scenarios") vScenarios();
+    else if (r.view === "registries") vRegistries();
+    else if (r.view === "about") vAbout();
+    else vOverview();
+    postRender();
+  }
+
+  function postRender() {
+    try {
+      const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      Array.from(page.children).forEach((el, i) => {
+        if (!el.classList) return;
+        el.classList.add("rv");
+        el.style.animationDelay = reduce ? "0ms" : Math.min(i * 70, 350) + "ms";
+      });
+      page.querySelectorAll("[data-count]").forEach((el) => {
+        const target = parseInt(el.dataset.count, 10) || 0;
+        if (reduce) { el.textContent = target; return; }
+        const t0 = performance.now(), dur = 850;
+        const step = (t) => {
+          const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+          el.textContent = Math.round(target * e);
+          if (p < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      });
+    } catch (e) { /* animations are decorative */ }
   }
 
   function updateCounts() {
-    $("#cnt-zk").textContent = state.complexes.length;
-    $("#cnt-ads").textContent = allAds().length;
+    const z = $("#cnt-zk"); if (z) z.textContent = state.complexes.length;
+    const a = $("#cnt-ads"); if (a) a.textContent = allAds().length;
   }
   function updateAIStatus() {
     const real = window.SQ_AI.hasRealAI();
@@ -149,6 +174,68 @@
 
   // ---------- views ----------
   let overviewFilter = { q: "", zone: "all" };
+
+  function parserEntitiesHtml(p) {
+    if (!p) return "";
+    const rows = (p.entities || []).slice(0, 12).map((e) => `<tr><td><b>${esc(e.label)}</b></td><td>${esc(e.value)}</td><td><span class="conf ${esc(e.confidence)}">${esc(e.confidence)}</span></td><td class="q">«${esc(e.quote)}»</td></tr>`).join("");
+    return `<div style="margin:12px 0 4px"><span class="engine-badge parser">PARSER · local-parser — настоящий локальный разбор</span></div>
+    <div style="font-size:12.5px;color:var(--ink-2)">Платёжных предложений: <b>${p.payment.flagged ? "найдены" : "не найдены"}</b> · предложений в тексте: ${p.sentences} · сущностей: ${p.entities.length}</div>
+    ${rows ? `<table class="parse-table"><tr><th>Тип</th><th>Значение</th><th>Уверенность</th><th>Цитата</th></tr>${rows}</table>` : `<div class="empty">Сущностей не извлечено.</div>`}`;
+  }
+
+  function vHome() {
+    const counts = { green: 0, yellow: 0, red: 0 };
+    for (const zk of state.complexes) counts[scoreOf(zk).zone]++;
+    const top = state.complexes.slice().sort((a, b) => scoreOf(b).score - scoreOf(a).score).slice(0, 3);
+    const regs = window.SQ_SEED.REGISTRIES || [];
+    page.innerHTML = `
+      <div class="hero">
+        <div class="orb a"></div><div class="orb b"></div><div class="orb c"></div>
+        <span class="kicker"><span class="demo-pill">DEMO · данные вымышлены</span> Codemasters 8.0 · Өскемен</span>
+        <h1>Проверь квартиру <em>до денег</em></h1>
+        <p class="lead">SAQ QURYLYS собирает объявления, объекты и проверки в одну карточку: парсер находит деньги и сроки дословно, риск считается по фиксированным правилам, а решение всегда принимает человек.</p>
+        <div class="cta">
+          <button class="btn btn-sun" data-go="analyze">Проверить объявление</button>
+          <button class="btn btn-glass" data-go="overview">Смотреть объекты</button>
+        </div>
+      </div>
+      <div class="ticker" aria-hidden="true"><div class="track">
+        <span><b>DEMO</b> платная бронь · депозит · первоначальный взнос · задаток · предоплата · эскроу · гарантия Единого оператора · разрешение МИО · </span>
+        <span><b>DEMO</b> платная бронь · депозит · первоначальный взнос · задаток · предоплата · эскроу · гарантия Единого оператора · разрешение МИО · </span>
+      </div></div>
+      <div class="stats">
+        <div class="panel stat"><div class="n" data-count="${state.complexes.length}">0</div><div class="l">демо-ЖК под наблюдением</div></div>
+        <div class="panel stat bad"><div class="n" data-count="${counts.red}" style="color:var(--red)">0</div><div class="l">красная зона · приоритет</div></div>
+        <div class="panel stat warn"><div class="n" data-count="${counts.yellow}" style="color:var(--amber)">0</div><div class="l">жёлтая зона · проверка</div></div>
+        <div class="panel stat"><div class="n" data-count="${allAds().length}">0</div><div class="l">публикаций разобрано</div></div>
+      </div>
+      <div class="section-t">Как это работает <small>четыре шага из ТЗ</small></div>
+      <div class="steps">
+        <div class="panel step"><div class="num">01</div><b>Обзор</b><p>Объекты города с баллом и зоной, карта только с реальными координатами.</p></div>
+        <div class="panel step"><div class="num">02</div><b>Проверка</b><p>Парсер извлекает деньги, сроки и контакты дословно; гипотезы ждёт человек.</p></div>
+        <div class="panel step"><div class="num">03</div><b>Сигнал</b><p>Факторы, цитаты-доказательства, журнал решений и печать отчёта.</p></div>
+        <div class="panel step"><div class="num">04</div><b>Решение</b><p>Подтвердить или вернуть. Неизвестность никогда не становится обвинением.</p></div>
+      </div>
+      <div class="section-t">Приоритет сейчас <small>топ по баллу, вживую</small></div>
+      <div class="panel">
+        ${top.map((zk) => { const s = scoreOf(zk); return `<div class="zkrow" data-zk="${zk.id}" tabindex="0" role="link" aria-label="${esc(zk.name)}, ${s.score} баллов">
+          <div><div class="nm">${esc(zk.name)} <span class="demo-pill">DEMO</span></div><div class="addr">${esc(zk.address)} · ${esc(zk.stage)}</div></div>
+          <div class="hide-m"><div class="scorebar"><i style="width:${s.score}%"></i></div></div>
+          <div class="hide-m"><span class="meta">${s.score} / 100</span></div>
+          <div>${zoneChip(s.zone)}</div></div>`; }).join("")}
+      </div>
+      <div class="section-t">Открытые реестры <small>проверено сегодня: 9 открываются, 2 молчат</small></div>
+      <div class="reg-strip">${regs.map((r) => `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a>`).join("")}</div>
+      <div class="panel" style="padding:16px 18px;margin-top:12px;font-size:13px;color:var(--ink-2)">
+        Все компании, БИНы и адреса вымышлены. Живой интеграции с госреестрами нет — есть честные ссылки и ручная сверка с датой. Красная зона требует одновременно R1 и R2.
+      </div>`;
+
+    page.querySelectorAll("[data-go]").forEach((b) => b.onclick = () => nav(b.dataset.go));
+    page.querySelectorAll("[data-zk]").forEach((el) => {
+      el.onclick = () => nav("detail", { zkId: el.dataset.zk });
+      el.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") nav("detail", { zkId: el.dataset.zk }); };
+    });
+  }
 
   function vOverview() {
     const counts = { green: 0, yellow: 0, red: 0 };
@@ -226,11 +313,11 @@
     const map = L.map("map").setView([49.984, 82.614], 12);
     mapInstance = map;
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© OpenStreetMap" }).addTo(map);
-    const colors = { red: "#b3271e", yellow: "#9a6206", green: "#1d7a4f" };
     const bounds = [];
     for (const zk of withCoords) {
       const s = scoreOf(zk);
-      const m = L.circleMarker([zk.lat, zk.lng], { radius: 9, color: colors[s.zone], fillColor: colors[s.zone], fillOpacity: 0.85, weight: 2 }).addTo(map);
+      const icon = L.divIcon({ className: "", html: `<span class="pin ${s.zone}"></span>`, iconSize: [18, 18], iconAnchor: [9, 9], popupAnchor: [0, -10] });
+      const m = L.marker([zk.lat, zk.lng], { icon }).addTo(map);
       m.bindPopup(`<b>${esc(zk.name)}</b><br>${s.score} баллов · ${esc(zoneLabel(s.zone))}`);
       m.on("click", () => nav("detail", { zkId: zk.id }));
       bounds.push([zk.lat, zk.lng]);
@@ -371,21 +458,51 @@
               <button class="btn primary" id="an-run">Запустить анализ</button>
               <button class="btn" id="an-fill">Вставить пример</button>
             </div>
-            <div style="font-size:12px;color:var(--ink-2)">Три примера для живого демо — в разделе «Сценарии A·B·C» (кнопка «Проверить вживую»).</div>
+            <div class="preset-grid">
+              <button class="preset" data-preset="SQ-001"><b>Кейс A · платная бронь</b><span>основание не проверено → ?</span></button>
+              <button class="preset" data-preset="SQ-002"><b>Кейс B · депозит</b><span>основания нет → ?</span></button>
+              <button class="preset" data-preset="SQ-003"><b>Кейс C · гарантия</b><span>чистое объявление → ?</span></button>
+            </div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:6px">Пресеты подставляют демо-текст и объект. Живые расчёты A·B·C — ниже.</div>
           </div>
         </div>
         <div class="panel" style="padding:16px 18px" id="an-result">
           <h3 class="block" style="padding:0 0 8px">2 · Гипотезы и решение</h3>
-          <div class="empty">Здесь появятся гипотезы с точными цитатами.<br>Ничего не влияет на балл, пока человек не подтвердит.</div>
+          <div class="empty">Здесь появятся разбор парсера и гипотезы с точными цитатами.<br>Ничего не влияет на балл, пока человек не подтвердит.</div>
         </div>
-      </div>`;
+      </div>
+      <div class="section-t">Живые расчёты A·B·C <small>по текущим данным</small></div>
+      <div class="scen" id="check-scen"></div>
+      <div class="section-t">Открытые реестры <small>ручная сверка, результат — в карточку ЖК</small></div>
+      <div class="reg-strip" id="check-regs"></div>`;
     $("#an-fill").onclick = () => { $("#an-text").value = "Срочно! Продажа квартир в строящемся доме, сдача в 2027. Первоначальный взнос 1 500 000 тенге напрямую застройщику, остаток в рассрочку. Торопитесь, этажи разбирают!"; };
+    page.querySelectorAll("[data-preset]").forEach((b) => b.onclick = () => {
+      const id = b.dataset.preset;
+      $("#an-zk").value = id;
+      $("#an-text").value = DEMO_TEXTS[id] || "";
+      $("#an-text").focus();
+      toast("Пресет подставлен — жмите «Запустить анализ»");
+    });
+    $("#check-scen").innerHTML = SCENARIOS.map((sc) => {
+      const zk = getZk(sc.id); const s = scoreOf(zk);
+      const ok = s.score === sc.expect.score && s.zone === sc.expect.zone;
+      return `<div class="panel scencard"><h4>Кейс ${sc.letter} · ${esc(sc.title)}</h4>
+        <div class="calc">Ожидание: ${esc(sc.calc)} → ${sc.expect.score}<br>Сейчас: ${s.score} · ${ok ? `<span class="pass">СОВПАДАЕТ</span>` : `<span class="fail">ОТЛИЧАЕТСЯ</span>`}</div>
+        <div class="row"><button class="btn small" data-copen="${sc.id}">Открыть ЖК</button></div></div>`;
+    }).join("");
+    page.querySelectorAll("[data-copen]").forEach((b) => b.onclick = () => nav("detail", { zkId: b.dataset.copen }));
+    $("#check-regs").innerHTML = (window.SQ_SEED.REGISTRIES || []).map((r) => `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a>`).join("");
     $("#an-run").onclick = async () => {
       const text = $("#an-text").value;
       const zkId = $("#an-zk").value;
       const zk = getZk(zkId);
       if (!text.trim()) { toast("Вставьте текст объявления"); return; }
-      $("#an-result").innerHTML = `<h3 class="block" style="padding:0 0 8px">2 · Гипотезы и решение</h3><div class="empty">Анализ выполняется…</div>`;
+      $("#an-result").innerHTML = `<h3 class="block" style="padding:0 0 8px">2 · Гипотезы и решение</h3>
+        <div><span class="engine-badge parser">PARSER · разбор…</span></div>
+        <div class="loading-line"></div><div class="loading-line" style="width:72%"></div><div class="loading-line" style="width:48%"></div>`;
+      let parsed = null;
+      try { parsed = window.SQ_Parser.parseAdText(text); }
+      catch (err) { $("#an-result").innerHTML += `<div class="empty">Парсер: ${esc(err.message)}</div>`; return; }
       let res;
       try { res = await window.SQ_AI.analyzeAdText(text, zk.name); }
       catch (err) { $("#an-result").innerHTML += `<div class="empty">Ошибка: ${esc(err.message)}</div>`; return; }
@@ -401,7 +518,9 @@
           </div></div>`).join("")
         : `<div class="empty">Прямых предложений внести деньги не найдено.<br>Объявление можно сохранить как обычное (кандидат R3 — на усмотрение аналитика).</div>`;
       $("#an-result").innerHTML = `<h3 class="block" style="padding:0 0 8px">2 · Гипотезы и решение</h3>
-        <div style="margin-bottom:8px">${badge}</div>${hyps}
+        <div style="margin-bottom:8px">${badge}</div>
+        ${parserEntitiesHtml(parsed)}
+        <div class="section-t">Гипотезы <small>только после решения человека влияют на балл</small></div>${hyps}
         <div class="section-t">Ограничения</div>
         <ul style="font-size:12.5px;color:var(--ink-2)">${res.limitations.map((l) => `<li>${esc(l)}</li>`).join("")}</ul>
         <div class="row" style="margin-top:10px">
@@ -528,7 +647,7 @@
   }
 
   // ---------- topbar actions ----------
-  $("#btn-reset").onclick = () => { if (confirm("Сбросить все подтверждения, объявления и сигналы к исходному демо?")) { localStorage.removeItem(LS_STATE); state = loadState(); nav("overview"); toast("Демо-данные сброшены"); } };
+  $("#btn-reset").onclick = () => { if (confirm("Сбросить все подтверждения, объявления и сигналы к исходному демо?")) { localStorage.removeItem(LS_STATE); state = loadState(); nav("home"); toast("Демо-данные сброшены"); } };
   $("#btn-ai-config").onclick = () => {
     const c = window.SQ_AI.getConfig();
     openModal(`<h3>Подключение AI-модели</h3>
