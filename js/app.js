@@ -637,6 +637,7 @@
         </div>
       </div>
       <div class="section-t">Живые расчёты A·B·C <small>по текущим данным</small></div>
+      <p style="font-size:12.5px;color:var(--ink-2);margin:0 2px 8px">Обозначения: <b>R1</b> — основания нет (+35) · <b>R2</b> — просят деньги (+25) · <b>R3</b> — реклама стройки (+10). Подробно — на главной в «Правилах скоринга».</p>
       <div class="scen" id="check-scen"></div>
       <div class="section-t">Открытые реестры <small>ручная сверка, результат — в карточку ЖК</small></div>
       <div class="reg-strip" id="check-regs"></div>`;
