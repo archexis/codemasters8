@@ -212,8 +212,8 @@
     const real = window.SQ_AI.hasRealAI();
     const cfg = window.SQ_AI.getConfig();
     $("#ai-status").innerHTML = real
-      ? `AI: <b style="color:var(--green)">подключён</b> · <span style="font-family:var(--mono);font-size:11px">${esc(cfg.model || "")}</span>`
-      : `AI: <b style="color:var(--amber)">эвристика</b> · без ключа`;
+      ? `AI: <span class="engine-badge real">подключён</span> <span style="font-family:var(--mono);font-size:11px">${esc(cfg.model || "")}</span>`
+      : `AI: <span class="engine-badge demo">эвристика · без ключа</span>`;
   }
 
   // ---------- views ----------

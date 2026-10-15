@@ -97,4 +97,37 @@ let threw = false;
 try { parseAdText("   "); } catch { threw = true; }
 ok(threw, "empty text throws");
 
+r = parseAdText("Первоначалка всего 1 млн, остальное потом.");
+ok(r.payment.flagged, "colloquial pervonachalka flagged");
+
+r = parseAdText("Залог 500 000 тенге за бронь квартиры.");
+ok(r.payment.flagged, "zalog flagged");
+
+r = parseAdText("Кепіл 300 000 теңге, бағаны бекітеміз.");
+ok(r.payment.flagged, "KZ kepil deposit flagged");
+
+r = parseAdText("Кепілдік Бірыңғай оператордан, төлем тек шарт бойынша.");
+ok(!r.payment.flagged, "kepildik guarantee alone is not payment");
+
+r = parseAdText("Алғашқы жарна 2 млн теңге.");
+ok(r.payment.flagged, "KZ algashky zharna flagged");
+
+r = parseAdText("Бастапқы жарна 1 500 000 теңге.");
+ok(r.payment.flagged, "KZ bastapky zharna flagged (escaped-space bug regression)");
+
+r = parseAdText("Ақы төлеу 200 000 теңге.");
+ok(r.payment.flagged, "KZ aky toleu flagged (escaped-space bug regression)");
+
+r = parseAdText("Оплата переводом на карту застройщику.");
+ok(r.payment.flagged, "transfer to card flagged");
+
+r = parseAdText("Бронь 0 тг, все платежи только по договору.");
+ok(!r.payment.flagged, "zero-sum 0 tg clean");
+
+r = parseAdText("Предоплата не нужна, оплата только по договору.");
+ok(!r.payment.flagged, "predoplata ne nuzhna clean");
+
+r = parseAdText("Без задатка и без залога, бронируйте бесплатно.");
+ok(!r.payment.flagged, "bez zadatka/zaloga clean");
+
 console.log("\nPASS · " + n + " checks");

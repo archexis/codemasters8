@@ -1,8 +1,11 @@
 // SAQ QURYLYS — seed data with per-record provenance.
 // origin 'scenario': synthetic contrast fixtures for A/B/C + extras (clearly marked).
-// origin 'public-snapshot': real rows from the open Ashyq Data set
-// "Объекты с долевым участием в жилищном строительстве" (CSV, обновлён 12.10.2026),
-// retrieved 2026-10-15. Presence in the set is a permit-number record, NOT a legal verdict.
+// origin 'public-snapshot': 8 of 86 Oskemen rows from the open Ashyq Data set
+// "Объекты с долевым участием в жилищном строительстве" (4005 rows total).
+// sdu_load_date in the set: 2026-06-15; snapshot taken into the app: 2026-10-15.
+// Row-level verified 2026-10-15 against the live CSV (id, object_name,
+// builder, number, dates all match) — see tools/verify_ashyq.py.
+// Presence in the set is a permit-number record, NOT a legal verdict.
 // Coordinates for snapshot rows: approximate Nominatim geocoding, marked as such.
 (function () {
   const T = (s) => s; // dates as ISO strings
