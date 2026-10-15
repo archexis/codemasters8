@@ -128,7 +128,7 @@
 
   // ---------- router ----------
   const TITLES = {
-    home: ["SAQ QURYLYS", "Титул · начните с проверки объявления"],
+    home: ["SAQ QURYLYS", "Главная · начните с проверки объявления"],
     overview: ["Объекты", "Өскемен · учебные сценарии и записи реестра разрешений"],
     detail: ["Карточка ЖК", "история · источники · факторы риска"],
     ads: ["Мониторинг рекламы", "все публикации · подозрительные формулировки подсвечены"],
@@ -148,6 +148,7 @@
   let suppressHash = false;
   function nav(view, param, push) {
     state.route = { view, ...param };
+    document.body.dataset.view = view;
     document.querySelectorAll("#nav button").forEach((b) => b.setAttribute("aria-current", b.dataset.view === view || (((view === "detail" || view === "signal" || view === "ads") && b.dataset.view === "overview")) ? "page" : "false"));
     const t = TITLES[view] || TITLES.overview;
     $("#page-title").textContent = t[0]; $("#page-sub").textContent = t[1];
@@ -168,6 +169,7 @@
 
   function render() {
     const r = state.route;
+    document.body.dataset.view = r.view;
     updateCounts(); updateAIStatus();
     if (r.view === "home") vHome();
     else if (r.view === "overview") vOverview();
@@ -232,16 +234,31 @@
     for (const zk of state.complexes) counts[scoreOf(zk).zone]++;
     const top = state.complexes.slice().sort((a, b) => scoreOf(b).score - scoreOf(a).score).slice(0, 3);
     const regs = window.SQ_SEED.REGISTRIES || [];
+    const snapTop = top[0] ? scoreOf(top[0]) : null;
+    const snapHtml = snapTop ? `<aside class="hero-snap" aria-label="Сводка рисков">
+        <div class="t">СВОДКА · ${state.complexes.length} ЖК ПОД НАБЛЮДЕНИЕМ</div>
+        <div class="rowline"><span class="n" style="color:#ff9d9d">${counts.red}</span><span class="sub">красная зона · приоритет</span></div>
+        <div class="rowline"><span class="n" style="color:var(--sun)">${counts.yellow}</span><span class="sub">жёлтая зона · проверка</span></div>
+        <div class="rowline"><span class="n" style="color:#8fe6bd">${counts.green}</span><span class="sub">зелёная зона · мониторинг</span></div>
+        <div class="rowline"><span class="who">${esc(top[0].name)}</span></div>
+        <div class="sub" style="margin:-4px 0 10px">топ-приоритет · ${snapTop.score}/100 · ${zoneLabel(snapTop.zone)} зона</div>
+        <button class="btn btn-sun small" data-go="overview">Открыть приоритет</button>
+      </aside>` : "";
     const rules = ["R1", "R2", "R3", "R4", "R5", "R6"].map((c) => `<tr><td><b style="font-family:var(--mono)">${c}</b></td><td class="pts">+${FACTOR_META[c].points}</td><td>${esc(FACTOR_META[c].title)}<br><span style="color:var(--ink-2);font-size:12px">${esc(FACTOR_META[c].hint)}</span></td></tr>`).join("");
     page.innerHTML = `
       <div class="hero">
         <div class="orb a"></div><div class="orb b"></div><div class="orb c"></div>
+        <div class="hero-grid">
+        <div>
         <span class="kicker"><span class="demo-pill">DEMO · данные вымышлены</span> Codemasters 8.0 · Өскемен</span>
         <h1>Риски долевого строительства — с объяснимыми основаниями</h1>
         <p class="lead">SAQ QURYLYS собирает объявления, объекты и проверки в одну карточку: парсер находит деньги и сроки дословно, риск считается по фиксированным правилам R1–R6, а решение всегда принимает человек.</p>
         <div class="cta">
           <button class="btn btn-sun" data-go="analyze">Проверить объявление</button>
           <button class="btn btn-glass" data-go="overview">Открыть рабочую панель</button>
+        </div>
+        </div>
+        ${snapHtml}
         </div>
       </div>
       <div class="anchors" aria-label="Разделы страницы">
