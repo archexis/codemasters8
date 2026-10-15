@@ -377,6 +377,11 @@ h3.block { font-family: var(--display); font-size: 16px; margin: 0; padding: 14p
   .page { max-width: none; padding: 0; }
   .panel { border: 1px solid #999; break-inside: avoid; box-shadow: none; }
 }
+@media (min-width: 1600px) {
+  .page, .pagehead { max-width: 1560px; }
+  .hero-grid { gap: 48px; }
+  .kv3, .zones3 { gap: 16px; }
+}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
   html { scroll-behavior: auto; }
