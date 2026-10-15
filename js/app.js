@@ -1,0 +1,529 @@
+/* SAQ QURYLYS — UI layer. State, routing, views, workflow. */
+(function () {
+  "use strict";
+  const { computeScore, FACTOR_META, zoneLabel } = window.SQ_Scoring;
+  const LS_STATE = "sq_state_v1";
+
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const $ = (sel, el) => (el || document).querySelector(sel);
+  const page = $("#page");
+
+  // ---------- state ----------
+  function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  function loadState() {
+    const seed = window.SQ_SEED;
+    let s = { complexes: deepClone(seed.COMPLEXES), userAds: [], signals: {}, route: { view: "overview" } };
+    try {
+      const raw = JSON.parse(localStorage.getItem(LS_STATE) || "null");
+      if (raw) {
+        // merge persisted factor statuses + user ads + signals onto fresh seed
+        if (raw.factors) for (const zk of s.complexes) {
+          if (raw.factors[zk.id]) zk.factors = raw.factors[zk.id];
+        }
+        if (Array.isArray(raw.userAds)) s.userAds = raw.userAds;
+        if (raw.signals) s.signals = raw.signals;
+      }
+    } catch { /* malformed storage -> fresh seed */ }
+    return s;
+  }
+  function persist() {
+    const factors = {};
+    for (const zk of state.complexes) factors[zk.id] = zk.factors;
+    localStorage.setItem(LS_STATE, JSON.stringify({ factors, userAds: state.userAds, signals: state.signals }));
+  }
+  let state = loadState();
+
+  const allAds = () => [...state.userAds, ...window.SQ_SEED.ADS];
+  const getZk = (id) => state.complexes.find((z) => z.id === id);
+  const adsOf = (zkId) => allAds().filter((a) => a.zkId === zkId);
+  const scoreOf = (zk) => computeScore(zk.factors);
+  const getSignal = (zkId) => state.signals[zkId] || { status: "draft", history: [] };
+
+  function setSignal(zkId, status, reviewer, comment) {
+    const prev = getSignal(zkId);
+    const entry = { at: new Date().toISOString(), reviewer: reviewer || "analyst", from: prev.status, to: status, comment: comment || "" };
+    state.signals[zkId] = { status, reviewer: entry.reviewer, updatedAt: entry.at, history: [...prev.history, entry] };
+    persist();
+  }
+
+  // ---------- helpers ----------
+  function toast(msg) {
+    const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 2600);
+  }
+  function openModal(html) {
+    $("#modal-box").innerHTML = html; $("#modal-bg").classList.add("open");
+    const f = $("#modal-box input, #modal-box button"); if (f) f.focus();
+  }
+  function closeModal() { $("#modal-bg").classList.remove("open"); }
+  $("#modal-bg").addEventListener("click", (e) => { if (e.target.id === "modal-bg") closeModal(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+  const PAY_RE = /(брон[ьи]|депозит|первоначальн\w*\s+взнос|задато[кч]|предоплат|аванс|взнос|рассрочк\w*\s+от\s+застройщика|оплат\w*\s+(напрямую|до\s+заключения|до\s+договора))/gi;
+  function highlight(text) {
+    return esc(text).replace(PAY_RE, "<mark>$1</mark>");
+  }
+  function zoneChip(zone) { return `<span class="zone ${zone}">${zoneLabel(zone)}</span>`; }
+  function statusChip(st) {
+    const labels = { confirmed: "подтверждён", hypothesis: "гипотеза ИИ", rejected: "отклонён", "needs-verification": "нужна проверка" };
+    return `<span class="st ${esc(st)}">${labels[st] || esc(st)}</span>`;
+  }
+  function legalLabel(lb) {
+    if (!lb) return "—";
+    if (lb.status === "verified" && lb.type === "guarantee") return "Гарантия Единого оператора · проверено";
+    if (lb.status === "verified" && lb.type === "mio-permit") return "Разрешение МИО · проверено";
+    if (lb.status === "absent-verified") return "Отсутствие основания · установлено проверкой";
+    return "Не проверено · нужна проверка";
+  }
+
+  function askReviewer(actionLabel, cb) {
+    openModal(`<h3>${esc(actionLabel)}</h3>
+      <label class="f">Аналитик (фиксируется в журнале)<input type="text" id="m-reviewer" value="analyst" maxlength="60"></label>
+      <label class="f" style="margin-top:8px">Комментарий (необязательно)<input type="text" id="m-comment" maxlength="240" placeholder="основание решения"></label>
+      <div class="row" style="margin-top:12px"><button class="btn primary" id="m-ok">Записать</button><button class="btn" id="m-cancel">Отмена</button></div>`);
+    $("#m-cancel").onclick = closeModal;
+    $("#m-ok").onclick = () => { const r = $("#m-reviewer").value.trim() || "analyst"; const c = $("#m-comment").value.trim(); closeModal(); cb(r, c); };
+  }
+
+  // ---------- factor review ----------
+  function setFactor(zkId, code, status, reviewer, evidence) {
+    const zk = getZk(zkId);
+    let f = zk.factors.find((x) => x.code === code);
+    if (!f) { f = { code, status, evidence: evidence || {} }; zk.factors.push(f); }
+    else { f.status = status; if (evidence) f.evidence = { ...f.evidence, ...evidence }; }
+    f.reviewer = reviewer; f.updatedAt = new Date().toISOString();
+    persist();
+  }
+
+  // ---------- router ----------
+  const TITLES = {
+    overview: ["Обзор объектов", "Өскемен · 8 демо-ЖК · все совпадения случайны"],
+    detail: ["Карточка ЖК", "история · источники · факторы риска"],
+    ads: ["Мониторинг рекламы", "все публикации · подозрительные формулировки подсвечены"],
+    analyze: ["Новый анализ", "текст объявления → гипотезы ИИ → решение человека"],
+    signal: ["Сигнальная карточка", "факторы · доказательства · статус проверки"],
+    scenarios: ["Контрольные сценарии", "A · B · C — живые расчёты по текущим данным"],
+    registries: ["Открытые реестры РК", "внешние источники · живой интеграции в демо нет"],
+    about: ["О проекте", "архитектура · ограничения · путь демонстрации"],
+  };
+  function nav(view, param) {
+    state.route = { view, ...param };
+    document.querySelectorAll("#nav button").forEach((b) => b.setAttribute("aria-current", b.dataset.view === view || (view === "detail" && b.dataset.view === "overview") || (view === "signal" && b.dataset.view === "overview") ? "page" : "false"));
+    const t = TITLES[view] || TITLES.overview;
+    $("#page-title").textContent = t[0]; $("#page-sub").textContent = t[1];
+    window.scrollTo(0, 0);
+    render();
+  }
+  $("#nav").addEventListener("click", (e) => { const b = e.target.closest("button[data-view]"); if (b) nav(b.dataset.view); });
+
+  function render() {
+    const r = state.route;
+    updateCounts(); updateAIStatus();
+    if (r.view === "overview") return vOverview();
+    if (r.view === "detail") return vDetail(r.zkId);
+    if (r.view === "ads") return vAds();
+    if (r.view === "analyze") return vAnalyze(r.prefill);
+    if (r.view === "signal") return vSignal(r.zkId);
+    if (r.view === "scenarios") return vScenarios();
+    if (r.view === "registries") return vRegistries();
+    if (r.view === "about") return vAbout();
+    return vOverview();
+  }
+
+  function updateCounts() {
+    $("#cnt-zk").textContent = state.complexes.length;
+    $("#cnt-ads").textContent = allAds().length;
+  }
+  function updateAIStatus() {
+    const real = window.SQ_AI.hasRealAI();
+    const cfg = window.SQ_AI.getConfig();
+    $("#ai-status").innerHTML = real
+      ? `AI: <b style="color:#7fd6b2">real</b> · <span style="font-family:var(--mono);font-size:11px">${esc(cfg.model || "")}</span>`
+      : `AI: <b style="color:#ffd97a">demo-режим</b> · эвристика с честной меткой`;
+  }
+
+  // ---------- views ----------
+  let overviewFilter = { q: "", zone: "all" };
+
+  function vOverview() {
+    const counts = { green: 0, yellow: 0, red: 0 };
+    for (const zk of state.complexes) counts[scoreOf(zk).zone]++;
+    const q = overviewFilter.q.trim().toLowerCase();
+    let list = state.complexes.filter((zk) => {
+      const s = scoreOf(zk);
+      if (overviewFilter.zone !== "all" && s.zone !== overviewFilter.zone) return false;
+      if (q && !(zk.name + " " + zk.address + " " + zk.developer + " " + zk.id).toLowerCase().includes(q)) return false;
+      return true;
+    });
+    list = list.slice().sort((a, b) => scoreOf(b).score - scoreOf(a).score);
+
+    page.innerHTML = `
+      <div class="stats">
+        <div class="panel stat"><div class="n">${state.complexes.length}</div><div class="l">демо-ЖК под наблюдением</div></div>
+        <div class="panel stat"><div class="n" style="color:var(--red)">${counts.red}</div><div class="l">красная зона · приоритет</div></div>
+        <div class="panel stat"><div class="n" style="color:var(--amber)">${counts.yellow}</div><div class="l">жёлтая зона · проверка</div></div>
+        <div class="panel stat"><div class="n" style="color:var(--green)">${counts.green}</div><div class="l">зелёная зона · мониторинг</div></div>
+      </div>
+      <div class="mapwrap">
+        <div><div id="map" role="img" aria-label="Карта объектов"></div></div>
+        <div class="panel mapnote"><b>Карта — только объекты с координатами.</b><br><br><span id="map-note-text"></span></div>
+      </div>
+      <div class="toolbar">
+        <input type="text" id="ov-q" class="search" placeholder="Поиск: название, адрес, застройщик…" value="${esc(overviewFilter.q)}" aria-label="Поиск ЖК">
+        <div class="seg" role="group" aria-label="Фильтр по зоне">
+          ${["all", "red", "yellow", "green"].map((z) => `<button data-z="${z}" aria-pressed="${overviewFilter.zone === z}">${z === "all" ? "Все" : zoneLabel(z)}</button>`).join("")}
+        </div>
+      </div>
+      <div class="panel" id="zk-list">
+        ${list.length ? list.map((zk) => {
+          const s = scoreOf(zk); const ads = adsOf(zk.id);
+          const color = s.zone === "red" ? "var(--red)" : s.zone === "yellow" ? "var(--amber)" : "var(--green)";
+          return `<div class="zkrow" data-zk="${zk.id}" tabindex="0" role="link" aria-label="${esc(zk.name)}, ${s.score} баллов, ${zoneLabel(s.zone)} зона">
+            <div><div class="nm">${esc(zk.name)} <span class="demo-pill">DEMO</span>${zk.scenario ? ` <span class="chip">сценарий ${zk.scenario}</span>` : ""}</div>
+              <div class="addr">${esc(zk.address)} · ${esc(zk.stage)}</div>
+              <div class="meta">${zk.id} · ${esc(zk.developer)} · объявлений: ${ads.length}</div></div>
+            <div class="hide-m"><div class="scorebar" aria-hidden="true"><i style="width:${s.score}%;background:${color}"></i></div>
+              <div class="meta" style="margin-top:4px">${s.score} / 100 · подтверждено: ${s.confirmed.join(", ") || "—"}</div></div>
+            <div class="hide-m"><span class="meta">сигнал: ${esc(sigLabel(getSignal(zk.id).status))}</span></div>
+            <div>${zoneChip(s.zone)}</div>
+          </div>`;
+        }).join("") : `<div class="empty">Ничего не найдено. Измените запрос или фильтр.</div>`}
+      </div>`;
+
+    $("#ov-q").addEventListener("input", (e) => { overviewFilter.q = e.target.value; const v = e.target.value; const pos = e.target.selectionStart; render(); const el = $("#ov-q"); el.focus(); el.setSelectionRange(pos, pos); });
+    page.querySelectorAll(".seg button").forEach((b) => b.onclick = () => { overviewFilter.zone = b.dataset.z; render(); });
+    page.querySelectorAll(".zkrow").forEach((el) => {
+      el.onclick = () => nav("detail", { zkId: el.dataset.zk });
+      el.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") nav("detail", { zkId: el.dataset.zk }); };
+    });
+    initMap(list);
+  }
+
+  function sigLabel(st) {
+    return { draft: "черновик", pending: "на проверке", confirmed: "подтверждён", returned: "возвращён" }[st] || st;
+  }
+
+  function initMap(list) {
+    const withCoords = list.filter((z) => typeof z.lat === "number" && typeof z.lng === "number");
+    const missing = list.length - withCoords.length;
+    $("#map-note-text").textContent = missing > 0
+      ? `Показано меток: ${withCoords.length} из ${list.length}. Без координат (${missing}) на карту не ставятся — это честное поведение, а не ошибка.`
+      : `Показано меток: ${withCoords.length} из ${list.length}.`;
+    if (typeof L === "undefined") { $("#map").innerHTML = `<div class="empty">Карта недоступна офлайн (CDN Leaflet не загрузился). Список выше — полный.</div>`; return; }
+    const map = L.map("map").setView([49.984, 82.614], 12);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© OpenStreetMap" }).addTo(map);
+    const colors = { red: "#b3271e", yellow: "#9a6206", green: "#1d7a4f" };
+    for (const zk of withCoords) {
+      const s = scoreOf(zk);
+      const m = L.circleMarker([zk.lat, zk.lng], { radius: 9, color: colors[s.zone], fillColor: colors[s.zone], fillOpacity: 0.85, weight: 2 }).addTo(map);
+      m.bindPopup(`<b>${esc(zk.name)}</b><br>${s.score} баллов · ${esc(zoneLabel(s.zone))}`);
+      m.on("click", () => nav("detail", { zkId: zk.id }));
+    }
+  }
+
+  function vDetail(zkId) {
+    const zk = getZk(zkId);
+    if (!zk) { page.innerHTML = `<div class="panel empty">Объект не найден. <button class="btn" onclick="document.querySelector('#nav button').click()">К обзору</button></div>`; return; }
+    const s = scoreOf(zk);
+    const ads = adsOf(zkId);
+    const sig = getSignal(zkId);
+    const color = s.zone === "red" ? "var(--red)" : s.zone === "yellow" ? "var(--amber)" : "var(--green)";
+    const codes = ["R1", "R2", "R3", "R4", "R5", "R6"];
+    const byCode = Object.fromEntries(zk.factors.map((f) => [f.code, f]));
+
+    page.innerHTML = `
+      <div class="row no-print" style="margin-bottom:12px">
+        <button class="btn small" id="d-back">← К обзору</button>
+        <button class="btn small primary" id="d-signal">Сигнальная карточка</button>
+        <button class="btn small" id="d-analyze">+ Анализ объявления</button>
+      </div>
+      <div class="detail-head">
+        <div class="panel">
+          <div style="padding:16px 18px 0"><h3 style="font-family:var(--serif);margin:0;font-size:22px">${esc(zk.name)} <span class="demo-pill">DEMO</span></h3>
+          <div style="color:var(--ink-2);font-size:13px">${esc(zk.city)} · ${esc(zk.address)}</div></div>
+          <dl class="kv">
+            <dt>Застройщик / БИН</dt><dd>${esc(zk.developer)} · <span style="font-family:var(--mono)">${esc(zk.bin)}</span> <span class="chip">вымышлены</span></dd>
+            <dt>Этап строительства</dt><dd>${esc(zk.stage)}</dd>
+            <dt>Готовность</dt><dd>заявлено ${zk.readinessClaimed ?? "—"}% · подтверждено ${zk.readinessConfirmed ?? "—"}%</dd>
+            <dt>Правовое основание</dt><dd><b>${esc(legalLabel(zk.legalBasis))}</b><br><span style="font-size:12.5px;color:var(--ink-2)">${esc(zk.legalBasis.source)} · ${esc(zk.legalBasis.checkedAt)}</span></dd>
+            <dt>Заметка аналитика</dt><dd>${esc(zk.note || "—")}</dd>
+          </dl>
+        </div>
+        <div class="panel" style="padding:16px 18px">
+          <div class="section-t" style="margin-top:0">Риск-балл · только подтверждённое</div>
+          <div class="score-num">${s.score}<span style="font-size:16px;color:var(--ink-3)">/100</span></div>
+          <div style="margin:8px 0">${zoneChip(s.zone)}</div>
+          <div class="scorebar"><i style="width:${s.score}%;background:${color}"></i></div>
+          <div style="font-size:12.5px;color:var(--ink-2);margin-top:8px">Подтверждено: ${s.confirmed.join(" · ") || "—"}${s.pending.length ? `<br>Ожидают решения: ${s.pending.join(" · ")} (на балл не влияют)` : ""}</div>
+          <div style="margin-top:10px;font-size:12.5px">Сигнал: <b>${esc(sigLabel(sig.status))}</b></div>
+        </div>
+      </div>
+
+      <div class="section-t">Факторы риска · R1–R6</div>
+      <div class="panel">
+        ${codes.map((code) => {
+          const m = FACTOR_META[code]; const f = byCode[code];
+          const st = f ? f.status : "needs-verification";
+          const ev = f && f.evidence;
+          return `<div class="factor" id="f-${code}">
+            <div class="fh"><span class="code">${code}</span><span class="pts">+${m.points}</span>
+              <b>${esc(m.title)}</b> ${statusChip(st)}</div>
+            <div style="font-size:12.5px;color:var(--ink-2)">${esc(m.hint)}</div>
+            ${ev ? `<div class="ev">${ev.quote ? `<q>${esc(ev.quote)}</q><br>` : ""}<span class="src">Источник: ${esc(ev.source || "—")}${ev.adId ? ` · <a href="#" data-ad="${ev.adId}">${esc(ev.adId)}</a>` : ""}${ev.date ? ` · ${esc(ev.date)}` : ""}${f.reviewer ? ` · проверил: ${esc(f.reviewer)} · ${esc((f.updatedAt || "").slice(0, 16).replace("T", " "))}` : ""}</span></div>`
+              : `<div style="font-size:12.5px;color:var(--ink-3);margin-top:4px">Доказательств нет — 0 баллов, пометка «нужна проверка».</div>`}
+            <div class="row no-print" style="margin-top:8px">
+              ${st === "hypothesis" ? `<button class="btn small primary" data-confirm="${code}">Подтвердить</button><button class="btn small danger" data-reject="${code}">Отклонить</button>` : ""}
+              ${st === "needs-verification" ? `<button class="btn small" data-confirm="${code}">Подтвердить вручную</button>` : ""}
+              ${st === "confirmed" ? `<button class="btn small" data-unconfirm="${code}">Снять подтверждение</button>` : ""}
+              ${st === "rejected" ? `<button class="btn small" data-confirm="${code}">Пересмотреть</button>` : ""}
+            </div>
+          </div>`;
+        }).join("")}
+      </div>
+
+      <div class="section-t">Связанные объявления · ${ads.length}</div>
+      <div class="panel">
+        ${ads.length ? ads.map((a) => `
+          <div class="factor"><div class="fh"><b>${esc(a.id)}</b> <span class="chip">${esc(a.platform)}</span> <span class="chip">${esc(a.account)}</span> <span class="chip">${esc(a.date)}</span> ${a.userAdded ? `<span class="chip">добавлено аналитиком</span>` : `<span class="chip">демо-снимок</span>`}</div>
+          <div class="adtext" style="margin-top:6px">${highlight(a.text)}</div>
+          <div class="src-link"><a href="${esc(a.url)}" target="_blank" rel="noopener">Источник (демо-ссылка)</a> · снято ${esc(a.captureAt)}</div></div>`).join("")
+          : `<div class="empty">Объявлений пока нет. Добавьте первое через «Новый анализ».</div>`}
+      </div>
+
+      <div class="grid2">
+        <div><div class="section-t">События</div><div class="panel timeline">
+          ${(zk.events || []).map((e) => `<div><time>${esc(e.date)}</time><span>${esc(e.text)}</span></div>`).join("") || `<div class="empty">Нет событий.</div>`}
+        </div></div>
+        <div><div class="section-t">Источники и фиксация</div><div class="panel timeline">
+          ${(zk.sources || []).map((e) => `<div><time>${esc(e.date)}</time><span>${esc(e.title)}</span></div>`).join("") || `<div class="empty">Нет источников.</div>`}
+        </div></div>
+      </div>`;
+
+    $("#d-back").onclick = () => nav("overview");
+    $("#d-signal").onclick = () => nav("signal", { zkId });
+    $("#d-analyze").onclick = () => nav("analyze", { prefill: { zkId } });
+    page.querySelectorAll("[data-confirm]").forEach((b) => b.onclick = () => askReviewer(`Подтвердить ${b.dataset.confirm} — ${zk.name}`, (r, c) => {
+      setFactor(zkId, b.dataset.confirm, "confirmed", r + (c ? " · " + c : "")); toast(`${b.dataset.confirm} подтверждён, балл пересчитан`); render();
+    }));
+    page.querySelectorAll("[data-reject]").forEach((b) => b.onclick = () => askReviewer(`Отклонить гипотезу ${b.dataset.reject}`, (r, c) => {
+      setFactor(zkId, b.dataset.reject, "rejected", r + (c ? " · " + c : "")); toast(`${b.dataset.reject} отклонён`); render();
+    }));
+    page.querySelectorAll("[data-unconfirm]").forEach((b) => b.onclick = () => askReviewer(`Снять подтверждение ${b.dataset.unconfirm}`, (r, c) => {
+      setFactor(zkId, b.dataset.unconfirm, "needs-verification", r + (c ? " · " + c : "")); toast(`${b.dataset.unconfirm} возвращён на проверку`); render();
+    }));
+    page.querySelectorAll("[data-ad]").forEach((a) => a.onclick = (e) => { e.preventDefault(); nav("ads"); });
+  }
+
+  function vAds() {
+    const ads = allAds();
+    page.innerHTML = `
+      <div class="toolbar"><span style="font-size:13px;color:var(--ink-2)">Всего публикаций: <b>${ads.length}</b> · жёлтая подсветка — потенциально платёжные формулировки (подсказка, не вердикт)</span>
+      <span style="flex:1"></span><button class="btn primary small" id="ads-new">+ Новое объявление</button></div>
+      <div class="panel">${ads.map((a) => {
+        const zk = getZk(a.zkId);
+        return `<div class="factor"><div class="fh"><b>${esc(a.id)}</b> <span class="chip">${esc(a.platform)}</span> <span class="chip">${esc(a.account)}</span> <span class="chip">${esc(a.date)}</span>
+          → <a href="#" data-zk="${esc(a.zkId)}">${esc(zk ? zk.name : a.zkId)}</a></div>
+          <div class="adtext" style="margin-top:6px">${highlight(a.text)}</div>
+          <div class="src-link"><a href="${esc(a.url)}" target="_blank" rel="noopener">Источник</a> · снято ${esc(a.captureAt)}</div></div>`;
+      }).join("")}</div>`;
+    $("#ads-new").onclick = () => nav("analyze");
+    page.querySelectorAll("[data-zk]").forEach((x) => x.onclick = (e) => { e.preventDefault(); nav("detail", { zkId: x.dataset.zk }); });
+  }
+
+  function vAnalyze(prefill) {
+    const opts = state.complexes.map((z) => `<option value="${z.id}" ${prefill && prefill.zkId === z.id ? "selected" : ""}>${esc(z.name)} · ${z.id}</option>`).join("");
+    page.innerHTML = `
+      <div class="grid2">
+        <div class="panel" style="padding:16px 18px">
+          <h3 class="block" style="padding:0 0 8px">1 · Ввод объявления</h3>
+          <div style="display:grid;gap:10px">
+            <label class="f">Связанный ЖК<select id="an-zk">${opts}</select></label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <label class="f">Площадка<input type="text" id="an-platform" value="Krisha (демо)" maxlength="80"></label>
+              <label class="f">Аккаунт<input type="text" id="an-account" value="@analyst_inbox" maxlength="80"></label>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <label class="f">Дата публикации<input type="date" id="an-date" value="2026-10-15"></label>
+              <label class="f">URL<input type="url" id="an-url" value="https://example.invalid/new" maxlength="300"></label>
+            </div>
+            <label class="f">Текст объявления<textarea id="an-text" rows="8" maxlength="4000" placeholder="Вставьте текст объявления…"></textarea></label>
+            <div class="row">
+              <button class="btn primary" id="an-run">Запустить анализ</button>
+              <button class="btn" id="an-fill">Вставить пример</button>
+            </div>
+            <div style="font-size:12px;color:var(--ink-2)">Три примера для живого демо — в разделе «Сценарии A·B·C» (кнопка «Проверить вживую»).</div>
+          </div>
+        </div>
+        <div class="panel" style="padding:16px 18px" id="an-result">
+          <h3 class="block" style="padding:0 0 8px">2 · Гипотезы и решение</h3>
+          <div class="empty">Здесь появятся гипотезы с точными цитатами.<br>Ничего не влияет на балл, пока человек не подтвердит.</div>
+        </div>
+      </div>`;
+    $("#an-fill").onclick = () => { $("#an-text").value = "Срочно! Продажа квартир в строящемся доме, сдача в 2027. Первоначальный взнос 1 500 000 тенге напрямую застройщику, остаток в рассрочку. Торопитесь, этажи разбирают!"; };
+    $("#an-run").onclick = async () => {
+      const text = $("#an-text").value;
+      const zkId = $("#an-zk").value;
+      const zk = getZk(zkId);
+      if (!text.trim()) { toast("Вставьте текст объявления"); return; }
+      $("#an-result").innerHTML = `<h3 class="block" style="padding:0 0 8px">2 · Гипотезы и решение</h3><div class="empty">Анализ выполняется…</div>`;
+      let res;
+      try { res = await window.SQ_AI.analyzeAdText(text, zk.name); }
+      catch (err) { $("#an-result").innerHTML += `<div class="empty">Ошибка: ${esc(err.message)}</div>`; return; }
+      const badge = res.realAI ? `<span class="engine-badge real">REAL AI · ${esc(res.engine)}</span>` : `<span class="engine-badge demo">DEMO · ${esc(res.engine)} — не настоящий ИИ</span>`;
+      const hyps = res.hypotheses.length ? res.hypotheses.map((h, i) => `
+        <div class="hyp"><b>Гипотеза ${i + 1} → кандидат ${esc(h.candidate_factor || "—")}</b> ${statusChip("hypothesis")}
+          <span class="q">«${esc(h.exact_quote)}»</span>
+          <div style="font-size:13px">${esc(h.explanation)}</div>
+          <div style="font-size:12px;color:var(--ink-2)">уверенность: ${esc(h.confidence)} · требует решения человека</div>
+          <div class="row" style="margin-top:8px">
+            <button class="btn small primary" data-hok="${i}">Подтвердить как ${esc(h.candidate_factor)}</button>
+            <button class="btn small danger" data-hno="${i}">Отклонить</button>
+          </div></div>`).join("")
+        : `<div class="empty">Прямых предложений внести деньги не найдено.<br>Объявление можно сохранить как обычное (кандидат R3 — на усмотрение аналитика).</div>`;
+      $("#an-result").innerHTML = `<h3 class="block" style="padding:0 0 8px">2 · Гипотезы и решение</h3>
+        <div style="margin-bottom:8px">${badge}</div>${hyps}
+        <div class="section-t">Ограничения</div>
+        <ul style="font-size:12.5px;color:var(--ink-2)">${res.limitations.map((l) => `<li>${esc(l)}</li>`).join("")}</ul>
+        <div class="row" style="margin-top:10px">
+          <button class="btn small" id="an-save-plain">Сохранить как обычное объявление</button>
+          <button class="btn small" id="an-confirm-r3">Подтвердить R3 вручную</button>
+        </div>`;
+      const saveAd = (withR2) => askReviewer("Сохранить объявление и решение", (r, c) => {
+        const id = "AD-U" + String(state.userAds.length + 1).padStart(2, "0");
+        state.userAds.unshift({
+          id, zkId, platform: $("#an-platform").value, account: $("#an-account").value,
+          date: $("#an-date").value || "2026-10-15", url: $("#an-url").value, text,
+          captureAt: new Date().toISOString().slice(0, 10), userAdded: true,
+        });
+        if (withR2) setFactor(zkId, withR2, "confirmed", r + (c ? " · " + c : ""), { adId: id, quote: res.hypotheses[0].exact_quote, source: "Новое объявление " + id });
+        persist(); toast(`Объявление ${id} сохранено${withR2 ? ", " + withR2 + " подтверждён" : ""}`);
+        nav("detail", { zkId });
+      });
+      page.querySelectorAll("[data-hok]").forEach((b) => b.onclick = () => saveAd(res.hypotheses[+b.dataset.hok].candidate_factor));
+      page.querySelectorAll("[data-hno]").forEach((b) => b.onclick = () => { b.closest(".hyp").querySelector(".row").innerHTML = `<span class="st rejected">отклонён</span> <span style="font-size:12px;color:var(--ink-2)">решение зафиксировано локально, на балл не влияет</span>`; toast("Гипотеза отклонена"); });
+      $("#an-save-plain").onclick = () => saveAd(null);
+      $("#an-confirm-r3").onclick = () => askReviewer("Подтвердить R3 вручную", (r, c) => {
+        const id = "AD-U" + String(state.userAds.length + 1).padStart(2, "0");
+        state.userAds.unshift({ id, zkId, platform: $("#an-platform").value, account: $("#an-account").value, date: $("#an-date").value || "2026-10-15", url: $("#an-url").value, text, captureAt: new Date().toISOString().slice(0, 10), userAdded: true });
+        setFactor(zkId, "R3", "confirmed", r + (c ? " · " + c : ""), { adId: id, quote: text.slice(0, 140), source: "Новое объявление " + id });
+        persist(); toast(`R3 подтверждён`); nav("detail", { zkId });
+      });
+    };
+  }
+
+  function vSignal(zkId) {
+    const zk = getZk(zkId);
+    if (!zk) { page.innerHTML = `<div class="panel empty">Объект не найден.</div>`; return; }
+    const s = scoreOf(zk);
+    const sig = getSignal(zkId);
+    const confirmed = zk.factors.filter((f) => f.status === "confirmed");
+    page.innerHTML = `
+      <div class="row no-print" style="margin-bottom:12px">
+        <button class="btn small" id="sg-back">← К карточке ЖК</button>
+        <span style="flex:1"></span>
+        <button class="btn small primary" id="sg-confirm">Подтвердить сигнал</button>
+        <button class="btn small danger" id="sg-return">Вернуть на доработку</button>
+        <button class="btn small" id="sg-print">Печать / PDF</button>
+      </div>
+      <div class="panel signal" id="signal-card">
+        <div class="shead">
+          <div style="font-size:11.5px;letter-spacing:.09em;color:var(--ink-3)">SAQ QURYLYS · СИГНАЛЬНАЯ КАРТОЧКА · <b>DEMO — НЕ ЮРИДИЧЕСКИЙ ДОКУМЕНТ</b></div>
+          <h3>${esc(zk.name)} — ${s.score}/100 · ${zoneLabel(s.zone)} зона</h3>
+          <div style="font-size:13px;color:var(--ink-2)">${esc(zk.address)} · ${esc(zk.developer)} · БИН <span style="font-family:var(--mono)">${esc(zk.bin)}</span> (вымышлены)</div>
+          <div style="margin-top:6px">${zoneChip(s.zone)} <span class="chip">статус: ${esc(sigLabel(sig.status))}</span> ${zk.scenario ? `<span class="chip">сценарий ${zk.scenario}</span>` : ""}</div>
+        </div>
+        <div class="sig-grid">
+          <div><div class="section-t">Подтверждённые факторы</div>
+            ${confirmed.length ? confirmed.map((f) => { const m = FACTOR_META[f.code]; return `<div style="font-size:13px;margin-bottom:8px"><b style="font-family:var(--mono)">${f.code} +${m.points}</b> · ${esc(m.title)}<br><span style="color:var(--ink-2);font-size:12.5px">${f.evidence && f.evidence.quote ? `«${esc(f.evidence.quote)}» · ` : ""}${esc((f.evidence && (f.evidence.source || f.evidence.date)) || "—")}${f.reviewer ? ` · ${esc(f.reviewer)}` : ""}</span></div>`; }).join("") : `<div style="font-size:13px;color:var(--ink-2)">Нет подтверждённых факторов.</div>`}
+          </div>
+          <div><div class="section-t">Правовое основание и готовность</div>
+            <div style="font-size:13px">Основание: <b>${esc(legalLabel(zk.legalBasis))}</b><br>
+            <span style="color:var(--ink-2);font-size:12.5px">${esc(zk.legalBasis.source)} · ${esc(zk.legalBasis.checkedAt)}</span></div>
+            <div style="font-size:13px;margin-top:8px">Готовность: заявлено ${zk.readinessClaimed ?? "—"}% · подтверждено ${zk.readinessConfirmed ?? "—"}%</div>
+            <div style="font-size:13px;margin-top:8px">Связанных объявлений: ${adsOf(zkId).length}</div>
+          </div>
+        </div>
+        <div class="log"><div class="section-t">Журнал решений</div>
+          ${sig.history.length ? `<table><tr><th>Дата</th><th>Аналитик</th><th>Переход</th><th>Комментарий</th></tr>${sig.history.map((h) => `<tr><td style="font-family:var(--mono)">${esc(h.at.slice(0, 16).replace("T", " "))}</td><td>${esc(h.reviewer)}</td><td>${esc(h.from)} → <b>${esc(h.to)}</b></td><td>${esc(h.comment || "—")}</td></tr>`).join("")}</table>` : `<div style="font-size:13px;color:var(--ink-2)">Решений пока нет — сигнал в статусе «черновик».</div>`}
+          <div style="font-size:12px;color:var(--ink-3);margin-top:10px">Система подсвечивает признаки и помогает принять решение, но не устанавливает факт правонарушения и не отправляет материалы в госорганы автоматически. Все записи демонстрационные.</div>
+        </div>
+      </div>`;
+    $("#sg-back").onclick = () => nav("detail", { zkId });
+    $("#sg-print").onclick = () => window.print();
+    $("#sg-confirm").onclick = () => askReviewer("Подтвердить сигнал", (r, c) => { setSignal(zkId, "confirmed", r, c); toast("Сигнал подтверждён"); render(); });
+    $("#sg-return").onclick = () => askReviewer("Вернуть на доработку", (r, c) => { setSignal(zkId, "returned", r, c); toast("Сигнал возвращён"); render(); });
+  }
+
+  const SCENARIOS = [
+    { id: "SQ-001", letter: "A", title: "Основание не проверено + платная бронь", calc: "R2 25 + R3 10 = 35", expect: { score: 35, zone: "yellow" }, note: "Неизвестное основание не превращается в R1." },
+    { id: "SQ-002", letter: "B", title: "Отсутствие основания установлено + депозит", calc: "R1 35 + R2 25 + R3 10 = 70", expect: { score: 70, zone: "red" }, note: "Красный, но карточка ждёт решения человека." },
+    { id: "SQ-003", letter: "C", title: "Гарантия подтверждена + обычное объявление", calc: "R3 10 = 10", expect: { score: 10, zone: "green" }, note: "Нет отдельного разрешения МИО — и это не R1." },
+  ];
+  const DEMO_TEXTS = {
+    "SQ-001": "Старт продаж в строящемся доме, сдача в 2027 году. Бронь квартиры — всего 500 000 тенге, сумма идёт в зачёт стоимости!",
+    "SQ-002": "Продажа квартир на этапе котлована! Депозит 1 000 000 тенге для фиксации цены, остаток в рассрочку от застройщика.",
+    "SQ-003": "Открыты продажи в строящемся доме, сдача — IV квартал 2026. Оформление строго по договору с гарантией Единого оператора, оплата через эскроу.",
+  };
+  function vScenarios() {
+    page.innerHTML = `<p style="color:var(--ink-2);font-size:13.5px;max-width:70ch">Контрольные кейсы из ТЗ считаются <b>вживую</b> по текущим данным (учитываются ваши подтверждения/отклонения). Кнопка «Проверить вживую» прогоняет текст через AI-адаптер и показывает гипотезы.</p>
+    <div class="scen">${SCENARIOS.map((sc) => {
+        const zk = getZk(sc.id); const s = scoreOf(zk);
+        const ok = s.score === sc.expect.score && s.zone === sc.expect.zone;
+        return `<div class="panel scencard"><h4>Кейс ${sc.letter} · ${esc(sc.title)}</h4>
+          <div class="calc">Ожидание: ${esc(sc.calc)} → ${sc.expect.score}, ${zoneLabel(sc.expect.zone)}<br>Сейчас: ${s.score}, ${zoneLabel(s.zone)} · ${ok ? `<span class="pass">СОВПАДАЕТ</span>` : `<span class="fail">ОТЛИЧАЕТСЯ (данные меняли?)</span>`}</div>
+          <div style="font-size:12.5px;color:var(--ink-2)">${esc(sc.note)}</div>
+          <div class="row"><button class="btn small" data-open="${sc.id}">Открыть ЖК</button><button class="btn small" data-live="${sc.id}">Проверить вживую</button></div>
+          <div id="live-${sc.id}"></div></div>`;
+      }).join("")}</div>`;
+    page.querySelectorAll("[data-open]").forEach((b) => b.onclick = () => nav("detail", { zkId: b.dataset.open }));
+    page.querySelectorAll("[data-live]").forEach((b) => b.onclick = async () => {
+      const box = $("#live-" + b.dataset.live);
+      box.innerHTML = `<div style="font-size:12.5px">Анализ…</div>`;
+      try {
+        const res = await window.SQ_AI.analyzeAdText(DEMO_TEXTS[b.dataset.live], getZk(b.dataset.live).name);
+        box.innerHTML = `<div style="margin-top:6px">${res.realAI ? `<span class="engine-badge real">REAL AI</span>` : `<span class="engine-badge demo">DEMO-эвристика</span>`}
+          ${res.hypotheses.length ? res.hypotheses.map((h) => `<div class="hyp"><span class="q">«${esc(h.exact_quote)}»</span><div style="font-size:12.5px">→ кандидат ${esc(h.candidate_factor)} · ${esc(h.explanation)}</div></div>`).join("") : `<div style="font-size:12.5px">Прямых предложений оплаты не найдено.</div>`}</div>`;
+      } catch (e) { box.innerHTML = `<div style="font-size:12.5px;color:var(--red)">Ошибка: ${esc(e.message)}</div>`; }
+    });
+  }
+
+  function vRegistries() {
+    const regs = window.SQ_SEED.REGISTRIES;
+    page.innerHTML = `<div class="panel" style="padding:6px 18px 14px"><div class="section-t">Открытые реестры и базы данных РК · внешние ссылки</div>
+      <p style="font-size:13px;color:var(--ink-2)">В демо живой интеграции с реестрами нет — это честно указано. Список нужен аналитику для ручной сверки; результат сверки фиксируется в карточке ЖК с источником и датой.</p>
+      ${(regs || []).map((r) => `<div style="padding:8px 0;border-top:1px solid var(--line);font-size:13.5px"><a href="${esc(r.url)}" target="_blank" rel="noopener"><b>${esc(r.name)}</b></a><br><span style="color:var(--ink-2);font-size:12.5px">${esc(r.note)} · ${esc(r.url)}</span></div>`).join("")}</div>`;
+  }
+
+  function vAbout() {
+    page.innerHTML = `<div class="panel" style="padding:18px 22px;max-width:80ch">
+      <h3 style="font-family:var(--serif);margin:0 0 8px">SAQ QURYLYS · что это</h3>
+      <p>Аналитическая система мониторинга рисков в объявлениях о долевом строительстве. Собирает сведения о ЖК, публикациях и проверках в одну карточку, считает объяснимый риск по фиксированным правилам и формирует проверяемый сигнал. Решение всегда принимает человек.</p>
+      <div class="section-t">Архитектура</div>
+      <p style="font-size:13.5px"><span style="font-family:var(--mono)">js/data.js</span> — seed (демо-данные) · <span style="font-family:var(--mono)">js/scoring.js</span> — детерминированный движок R1–R6 (ноль зависимостей, покрыт тестами) · <span style="font-family:var(--mono)">js/ai.js</span> — адаптер извлечения гипотез (real LLM при ключе, иначе меченая эвристика) · <span style="font-family:var(--mono)">js/app.js</span> — интерфейс и workflow · состояние — localStorage.</p>
+      <div class="section-t">Ограничения (честно)</div>
+      <ul style="font-size:13.5px"><li>Все компании, БИНы, адреса и документы вымышлены; совпадения случайны.</li><li>Нет живой интеграции с госреестрами, Telegram или парсингом — только ручной ввод и ссылки.</li><li>Без ключа AI работает меченая эвристика, а не языковая модель (кнопка «Настроить AI»).</li><li>Красная зона требует одновременно R1 и R2; неизвестность никогда не даёт баллов.</li></ul>
+      <div class="section-t">Путь демонстрации (2–3 минуты)</div>
+      <ol style="font-size:13.5px"><li>Обзор: фильтры зон, карта, сортировка по баллу.</li><li>Карточка SQ-002 (сценарий B): факторы, доказательства, журнал.</li><li>Новый анализ: вставить пример → гипотеза с цитатой → подтвердить → балл пересчитан.</li><li>Сигнальная карточка: подтвердить, печать/PDF.</li><li>Сценарии A·B·C: живые расчёты сошлись.</li></ol></div>`;
+  }
+
+  // ---------- topbar actions ----------
+  $("#btn-reset").onclick = () => { if (confirm("Сбросить все подтверждения, объявления и сигналы к исходному демо?")) { localStorage.removeItem(LS_STATE); state = loadState(); nav("overview"); toast("Демо-данные сброшены"); } };
+  $("#btn-ai-config").onclick = () => {
+    const c = window.SQ_AI.getConfig();
+    openModal(`<h3>Подключение AI-модели</h3>
+      <p style="font-size:13px;color:var(--ink-2)">OpenAI-совместимый endpoint (например, https://openrouter.ai/api/v1/chat/completions). Ключ хранится только в localStorage этого браузера и никуда не коммитится. Без ключа работает меченая DEMO-эвристика.</p>
+      <label class="f">Endpoint<input type="text" id="ai-endpoint" value="${esc(c.endpoint || "https://openrouter.ai/api/v1/chat/completions")}"></label>
+      <label class="f" style="margin-top:8px">Model<input type="text" id="ai-model" value="${esc(c.model || "")}" placeholder="например, vendor/model-name"></label>
+      <label class="f" style="margin-top:8px">API key<input type="text" id="ai-key" value="${esc(c.apiKey || "")}" placeholder="оставьте пустым для demo-режима"></label>
+      <div class="row" style="margin-top:12px"><button class="btn primary" id="ai-save">Сохранить</button><button class="btn danger" id="ai-clear">Отключить AI</button><button class="btn" id="ai-cancel">Закрыть</button></div>`);
+    $("#ai-cancel").onclick = closeModal;
+    $("#ai-clear").onclick = () => { window.SQ_AI.saveConfig({}); closeModal(); render(); toast("AI отключён, demo-режим"); };
+    $("#ai-save").onclick = () => {
+      window.SQ_AI.saveConfig({ endpoint: $("#ai-endpoint").value.trim(), model: $("#ai-model").value.trim(), apiKey: $("#ai-key").value.trim() });
+      closeModal(); render(); toast(window.SQ_AI.hasRealAI() ? "Real AI подключён" : "Сохранено (ключа нет — demo-режим)");
+    };
+  };
+
+  render();
+})();

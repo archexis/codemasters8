@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAQ QURYLYS — мониторинг рисков долевого строительства · DEMO</title>
+<meta name="description" content="SAQ QURYLYS: аналитическая система мониторинга рисков в объявлениях о долевом строительстве жилья в Казахстане. Демонстрационный MVP.">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" aria-label="Навигация">
+    <div class="brand">
+      <h1>SAQ <span>QURYLYS</span></h1>
+      <p>сақ · мониторинг рисков долевого строительства</p>
+      <p style="margin-top:8px"><span class="demo-pill">DEMO · данные вымышлены</span></p>
+    </div>
+    <nav class="nav" id="nav" aria-label="Разделы">
+      <button data-view="overview" aria-current="page">Обзор <span class="cnt" id="cnt-zk"></span></button>
+      <button data-view="ads">Объявления <span class="cnt" id="cnt-ads"></span></button>
+      <button data-view="analyze">Новый анализ</button>
+      <button data-view="scenarios">Сценарии A·B·C</button>
+      <button data-view="registries">Реестры РК</button>
+      <button data-view="about">О проекте</button>
+    </nav>
+    <div class="foot">
+      <div id="ai-status">AI: —</div>
+      <div style="margin-top:6px">Не устанавливает факт правонарушения. Решение — за человеком.</div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="topbar no-print">
+      <div>
+        <h2 id="page-title">Обзор объектов</h2>
+        <div class="sub" id="page-sub">Өскемен · 8 демо-ЖК · все совпадения случайны</div>
+      </div>
+      <div class="sp"></div>
+      <button class="btn small" id="btn-ai-config">Настроить AI</button>
+      <button class="btn small" id="btn-reset">Сбросить демо</button>
+    </div>
+    <main class="page" id="page" aria-live="polite"></main>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-bg" role="dialog" aria-modal="true">
+  <div class="modal" id="modal-box"></div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="js/scoring.js"></script>
+<script src="js/data.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
