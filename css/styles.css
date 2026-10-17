@@ -436,7 +436,7 @@ h3.block { font-family: var(--display); font-size: 16px; margin: 0; padding: 14p
 }
 
 @media print {
-  .top, .toolbar, .no-print, .toast, .modal-bg, .hero { display: none !important; }
+  .top, .toolbar, .no-print, .toast, .modal-bg, .hero, .quick { display: none !important; }
   body { background: #fff; }
   .shell { display: block; }
   .page { max-width: none; padding: 0; }
