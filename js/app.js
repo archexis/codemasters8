@@ -225,8 +225,8 @@
     const real = window.SQ_AI.hasRealAI();
     const cfg = window.SQ_AI.getConfig();
     $("#ai-status").innerHTML = real
-      ? `AI: <span class="engine-badge real">подключён</span> <span style="font-family:var(--mono);font-size:11px">${esc(cfg.model || "")}</span>`
-      : `AI: <span class="engine-badge demo">учебный разбор</span>`;
+      ? `Помощник: <span class="engine-badge real">ваша модель</span> <span style="font-family:var(--mono);font-size:11px">${esc(cfg.model || "")}</span>`
+      : `Помощник: <span class="engine-badge demo">встроенный · без ключей</span>`;
   }
 
   // ---------- views ----------
@@ -243,7 +243,7 @@
       return s;
     }).join("");
     return `<div style="display:flex;gap:16px;align-items:center"><svg width="90" height="90" viewBox="0 0 90 90" role="img" aria-label="Распределение зон риска">${arcs}<text x="45" y="46" text-anchor="middle" font-size="17" font-weight="800" fill="var(--ink)">${total}</text><text x="45" y="60" text-anchor="middle" font-size="9" fill="var(--ink-2)">ЖК всего</text></svg>
-      <div style="font-size:13px;display:grid;gap:6px"><span><span style="color:var(--red)">●</span> Красная — <b>${counts.red}</b></span><span><span style="color:var(--amber)">●</span> Жёлтая — <b>${counts.yellow}</b></span><span><span style="color:var(--green)">●</span> Зелёная — <b>${counts.green}</b></span></div></div>`;
+      <div style="font-size:13px;display:grid;gap:6px"><span><span style="color:var(--red)">●</span> Красная — <b>${counts.red}</b></span><span><span style="color:var(--sun)">●</span> Жёлтая — <b>${counts.yellow}</b></span><span><span style="color:var(--green)">●</span> Зелёная — <b>${counts.green}</b></span></div></div>`;
   }
   function alertsHtml() {
     const items = [];
@@ -285,7 +285,7 @@
         <div class="rowline"><span class="n" style="color:#8fe6bd">${counts.green}</span><span class="sub">зелёная зона · мониторинг</span></div>
         <div class="rowline"><span class="who">${esc(top[0].name)}</span></div>
         <div class="sub" style="margin:-4px 0 10px">топ-приоритет · ${snapTop.score}/100 · ${zoneLabel(snapTop.zone)} зона</div>
-        <button class="btn btn-sun small" data-go="overview">Открыть приоритет</button>
+        <button class="btn btn-sun small" data-top="${top[0].id}">Открыть приоритет</button>
       </aside>` : "";
     const rules = ["R1", "R2", "R3", "R4", "R5", "R6"].map((c) => `<tr><td><b style="font-family:var(--mono)">${c}</b></td><td class="pts">+${FACTOR_META[c].points}</td><td>${esc(FACTOR_META[c].title)}<br><span style="color:var(--ink-2);font-size:12px">${esc(FACTOR_META[c].hint)}</span></td></tr>`).join("");
     page.innerHTML = `
@@ -388,6 +388,7 @@
       <div class="panel footer"><b>SAQ QURYLYS · не юридический документ.</b> Скоринг детерминирован: максимум 100, только подтверждённые факторы, неизвестность — 0 и «требует проверки». Исходное ТЗ имеет приоритет над дизайном: визуальные изменения не ослабляют обязательные правила.</div>`;
 
     page.querySelectorAll("[data-go]").forEach((b) => b.onclick = () => nav(b.dataset.go));
+    page.querySelectorAll("[data-top]").forEach((b) => b.onclick = () => nav("detail", { zkId: b.dataset.top }));
     const qGo = $("#q-go");
     if (qGo) {
       const runQ = () => {
@@ -870,7 +871,10 @@
         $("#an-text").value = row.text;
         if (row.platform) $("#an-platform").value = row.platform;
         if (row.account) $("#an-account").value = row.account;
-        if (row.date) $("#an-date").value = row.date;
+        if (row.date) {
+          const dm = String(row.date).match(/(\d{1,2})[.](\d{1,2})[.](\d{4})/);
+          $("#an-date").value = dm ? `${dm[3]}-${dm[2].padStart(2, "0")}-${dm[1].padStart(2, "0")}` : row.date;
+        }
         if (row.url) $("#an-url").value = row.url;
         autoplat();
         toast("Строка подставлена — жмите «Запустить анализ»");
@@ -924,6 +928,8 @@
         </div>`;
       const saveAd = (idx) => askReviewer("Сохранить объявление и решение", (r, c) => {
         const id = "AD-U" + String(state.userAds.length + 1).padStart(2, "0");
+        const dupKey = window.SQ_Parser.dedupeKey({ text });
+        const isDup = allAds().some((a) => window.SQ_Parser.dedupeKey(a) === dupKey);
         state.userAds.unshift({
           id, zkId, platform: $("#an-platform").value, account: $("#an-account").value,
           date: $("#an-date").value || "2026-10-15", url: $("#an-url").value, text,
@@ -933,7 +939,7 @@
         if (hyp) setFactor(zkId, hyp.candidate_factor, "confirmed", r + (c ? " · " + c : ""), { adId: id, quote: hyp.exact_quote, source: "Новое объявление " + id });
         persist();
         const rel = window.SQ_Parser.relatedAds(state.userAds[0], allAds());
-        toast(`Объявление ${id} сохранено${hyp ? ", " + hyp.candidate_factor + " подтверждён" : ""}${rel.length ? " · связано: " + rel.slice(0, 2).map((x) => x.id + " (" + x.via + ")").join(", ") : ""}`);
+        toast(`Объявление ${id} сохранено${hyp ? ", " + hyp.candidate_factor + " подтверждён" : ""}${isDup ? " · похоже на дубль, проверьте ленту" : ""}${rel.length ? " · связано: " + rel.slice(0, 2).map((x) => x.id + " (" + x.via + ")").join(", ") : ""}`);
         nav("detail", { zkId });
       });
       page.querySelectorAll("[data-hok]").forEach((b) => b.onclick = () => saveAd(+b.dataset.hok));
