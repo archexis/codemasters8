@@ -901,8 +901,8 @@
           <div style="font-size:13px">${esc(h.explanation)}</div>
           <div style="font-size:12px;color:var(--ink-2)">уверенность: ${esc(confLabel(h.confidence))} · требует решения человека</div>
           <div class="row" style="margin-top:8px">
-            <button class="btn small primary" data-hok="${i}">Подтвердить как ${esc(h.candidate_factor)}</button>
-            <button class="btn small danger" data-hno="${i}">Отклонить</button>
+            <button class="btn small primary" data-hok="${i}">Да, верно — подтверждаю</button>
+            <button class="btn small danger" data-hno="${i}">Нет, отклонить</button>
           </div></div>`).join("")
         : `<div class="empty">Прямых предложений внести деньги не найдено.<br>Объявление можно сохранить как обычное (кандидат R3 — на усмотрение аналитика).</div>`;
       $("#an-result").innerHTML = `<h3 class="block" style="padding:0 0 8px">Шаг 2 · Что нашёл помощник</h3>
