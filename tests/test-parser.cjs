@@ -53,7 +53,7 @@ for (const e of r.entities) {
   ok(Array.isArray(e.span) && e.span[1] > e.span[0], "span present: " + e.type);
   ok(spanInput.slice(e.span[0], e.span[1]).length > 0, "span points into text: " + e.type);
 }
-ok(r.engine === "local-parser-v2", "engine version tag");
+ok(r.engine === "local-parser-v3", "engine version tag");
 
 r = parseAdText("Бронь — 500 000 тенге, квартиры от 15 млн тенге.");
 const m1 = r.entities.find((e) => e.type === "money" && /500 000/.test(e.value));

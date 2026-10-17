@@ -13,7 +13,7 @@
 
   function loadState() {
     const seed = window.SQ_SEED;
-    let s = { complexes: deepClone(seed.COMPLEXES), userAds: [], signals: {}, route: { view: "home" } };
+    let s = { complexes: deepClone(seed.COMPLEXES), userAds: [], signals: {}, media: {}, route: { view: "home" } };
     try {
       const raw = JSON.parse(localStorage.getItem(LS_STATE) || "null");
       if (raw) {
@@ -21,7 +21,12 @@
         if (raw.factors) for (const zk of s.complexes) {
           if (raw.factors[zk.id]) zk.factors = raw.factors[zk.id];
         }
+        if (raw.zkExtra) for (const zk of s.complexes) {
+          const x = raw.zkExtra[zk.id];
+          if (x) for (const k of ["readinessConfirmed", "readinessSources", "events", "sources"]) if (x[k] !== undefined) zk[k] = x[k];
+        }
         if (Array.isArray(raw.userAds)) s.userAds = raw.userAds;
+        if (raw.media) s.media = raw.media;
         if (raw.signals) s.signals = raw.signals;
       }
     } catch { /* malformed storage -> fresh seed */ }
@@ -30,11 +35,18 @@
   function persist() {
     try {
       const factors = {};
-      for (const zk of state.complexes) factors[zk.id] = zk.factors;
-      localStorage.setItem(LS_STATE, JSON.stringify({ factors, userAds: state.userAds, signals: state.signals }));
+      const zkExtra = {};
+      for (const zk of state.complexes) {
+        factors[zk.id] = zk.factors;
+        zkExtra[zk.id] = { readinessConfirmed: zk.readinessConfirmed, readinessSources: zk.readinessSources, events: zk.events, sources: zk.sources };
+      }
+      localStorage.setItem(LS_STATE, JSON.stringify({ factors, zkExtra, userAds: state.userAds, signals: state.signals, media: state.media }));
     } catch { toast("Хранилище переполнено: решение показано, но не сохранено"); }
   }
   let state = loadState();
+  // Кадры площадки: сами файлы живут только в сеансе (objectURL), между
+  // перезапусками сохраняются дата, подпись и оценка готовности. Честно.
+  const mediaBlobs = {};
 
   const allAds = () => [...state.userAds, ...window.SQ_SEED.ADS];
   const getZk = (id) => state.complexes.find((z) => z.id === id);
@@ -134,7 +146,7 @@
     overview: ["Объекты", "Өскемен · учебные сценарии и записи реестра разрешений"],
     detail: ["Карточка ЖК", "история · источники · факторы риска"],
     ads: ["Мониторинг рекламы", "все публикации · подозрительные формулировки подсвечены"],
-    analyze: ["Проверка", "парсер → гипотезы → решение человека"],
+    analyze: ["Проверка", "вставьте текст — помощник подскажет, решать вам"],
     signal: ["Сигнальная карточка", "факторы · доказательства · статус проверки"],
     registries: ["Открытые реестры РК", "внешние источники · живой интеграции в демо нет"],
   };
@@ -292,6 +304,11 @@
         ${snapHtml}
         </div>
       </div>
+      <div class="panel quick" aria-label="Быстрая проверка фразы">
+        <div><b>Попробуйте прямо сейчас</b><span>Вставьте фразу из объявления — помощник скажет, есть ли просьба денег, за секунду и без ключей.</span></div>
+        <div class="quick-row"><input type="text" id="q-text" maxlength="500" placeholder="например: бронь квартиры — 500 000 тенге в зачёт стоимости" aria-label="Фраза для быстрой проверки"><button class="btn btn-sun" id="q-go">Проверить</button></div>
+        <div id="q-out" aria-live="polite"></div>
+      </div>
       <div class="anchors" aria-label="Разделы страницы">
         <a href="#l-problem">Проблема</a><a href="#l-how">Как работает</a><a href="#l-rules">Правила R1–R6</a><a href="#l-zones">Зоны</a><a href="#l-cases">Кейсы A·B·C</a><a href="#l-regs">Реестры</a><a href="#l-faq">Вопросы</a>
       </div>
@@ -363,14 +380,35 @@
       <div class="panel faq" style="padding:8px 18px 14px">
         <details open><summary>Это юридическое заключение?</summary><p>Нет. SAQ QURYLYS подсвечивает признаки и помогает принять решение, но не устанавливает факт правонарушения и ничего никуда не отправляет автоматически.</p></details>
         <details><summary>Почему платная бронь — это «жёлтый», а не сразу «красный»?</summary><p>Красная зона требует одновременно подтверждённых R1 (основания нет — установлено проверкой) и R2 (деньги просят). Один платёж без проверки основания — жёлтая зона и повод проверить реестры.</p></details>
-        <details><summary>Что делает AI, а что — человек?</summary><p>AI и локальный парсер извлекают только дословные фрагменты и честно показывают режим (подключён / учебный). Фактором риска находка становится после подтверждения аналитиком с источником и датой.</p></details>
+        <details><summary>Что делает AI, а что — человек?</summary><p>Встроенный помощник и локальный парсер извлекают только дословные фрагменты — ничего настраивать не нужно. Фактором риска находка становится после подтверждения аналитиком с источником и датой.</p></details>
         <details><summary>Откуда данные?</summary><p>Учебные сценарии и объявления к ним вымышлены — у них чип «сценарий» или «учебный пример». Отдельно показаны записи разрешений из открытого набора Ashyq Data (снимок 15.10.2026) с чипом «реестр» — у них нет объявлений и оценок, только номер разрешения и источник.</p></details>
-        <details><summary>Можно подключить настоящую модель?</summary><p>Да: пункт «Подключить AI…» в меню «Сеанс» принимает OpenAI-совместимый адрес и ключ. Ключ хранится только в этом браузере и никогда не коммитится. Без ключа работает встроенный учебный разбор.</p></details>
+        <details><summary>Нужен ли ключ или настройка для AI?</summary><p>Нет. Встроенный помощник работает сразу: вставьте текст в «Проверке» и нажмите «Запустить анализ». Свой ключ от внешней модели — только по желанию, в блоке «Хочу свою модель — необязательно» под результатом. Ключ хранится только в этом браузере и никогда не коммитится.</p></details>
       </div>
 
       <div class="panel footer"><b>SAQ QURYLYS · не юридический документ.</b> Скоринг детерминирован: максимум 100, только подтверждённые факторы, неизвестность — 0 и «требует проверки». Исходное ТЗ имеет приоритет над дизайном: визуальные изменения не ослабляют обязательные правила.</div>`;
 
     page.querySelectorAll("[data-go]").forEach((b) => b.onclick = () => nav(b.dataset.go));
+    const qGo = $("#q-go");
+    if (qGo) {
+      const runQ = () => {
+        const t = $("#q-text").value.trim();
+        if (!t) { $("#q-out").innerHTML = ""; return; }
+        let verdict;
+        try {
+          const pr = window.SQ_Parser.parseAdText(t);
+          verdict = pr.payment.flagged
+            ? `<span class="qverdict warn">Похоже на просьбу денег: «${esc(pr.payment.quotes[0])}» — стоит проверить полностью.</span> <button class="btn small" id="q-full">Открыть полную проверку</button>`
+            : (pr.channel.flagged
+              ? `<span class="qverdict info">Денег не просят, но уводят в мессенджер: «${esc(pr.channel.quotes[0])}» — повод присмотреться.</span>`
+              : `<span class="qverdict ok">Прямой просьбы денег не видно. Полную проверку это не заменяет.</span>`);
+        } catch { verdict = `<span class="qverdict info">Не разобралось — попробуйте другую фразу.</span>`; }
+        $("#q-out").innerHTML = verdict;
+        const qf = $("#q-full");
+        if (qf) qf.onclick = () => { nav("analyze"); setTimeout(() => { const ta = $("#an-text"); if (ta) { ta.value = t; ta.focus(); } }, 60); };
+      };
+      qGo.onclick = runQ;
+      $("#q-text").addEventListener("keydown", (e) => { if (e.key === "Enter") runQ(); });
+    }
     page.querySelectorAll("[data-zk]").forEach((el) => {
       el.onclick = () => nav("detail", { zkId: el.dataset.zk });
       el.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") nav("detail", { zkId: el.dataset.zk }); };
@@ -446,7 +484,7 @@
       </div>
       <div class="mapwrap">
         <div><div id="map" role="img" aria-label="Карта объектов"></div></div>
-        <div class="panel mapnote"><b>Карта — только объекты с координатами.</b><br><span style="font-size:12px">Метки: <span style="color:var(--red)">●</span> красная · <span style="color:var(--amber)">●</span> жёлтая · <span style="color:var(--green)">●</span> зелёная зона.</span><br><br><span id="map-note-text"></span></div>
+        <div class="panel mapnote"><b>Карта — только объекты с координатами.</b><br><span style="font-size:12px">Метки: <span style="color:var(--red)">●</span> красная · <span style="color:var(--amber)">●</span> жёлтая · <span style="color:var(--green)">●</span> зелёная зона.<br>Справа вверху — переключатель «Карта / Спутник» (открытые снимки Esri, без ключа). Дату съёмки спутник не сообщает — для выводов о готовности используйте кадры с датой из раздела «Площадка» в карточке ЖК.</span><br><br><span id="map-note-text"></span></div>
       </div>
       <div class="toolbar">
         <input type="text" id="ov-q" class="search" placeholder="Поиск: название, адрес, застройщик…" value="${esc(overviewFilter.q)}" aria-label="Поиск ЖК">
@@ -470,7 +508,13 @@
         }).join("") : `<div class="empty">Ничего не найдено. Измените запрос или фильтр.</div>`}
       </div>`;
 
-    $("#ov-q").addEventListener("input", (e) => { overviewFilter.q = e.target.value; const v = e.target.value; const pos = e.target.selectionStart; render(); const el = $("#ov-q"); el.focus(); el.setSelectionRange(pos, pos); });
+    let ovTimer = null;
+    $("#ov-q").addEventListener("input", (e) => {
+      overviewFilter.q = e.target.value;
+      const v = e.target.value, pos = e.target.selectionStart;
+      clearTimeout(ovTimer);
+      ovTimer = setTimeout(() => { render(); const el = $("#ov-q"); if (el) { el.focus(); try { el.setSelectionRange(pos, pos); } catch {} } }, 220);
+    });
     page.querySelectorAll(".seg button").forEach((b) => b.onclick = () => { overviewFilter.zone = b.dataset.z; render(); });
     page.querySelectorAll(".zkrow").forEach((el) => {
       el.onclick = () => nav("detail", { zkId: el.dataset.zk });
@@ -503,7 +547,10 @@
     if (mapInstance) { mapInstance.remove(); mapInstance = null; } // повторный рендер (поиск/фильтр) — без «already initialized»
     const map = L.map("map").setView([49.984, 82.614], 12);
     mapInstance = map;
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(map);
+    const osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" });
+    const sat = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, attribution: "Esri World Imagery" });
+    osm.addTo(map);
+    L.control.layers({ "Карта": osm, "Спутник": sat }, null, { position: "topright" }).addTo(map);
     const bounds = [];
     const layer = (L.markerClusterGroup ? L.markerClusterGroup({ showCoverageOnHover: false, maxClusterRadius: 48 }) : L.layerGroup()).addTo(map);
     for (const zk of withCoords) {
@@ -525,6 +572,7 @@
     const s = scoreOf(zk);
     const ads = adsOf(zkId);
     const sig = getSignal(zkId);
+    const media = (state.media && state.media[zkId]) || [];
     const color = s.zone === "red" ? "var(--red)" : s.zone === "yellow" ? "var(--amber)" : "var(--green)";
     const codes = ["R1", "R2", "R3", "R4", "R5", "R6"];
     const byCode = Object.fromEntries(zk.factors.map((f) => [f.code, f]));
@@ -590,6 +638,26 @@
           : `<div class="empty">Объявлений пока нет. Добавьте первое через «Новый анализ».</div>`}
       </div>
 
+      <div class="section-t">Площадка: фото и видео <small>кадры с дрона, осмотр, спутник — с датой</small></div>
+      <div class="panel" style="padding:14px 18px">
+        <p class="pane-hint">Загрузите кадры с дрона или фото осмотра: укажите дату съёмки и что видно. По дате кадра можно зафиксировать подтверждённую готовность — при разрыве с заявленной от 20 п.п. система предложит гипотезу R5, решение — за вами. Сами файлы видны только в этом сеансе, дата и подпись сохраняются.</p>
+        <div class="gallery" id="d-gallery">${media.length ? media.map((m, i) => {
+          const blob = (mediaBlobs[zkId] || [])[i];
+          const inner = blob ? (m.kind.indexOf("video") === 0 ? `<video src="${blob}" controls preload="metadata"></video>` : `<img src="${blob}" alt="${esc(m.note || "Кадр площадки")}" loading="lazy">`) : `<div class="file-lost">Файл сеанса закрыт — остались дата и подпись</div>`;
+          return `<figure>${inner}<figcaption><b>${esc(m.date || "—")}</b> · ${esc(m.note || "без подписи")}${m.ready != null && m.ready !== "" ? ` · вижу ${esc(String(m.ready))}%` : ""}</figcaption></figure>`;
+        }).join("") : `<div class="empty">Кадров пока нет. Первый кадр — ниже.</div>`}</div>
+        <div class="media-form">
+          <label class="f">Файл (фото/видео)<input type="file" id="d-file" accept="image/*,video/*"></label>
+          <label class="f">Дата съёмки<input type="date" id="d-date" value="2026-10-15"></label>
+          <label class="f">Что видно<input type="text" id="d-note" maxlength="140" placeholder="например, 7 этажей из 12, крана нет"></label>
+          <label class="f">Видимая готовность, %<input type="number" id="d-ready" min="0" max="100" placeholder="—"></label>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn small primary" id="d-add-frame">Добавить кадр</button>
+          <button class="btn small" id="d-fix-ready">Зафиксировать подтверждённую готовность</button>
+        </div>
+      </div>
+
       <div class="grid2">
         <div><div class="section-t">События</div><div class="panel timeline">
           ${(zk.events || []).map((e) => `<div><time>${esc(e.date)}</time><span>${esc(e.text)}</span></div>`).join("") || `<div class="empty">Нет событий.</div>`}
@@ -614,21 +682,55 @@
       setFactor(zkId, b.dataset.unconfirm, "needs-verification", r + (c ? " · " + c : "")); toast(`${b.dataset.unconfirm} возвращён на проверку`); render();
     }));
     page.querySelectorAll("[data-ad]").forEach((a) => a.onclick = (e) => { e.preventDefault(); nav("ads"); });
+    $("#d-add-frame").onclick = () => {
+      const f = $("#d-file").files && $("#d-file").files[0];
+      if (!f) { toast("Выберите файл кадра"); return; }
+      const item = { date: $("#d-date").value || new Date().toISOString().slice(0, 10), note: $("#d-note").value.trim(), ready: $("#d-ready").value === "" ? null : Math.max(0, Math.min(100, +$("#d-ready").value)), kind: f.type || "image/*", name: f.name };
+      if (!state.media[zkId]) state.media[zkId] = [];
+      state.media[zkId].push(item);
+      if (!mediaBlobs[zkId]) mediaBlobs[zkId] = [];
+      mediaBlobs[zkId].push(URL.createObjectURL(f));
+      persist(); toast("Кадр добавлен"); render();
+    };
+    $("#d-fix-ready").onclick = () => askReviewer("Зафиксировать подтверждённую готовность", (r, c) => {
+      const v = $("#d-ready").value === "" ? null : Math.max(0, Math.min(100, +$("#d-ready").value));
+      if (v == null) { toast("Укажите видимую готовность в %"); return; }
+      const date = $("#d-date").value || new Date().toISOString().slice(0, 10);
+      const note = $("#d-note").value.trim() || "кадр площадки";
+      zk.readinessConfirmed = v;
+      zk.readinessSources = [...(zk.readinessSources || []), { value: v, source: "Кадр площадки: " + note, date }];
+      zk.events = [...(zk.events || []), { date, text: "Зафиксирована подтверждённая готовность " + v + "% по кадру (" + note + ")." }];
+      const claimed = zk.readinessClaimed;
+      if (claimed != null && Math.abs(claimed - v) >= 20) {
+        setFactor(zkId, "R5", "hypothesis", r + (c ? " · " + c : ""), { quote: "Заявлено " + claimed + "%, по кадру " + v + "% (" + date + ")", source: "Кадр площадки от " + date });
+        toast("Разрыв ≥20 п.п. — создана гипотеза R5, подтвердите её во вкладке факторов");
+      } else toast("Готовность " + v + "% зафиксирована");
+      persist(); render();
+    });
   }
 
+  let adsPlatform = "all";
   function vAds() {
     const ads = allAds();
+    const plats = [...new Set(ads.map((a) => window.SQ_Parser.detectPlatform({ url: a.url, platform: a.platform, text: "" }).label))].sort();
+    const shown = ads.filter((a) => adsPlatform === "all" || window.SQ_Parser.detectPlatform({ url: a.url, platform: a.platform, text: "" }).label === adsPlatform);
     page.innerHTML = `
       <div class="toolbar"><span style="font-size:13px;color:var(--ink-2)">Всего публикаций: <b>${ads.length}</b> · жёлтая подсветка — потенциально платёжные формулировки (подсказка, не вердикт)</span>
       <span style="flex:1"></span><button class="btn primary small" id="ads-new">+ Новое объявление</button></div>
-      <div class="panel">${ads.map((a) => {
+      <div class="seg" role="group" aria-label="Фильтр по площадке" style="margin-bottom:10px">
+        <button data-p="all" aria-pressed="${adsPlatform === "all"}">Все площадки</button>${plats.map((p) => `<button data-p="${esc(p)}" aria-pressed="${adsPlatform === p}">${esc(p)}</button>`).join("")}
+      </div>
+      <div class="panel">${shown.map((a) => {
         const zk = getZk(a.zkId);
+        const rel = window.SQ_Parser.relatedAds(a, ads).slice(0, 3);
         return `<div class="factor"><div class="fh"><b>${esc(a.id)}</b> <span class="chip">${esc(a.platform)}</span> <span class="chip">${esc(a.account)}</span> <span class="chip">${esc(a.date)}</span>
           → <a href="#" data-zk="${esc(a.zkId)}">${esc(zk ? zk.name : a.zkId)}</a></div>
           <div class="adtext" style="margin-top:6px">${highlight(a.text)}</div>
+          ${rel.length ? `<div style="font-size:12px;color:var(--ink-2);margin-top:4px">Связано: ${rel.map((x) => `<b>${esc(x.id)}</b> (${esc(x.via)})`).join(" · ")}</div>` : ""}
           <div class="src-link"><a href="${esc(a.url)}" target="_blank" rel="noopener">Источник</a> · снято ${esc(a.captureAt)}</div></div>`;
-      }).join("")}</div>`;
+      }).join("") || `<div class="empty">На этой площадке публикаций нет.</div>`}</div>`;
     $("#ads-new").onclick = () => nav("analyze");
+    page.querySelectorAll(".seg button").forEach((b) => b.onclick = () => { adsPlatform = b.dataset.p; render(); });
     page.querySelectorAll("[data-zk]").forEach((x) => x.onclick = (e) => { e.preventDefault(); nav("detail", { zkId: x.dataset.zk }); });
   }
 
@@ -637,32 +739,57 @@
     page.innerHTML = `
       <div class="grid2">
         <div class="panel" style="padding:16px 18px">
-          <h3 class="block" style="padding:0 0 8px">1 · Ввод объявления</h3>
-          <div style="display:grid;gap:10px">
-            <label class="f">Связанный ЖК<select id="an-zk">${opts}</select></label>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-              <label class="f">Площадка<input type="text" id="an-platform" value="Krisha" maxlength="80"></label>
-              <label class="f">Аккаунт<input type="text" id="an-account" value="@analyst_inbox" maxlength="80"></label>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-              <label class="f">Дата публикации<input type="date" id="an-date" value="2026-10-15"></label>
-              <label class="f">URL<input type="url" id="an-url" value="https://example.invalid/new" maxlength="300"></label>
-            </div>
-            <label class="f">Текст объявления<textarea id="an-text" rows="8" maxlength="4000" placeholder="Вставьте текст объявления…"></textarea></label>
-            <div class="row">
-              <button class="btn primary" id="an-run">Запустить анализ</button>
-              <button class="btn" id="an-fill">Вставить пример</button>
-            </div>
+          <h3 class="block" style="padding:0 0 8px">Шаг 1 · Откуда объявление</h3>
+          <div class="steps-mini" aria-label="Шаги проверки"><span class="on">1 · Источник</span><span>2 · Проверка</span><span>3 · Решение</span></div>
+          <div class="src-tabs" role="tablist" aria-label="Способ ввода">
+            <button class="on" data-src="text" role="tab" aria-selected="true">Вставить текст</button>
+            <button data-src="web" role="tab" aria-selected="false">Из сети и соцсетей</button>
+            <button data-src="shot" role="tab" aria-selected="false">Скриншот</button>
+          </div>
+          <div data-pane="text">
+            <p class="pane-hint">Скопируйте текст объявления куда угодно и вставьте в поле ниже. Дальше помощник сам найдёт деньги, сроки и контакты.</p>
             <div class="preset-grid">
               <button class="preset" data-preset="SQ-001"><b>Кейс A · платная бронь</b><span>основание не проверено → ?</span></button>
               <button class="preset" data-preset="SQ-002"><b>Кейс B · депозит</b><span>основания нет → ?</span></button>
               <button class="preset" data-preset="SQ-003"><b>Кейс C · гарантия</b><span>чистое объявление → ?</span></button>
             </div>
-            <div style="font-size:12px;color:var(--ink-2);margin-top:6px">Пресеты подставляют пример текста и объект. Живые расчёты A·B·C — ниже.</div>
+          </div>
+          <div data-pane="web" hidden>
+            <p class="pane-hint">Прямой забор страниц из браузера невозможен: площадки не отдают тексты посторонним сайтам, а мессенджеры закрыты авторизацией. Поэтому так: откройте объявление, скопируйте текст, вставьте ниже. Ссылка и время снятия сохранятся как доказательство.</p>
+            <div class="chip-pick" id="an-pick" aria-label="Быстрый выбор площадки"></div>
+            <div style="display:grid;gap:10px;margin-top:10px">
+              <label class="f">Несколько объявлений сразу (CSV из Excel)<textarea id="an-csv" rows="3" maxlength="20000" placeholder="текст;площадка;аккаунт;дата;ссылка"></textarea></label>
+              <div class="row"><button class="btn small" id="an-csv-go">Разобрать список</button><button class="btn small" id="an-src-open">Открыть источник</button></div>
+              <div id="an-csv-prev"></div>
+            </div>
+          </div>
+          <div data-pane="shot" hidden>
+            <p class="pane-hint">Приложите снимок экрана — он сохранится рядом с проверкой как иллюстрация. Автораспознавания текста в демо нет: перепечатайте или вставьте текст в поле ниже.</p>
+            <label class="f">Файл снимка<input type="file" id="an-shot" accept="image/*"></label>
+            <div id="an-shot-prev"></div>
+          </div>
+          <div style="display:grid;gap:10px;margin-top:10px">
+            <label class="f">Связанный ЖК<select id="an-zk">${opts}</select></label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <label class="f">Площадка<input type="text" id="an-platform" list="an-platforms" value="Krisha" maxlength="80"></label>
+              <label class="f">Аккаунт<input type="text" id="an-account" value="@analyst_inbox" maxlength="80"></label>
+            </div>
+            <datalist id="an-platforms"><option value="Krisha.kz"></option><option value="OLX"></option><option value="Instagram"></option><option value="TikTok"></option><option value="Telegram"></option><option value="WhatsApp"></option><option value="Сайт застройщика"></option></datalist>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <label class="f">Дата публикации<input type="date" id="an-date" value="2026-10-15"></label>
+              <label class="f">Ссылка<input type="url" id="an-url" value="https://example.invalid/new" maxlength="300"></label>
+            </div>
+            <div id="an-autoplat" style="font-size:12.5px;color:var(--ink-2)"></div>
+            <label class="f">Текст объявления<textarea id="an-text" rows="8" maxlength="4000" placeholder="Вставьте текст объявления…"></textarea></label>
+            <div class="row">
+              <button class="btn primary" id="an-run">Запустить анализ</button>
+              <button class="btn" id="an-fill">Вставить пример</button>
+            </div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:6px">Пресеты — во вкладке «Вставить текст». Живые расчёты A·B·C — ниже.</div>
           </div>
         </div>
         <div class="panel" style="padding:16px 18px" id="an-result">
-          <h3 class="block" style="padding:0 0 8px">2 · Гипотезы и решение</h3>
+          <h3 class="block" style="padding:0 0 8px">Шаг 2 · Что нашёл помощник</h3>
           <div class="empty">Здесь появятся разбор парсера и гипотезы с точными цитатами.<br><br>Как получить результат:<br>1 — вставьте текст слева и нажмите «Запустить анализ»;<br>2 — прочитайте гипотезы с цитатами;<br>3 — подтвердите или отклоните каждую.<br><br>Ничего не влияет на балл, пока человек не подтвердит.</div>
         </div>
       </div>
@@ -688,6 +815,67 @@
     }).join("");
     page.querySelectorAll("[data-copen]").forEach((b) => b.onclick = () => nav("detail", { zkId: b.dataset.copen }));
     $("#check-regs").innerHTML = (window.SQ_SEED.REGISTRIES || []).map((r) => `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a>`).join("");
+    // Вкладки источника
+    page.querySelectorAll(".src-tabs button").forEach((b) => b.onclick = () => {
+      page.querySelectorAll(".src-tabs button").forEach((x) => { x.classList.toggle("on", x === b); x.setAttribute("aria-selected", x === b ? "true" : "false"); });
+      page.querySelectorAll("[data-pane]").forEach((p) => { p.hidden = p.dataset.pane !== b.dataset.src; });
+    });
+    // Быстрый выбор площадки
+    const PLAT_PICK = ["Krisha.kz", "OLX", "Instagram", "TikTok", "Telegram", "WhatsApp", "Сайт застройщика"];
+    $("#an-pick").innerHTML = PLAT_PICK.map((p) => `<button class="pick" data-p="${esc(p)}">${esc(p)}</button>`).join("");
+    page.querySelectorAll("#an-pick .pick").forEach((b) => b.onclick = () => { $("#an-platform").value = b.dataset.p; toast("Площадка: " + b.dataset.p); });
+    // Автоопределение площадки по ссылке
+    const autoplat = () => {
+      try {
+        const d = window.SQ_Parser.detectPlatform({ url: $("#an-url").value, platform: $("#an-platform").value, text: "" });
+        if (d.via === "url") {
+          $("#an-platform").value = d.label;
+          $("#an-autoplat").textContent = "По ссылке похоже на: " + d.label + ". Проверьте и поправьте при нужде.";
+        } else $("#an-autoplat").textContent = "";
+      } catch {}
+    };
+    $("#an-url").addEventListener("change", autoplat);
+    $("#an-src-open").onclick = () => {
+      const u = $("#an-url").value.trim();
+      if (!u || u.indexOf("example.invalid") >= 0) { toast("Сначала вставьте настоящую ссылку"); return; }
+      window.open(u, "_blank", "noopener");
+    };
+    // Скриншот: превью в сеансе
+    $("#an-shot").addEventListener("change", (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      const url = URL.createObjectURL(f);
+      $("#an-shot-prev").innerHTML = `<img src="${url}" alt="Снимок объявления" style="max-width:100%;border-radius:10px;border:1px solid var(--line);margin-top:8px">`;
+    });
+    // CSV-импорт: предпросмотр, каждая строка — в проверку по клику
+    $("#an-csv-go").onclick = () => {
+      const box = $("#an-csv-prev");
+      let parsed;
+      try { parsed = window.SQ_Parser.parseCsvAds($("#an-csv").value); }
+      catch (err) { box.innerHTML = `<div class="empty">Не разобралось: ${esc(err.message)}</div>`; return; }
+      const keys = new Set(allAds().map((a) => window.SQ_Parser.dedupeKey(a)));
+      box.innerHTML = (parsed.errors.length ? `<div class="empty">${parsed.errors.map(esc).join("<br>")}</div>` : "")
+        + parsed.rows.slice(0, 20).map((row, i) => {
+          let flag = "";
+          try {
+            const pr = window.SQ_Parser.parseAdText(row.text);
+            flag = pr.payment.flagged ? " · <b>есть просьба денег</b>" : (pr.channel.flagged ? " · увод в мессенджер" : " · чисто");
+          } catch {}
+          const dup = keys.has(window.SQ_Parser.dedupeKey(row));
+          return `<div class="csvrow"><span>${esc(row.text.slice(0, 90))}…${flag}${dup ? " · <b>похоже на дубль</b>" : ""}</span><button class="btn small" data-csv="${i}">В проверку</button></div>`;
+        }).join("")
+        + (parsed.rows.length > 20 ? `<div class="empty">Показаны первые 20 из ${parsed.rows.length}.</div>` : "");
+      box.querySelectorAll("[data-csv]").forEach((b) => b.onclick = () => {
+        const row = parsed.rows[+b.dataset.csv];
+        $("#an-text").value = row.text;
+        if (row.platform) $("#an-platform").value = row.platform;
+        if (row.account) $("#an-account").value = row.account;
+        if (row.date) $("#an-date").value = row.date;
+        if (row.url) $("#an-url").value = row.url;
+        autoplat();
+        toast("Строка подставлена — жмите «Запустить анализ»");
+      });
+    };
     $("#an-run").onclick = async () => {
       const runBtn = $("#an-run");
       if (runBtn.disabled) return;
@@ -697,7 +885,7 @@
       if (!text.trim()) { toast("Вставьте текст объявления"); return; }
       runBtn.disabled = true;
       try {
-      $("#an-result").innerHTML = `<h3 class="block" style="padding:0 0 8px">2 · Гипотезы и решение</h3>
+      $("#an-result").innerHTML = `<h3 class="block" style="padding:0 0 8px">Шаг 2 · Что нашёл помощник</h3>
         <div><span class="engine-badge parser">Разбор текста…</span></div>
         <div class="loading-line"></div><div class="loading-line" style="width:72%"></div><div class="loading-line" style="width:48%"></div>`;
       let parsed = null;
@@ -706,7 +894,7 @@
       let res;
       try { res = await window.SQ_AI.analyzeAdText(text, zk.name); }
       catch (err) { $("#an-result").innerHTML += `<div class="empty">Ошибка: ${esc(err.message)}</div>`; return; }
-      const badge = res.realAI ? `<span class="engine-badge real">AI подключён · ${esc(res.engine)}</span>` : `<span class="engine-badge demo">Учебный разбор · ${esc(res.engine)}</span>`;
+      const badge = res.realAI ? `<span class="engine-badge real">Смотрит ваша модель · ${esc(res.engine)}</span>` : `<span class="engine-badge demo">Смотрит встроенный помощник — работает сразу, без ключей</span>`;
       const hyps = res.hypotheses.length ? res.hypotheses.map((h, i) => `
         <div class="hyp"><b>Гипотеза ${i + 1} → кандидат ${esc(h.candidate_factor || "—")}</b> ${statusChip("hypothesis")}
           <span class="q">«${esc(h.exact_quote)}»</span>
@@ -717,12 +905,19 @@
             <button class="btn small danger" data-hno="${i}">Отклонить</button>
           </div></div>`).join("")
         : `<div class="empty">Прямых предложений внести деньги не найдено.<br>Объявление можно сохранить как обычное (кандидат R3 — на усмотрение аналитика).</div>`;
-      $("#an-result").innerHTML = `<h3 class="block" style="padding:0 0 8px">2 · Гипотезы и решение</h3>
+      $("#an-result").innerHTML = `<h3 class="block" style="padding:0 0 8px">Шаг 2 · Что нашёл помощник</h3>
         <div style="margin-bottom:8px">${badge}</div>
         ${parserEntitiesHtml(parsed)}
         <div class="section-t">Гипотезы <small>только после решения человека влияют на балл</small></div>${hyps}
         <div class="section-t">Ограничения</div>
         <ul style="font-size:12.5px;color:var(--ink-2)">${res.limitations.map((l) => `<li>${esc(l)}</li>`).join("")}</ul>
+        <details class="byok"><summary>Хочу свою модель — необязательно</summary>
+          <p>По умолчанию всё уже работает. Свой ключ нужен, только если хотите, чтобы текст смотрела внешняя языковая модель вместо встроенного помощника. Ключ живёт только в этом браузере.</p>
+          <label class="f">Адрес сервиса<input type="text" id="an-ai-endpoint" value="${esc((window.SQ_AI.getConfig().endpoint) || "https://openrouter.ai/api/v1/chat/completions")}"></label>
+          <label class="f" style="margin-top:8px">Модель<input type="text" id="an-ai-model" value="${esc(window.SQ_AI.getConfig().model || "")}" placeholder="например, vendor/model-name"></label>
+          <label class="f" style="margin-top:8px">Ключ<input type="password" id="an-ai-key" placeholder="вставьте ключ" autocomplete="off"></label>
+          <div class="row" style="margin-top:10px"><button class="btn small primary" id="an-ai-save">Запомнить</button><button class="btn small" id="an-ai-off">Вернуться ко встроенному</button></div>
+        </details>
         <div class="row" style="margin-top:10px">
           <button class="btn small" id="an-save-plain">Сохранить как обычное объявление</button>
           <button class="btn small" id="an-confirm-r3">Подтвердить R3 вручную</button>
@@ -736,12 +931,24 @@
         });
         const hyp = idx != null ? res.hypotheses[idx] : null;
         if (hyp) setFactor(zkId, hyp.candidate_factor, "confirmed", r + (c ? " · " + c : ""), { adId: id, quote: hyp.exact_quote, source: "Новое объявление " + id });
-        persist(); toast(`Объявление ${id} сохранено${hyp ? ", " + hyp.candidate_factor + " подтверждён" : ""}`);
+        persist();
+        const rel = window.SQ_Parser.relatedAds(state.userAds[0], allAds());
+        toast(`Объявление ${id} сохранено${hyp ? ", " + hyp.candidate_factor + " подтверждён" : ""}${rel.length ? " · связано: " + rel.slice(0, 2).map((x) => x.id + " (" + x.via + ")").join(", ") : ""}`);
         nav("detail", { zkId });
       });
       page.querySelectorAll("[data-hok]").forEach((b) => b.onclick = () => saveAd(+b.dataset.hok));
       page.querySelectorAll("[data-hno]").forEach((b) => b.onclick = () => { b.closest(".hyp").querySelector(".row").innerHTML = `<span class="st rejected">отклонён</span> <span style="font-size:12px;color:var(--ink-2)">решение зафиксировано локально, на балл не влияет</span>`; toast("Гипотеза отклонена"); });
       $("#an-save-plain").onclick = () => saveAd(null);
+      const aiSave = $("#an-ai-save"), aiOff = $("#an-ai-off");
+      if (aiSave) aiSave.onclick = () => {
+        const key = $("#an-ai-key").value.trim();
+        if (!key) { toast("Вставьте ключ — или ничего не трогайте, помощник уже работает"); return; }
+        window.SQ_AI.saveConfig({ endpoint: $("#an-ai-endpoint").value.trim(), model: $("#an-ai-model").value.trim(), apiKey: key });
+        $("#an-ai-key").value = "";
+        toast(window.SQ_AI.hasRealAI() ? "Ваша модель подключена" : "Нужно ещё название модели");
+        render();
+      };
+      if (aiOff) aiOff.onclick = () => { window.SQ_AI.saveConfig({}); toast("Снова встроенный помощник"); render(); };
       $("#an-confirm-r3").onclick = () => askReviewer("Подтвердить R3 вручную", (r, c) => {
         const id = "AD-U" + String(state.userAds.length + 1).padStart(2, "0");
         state.userAds.unshift({ id, zkId, platform: $("#an-platform").value, account: $("#an-account").value, date: $("#an-date").value || "2026-10-15", url: $("#an-url").value, text, captureAt: new Date().toISOString().slice(0, 10), userAdded: true });
@@ -860,21 +1067,8 @@
     }
   };
   $("#btn-reset").onclick = () => { if (confirm("Сбросить все подтверждения, объявления и сигналы к исходному состоянию?")) { localStorage.removeItem(LS_STATE); state = loadState(); nav("home"); toast("Всё сброшено к исходному состоянию"); } };
-  $("#btn-ai-config").onclick = () => {
-    const c = window.SQ_AI.getConfig();
-    openModal(`<h3>Подключение AI-модели</h3>
-      <p style="font-size:13px;color:var(--ink-2)">Адрес OpenAI-совместимого сервиса и ключ. Ключ хранится только в этом браузере и никуда не коммитится. Без ключа работает встроенный учебный разбор.</p>
-      <label class="f">Endpoint<input type="text" id="ai-endpoint" value="${esc(c.endpoint || "https://openrouter.ai/api/v1/chat/completions")}"></label>
-      <label class="f" style="margin-top:8px">Model<input type="text" id="ai-model" value="${esc(c.model || "")}" placeholder="например, vendor/model-name"></label>
-      <label class="f" style="margin-top:8px">API key<input type="password" id="ai-key" value="${esc(c.apiKey || "")}" placeholder="оставьте пустым — будет учебный разбор" autocomplete="off"></label>
-      <div class="row" style="margin-top:12px"><button class="btn primary" id="ai-save">Сохранить</button><button class="btn danger" id="ai-clear">Отключить AI</button><button class="btn" id="ai-cancel">Закрыть</button></div>`);
-    $("#ai-cancel").onclick = closeModal;
-    $("#ai-clear").onclick = () => { window.SQ_AI.saveConfig({}); closeModal(); render(); toast("AI отключён, учебный разбор"); };
-    $("#ai-save").onclick = () => {
-      window.SQ_AI.saveConfig({ endpoint: $("#ai-endpoint").value.trim(), model: $("#ai-model").value.trim(), apiKey: $("#ai-key").value.trim() });
-      closeModal(); render(); toast(window.SQ_AI.hasRealAI() ? "AI подключён" : "Сохранено без ключа — учебный разбор");
-    };
-  };
+  // AI-настройка убрана из меню: помощник работает сразу (см. раздел «Проверка»,
+  // блок «Хочу свою модель — необязательно»). Здесь только сброс состояния.
 
   try { const r0 = routeFromHash(window.location.hash); if (r0) state.route = r0; } catch {}
   refreshAccount();

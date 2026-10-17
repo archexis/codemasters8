@@ -18,6 +18,9 @@
     /первоначалк/i,
     new RegExp("договор(" + "\\s+" + C("+") + "){0,3}\\s+бронирования", "i"),
     /задато[кч]/i, /предоплат/i, /аванс/i, /взнос/i, /залог/i,
+    /перевод[^.!?…\n]{0,30}(?:каспи|kaspi|на\s+карту)/i,
+    /(?:скидывай|кидай|отправляй)[^.!?…\n]{0,25}(?:каспи|kaspi|карту|деньги)/i,
+    /номер\s+карт[уы]/i,
     new RegExp("рассрочк" + C() + "\\s+от\\s+застройщика", "i"),
     new RegExp("оплат" + C() + "\\s+(?:напрямую|до\\s+заключения|до\\s+договора|наличными|на\\s+карту|переводом)", "i"),
     new RegExp("перевод[" + CYR + "]{0,20}(?:на\\s+карту|наличными|застройщику)", "i"),
@@ -29,6 +32,24 @@
   ];
   const NEG = /никак|без |не |нет |не нужна|не нужен|не требуется|отсутств|только по договору|шарт\s+бойынша|эскроу|тегін|жоқ|бесплатн|без оплат|без предоплат|без задатка|без залога|(?:^|\D)0\s*(тенге|теңге|тг|₸)/i;
   const ESCROW_DENIED = /не\s+(?:через\s+)?эскроу|без\s+эскроу|эскроу\s+жоқ/i;
+
+  // Увод в мессенджер — НЕ платёжный сигнал (не R2), а канальный маркер:
+  // «пишите в личку» денег не просит, но уводит сделку с площадки.
+  const CHANNEL = [
+    /пишите\s+в\s+(?:личку|директ|direct)/i,
+    /подробности\s+в\s+(?:личке|директе|direct)/i,
+    /в\s+директ/i,
+    /whatsapp|вацап|ватсап|вотсап|wa\.me/i,
+  ];
+  function channelCues(sent) {
+    const cues = [];
+    for (const re of CHANNEL) {
+      re.lastIndex = 0;
+      const m = re.exec(sent);
+      if (m) cues.push(m[0]);
+    }
+    return cues;
+  }
 
   // Инвест-приманки и давление сроком: не прямое требование денег (не R2), но повод присмотреться.
   const LURE = [
@@ -124,6 +145,7 @@
 
     const paymentQuotes = [];
     const paymentCueSet = [];
+    const channelQuotes = [];
     for (const { text: sent, start: base } of sentences) {
       const cues = paymentCues(sent);
       const hasPay = cues.length > 0;
@@ -158,20 +180,161 @@
         const lm = re.exec(sent);
         if (lm) push("lure", "Инвест-приманка", lm[0].trim(), sent, base + lm.index, base + lm.index + lm[0].length, "medium");
       }
+      for (const re of CHANNEL) {
+        re.lastIndex = 0;
+        const cm = re.exec(sent);
+        if (cm) push("channel", "Увод в мессенджер", cm[0].trim(), sent, base + cm.index, base + cm.index + cm[0].length, "medium");
+      }
       if (hasPay) paymentQuotes.push(quote(sent));
+      else if (channelCues(sent).length) channelQuotes.push(quote(sent));
     }
 
     const byType = {};
     for (const e of entities) byType[e.type] = (byType[e.type] || 0) + 1;
     return {
-      engine: "local-parser-v2",
+      engine: "local-parser-v3",
       sentences: sentences.length,
       payment: { flagged: paymentQuotes.length > 0, quotes: paymentQuotes.slice(0, 3), cues: paymentCueSet.slice(0, 5) },
+      channel: { flagged: channelQuotes.length > 0, quotes: channelQuotes.slice(0, 3) },
       entities,
       counts: byType,
     };
   }
 
-  if (typeof window !== "undefined") window.SQ_Parser = { parseAdText };
-  if (typeof module !== "undefined" && module.exports) module.exports = { parseAdText };
+  // ---------- Источники: веб / соцсети / мессенджеры ----------
+  // Честная модель: живого скрейпинга из статичного демо нет (CORS, авторизация,
+  // правила площадок). Парсер нормализует источник по URL и подсказкам в тексте,
+  // чтобы аналитик видел происхождение публикации и находил связанные
+  // аккаунты и телефоны (доп. сценарий п.11 ТЗ).
+  const PLATFORMS = [
+    { key: "krisha", label: "Krisha.kz", urlRe: /krisha\.kz/i, hintRe: /krisha|крыша/i },
+    { key: "olx", label: "OLX", urlRe: /olx\.kz|olx\./i, hintRe: /\bolx\b/i },
+    { key: "instagram", label: "Instagram", urlRe: /instagram\.com|instagr\.am/i, hintRe: /instagram|инстаграм|директ|сторис/i },
+    { key: "tiktok", label: "TikTok", urlRe: /tiktok\.com/i, hintRe: /tiktok|тикток/i },
+    { key: "telegram", label: "Telegram", urlRe: /t\.me|telegram\.(me|org|dog)/i, hintRe: /telegram|телеграм|тг-канал/i },
+    { key: "whatsapp", label: "WhatsApp", urlRe: /wa\.me|whatsapp\.com/i, hintRe: /whatsapp|вацап|ватсап|вотсап/i },
+    { key: "developer", label: "Сайт застройщика", urlRe: null, hintRe: /сайт застройщика|официальный сайт|отдел продаж/i },
+  ];
+  function detectPlatform(info) {
+    const url = String((info && info.url) || "");
+    const txt = String(((info && info.platform) || "") + " " + ((info && info.text) || ""));
+    for (const p of PLATFORMS) {
+      if (p.urlRe && p.urlRe.test(url)) return { key: p.key, label: p.label, via: "url" };
+    }
+    for (const p of PLATFORMS) {
+      if (p.hintRe && p.hintRe.test(txt)) return { key: p.key, label: p.label, via: "hint" };
+    }
+    if (txt.trim()) return { key: "other", label: String((info && info.platform) || "Другой источник").slice(0, 60), via: "manual" };
+    return { key: "unknown", label: "Источник не указан", via: "unknown" };
+  }
+  function platformLabel(key) {
+    const p = PLATFORMS.find((x) => x.key === key);
+    return p ? p.label : "Другой источник";
+  }
+
+  // Телефон к каноническому виду +7XXXXXXXXXX для поиска связей.
+  const RE_PHONE_G = /((?:\+7|8)[\s\-()]?\d{3}[\s\-()]?\d{3}[\s\-()]?\d{2}[\s\-()]?\d{2})/g;
+  const RE_HANDLE_G = /(@[A-Za-z0-9_.]{3,}|t\.me\/[^\s,;]+)/g;
+  function normPhone(p) {
+    let d = String(p || "").replace(/\D/g, "");
+    if (d.length === 11 && d[0] === "8") d = "7" + d.slice(1);
+    if (d.length === 10) d = "7" + d;
+    return d.length >= 10 ? "+" + d : null;
+  }
+  function phoneList(s) {
+    RE_PHONE_G.lastIndex = 0;
+    return (String(s || "").match(RE_PHONE_G) || []).map(normPhone).filter(Boolean);
+  }
+  function handleList(s) {
+    RE_HANDLE_G.lastIndex = 0;
+    return (String(s || "").match(RE_HANDLE_G) || []).map((h) => h.toLowerCase());
+  }
+  function normUrl(u) {
+    const s = String(u || "").trim().toLowerCase().replace(/\/$/, "");
+    if (!s || s.indexOf("example.invalid") >= 0) return null;
+    return s;
+  }
+
+  // Связанные публикации: общий телефон, аккаунт или ссылка.
+  function relatedAds(ad, ads) {
+    const out = [];
+    const phones = new Set(phoneList(ad.text));
+    const handles = new Set(handleList((ad.text || "") + " " + (ad.account || "")));
+    const myUrl = normUrl(ad.url);
+    for (const other of (ads || [])) {
+      if (!other || other.id === ad.id) continue;
+      const vias = [];
+      if (phoneList(other.text).some((p) => phones.has(p))) vias.push("общий телефон");
+      const oh = handleList((other.text || "") + " " + (other.account || ""));
+      if (oh.some((h) => h.length >= 4 && handles.has(h))) vias.push("общий аккаунт");
+      if (myUrl && normUrl(other.url) === myUrl) vias.push("общая ссылка");
+      if (vias.length) out.push({ id: other.id, via: vias.join(" + ") });
+    }
+    return out;
+  }
+
+  function dedupeKey(ad) {
+    const txt = String(ad.text || "");
+    const ph = phoneList(txt)[0] || "nophone";
+    RE_PHONE_G.lastIndex = 0;
+    const canon = txt.replace(RE_PHONE_G, (m) => normPhone(m) || m);
+    const head = canon.replace(/\s+/g, " ").trim().slice(0, 60).toLowerCase();
+    return ph + "|" + head;
+  }
+
+  // CSV-импорт без зависимостей: разделитель ; , или таб, кавычки, заголовок
+  // с RU/EN-синонимами. Возвращает { rows, errors } — строки НЕ сохраняются сами,
+  // каждую проверяет и сохраняет человек.
+  const QUOTE = String.fromCharCode(34);
+  const CSV_COLS = {
+    text: ["text", "текст", "объявление", "публикация"],
+    platform: ["platform", "площадка", "источник", "платформа", "source"],
+    account: ["account", "аккаунт", "автор", "канал"],
+    date: ["date", "дата", "опубликовано"],
+    url: ["url", "ссылка", "link"],
+    zk: ["zk", "жк", "объект", "zkid"],
+  };
+  function splitCsvLine(line, delim) {
+    const cells = []; let cur = "", q = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (q) {
+        if (c === QUOTE) { if (line[i + 1] === QUOTE) { cur += QUOTE; i++; } else q = false; }
+        else cur += c;
+      } else if (c === QUOTE) q = true;
+      else if (c === delim) { cells.push(cur); cur = ""; }
+      else cur += c;
+    }
+    cells.push(cur);
+    return cells.map((s) => s.trim());
+  }
+  function parseCsvAds(input) {
+    const text = String(input || "").replace(/^﻿/, "");
+    if (!text.trim()) throw new Error("Пустой CSV");
+    const lines = text.split(/\r?\n/).filter((l) => l.trim());
+    if (lines.length < 2) throw new Error("Нужны заголовок и хотя бы одна строка");
+    const cands = [";", ",", String.fromCharCode(9)].map((d) => ({ d, n: splitCsvLine(lines[0], d).length }));
+    cands.sort((a, b) => b.n - a.n);
+    const delim = cands[0].n > 1 ? cands[0].d : ";";
+    const header = splitCsvLine(lines[0], delim).map((h) => h.toLowerCase());
+    const colIdx = {};
+    for (const canon of Object.keys(CSV_COLS)) {
+      const i = header.findIndex((h) => CSV_COLS[canon].indexOf(h) >= 0);
+      if (i >= 0) colIdx[canon] = i;
+    }
+    if (colIdx.text == null) throw new Error("Нет колонки текста (text/текст)");
+    const rows = [], errors = [];
+    lines.slice(1).forEach((line, k) => {
+      const cells = splitCsvLine(line, delim);
+      const get = (c) => (colIdx[c] == null ? "" : (cells[colIdx[c]] || ""));
+      const t = get("text");
+      if (!t) { errors.push("Строка " + (k + 2) + ": пустой текст — пропущена"); return; }
+      rows.push({ text: t, platform: get("platform"), account: get("account"), date: get("date"), url: get("url"), zkHint: get("zk") });
+    });
+    return { rows, errors, delim };
+  }
+
+  const API = { parseAdText, detectPlatform, platformLabel, parseCsvAds, relatedAds, normPhone, dedupeKey, PAY_SOURCES: PAY.map((r) => r.source) };
+  if (typeof window !== "undefined") window.SQ_Parser = API;
+  if (typeof module !== "undefined" && module.exports) module.exports = API;
 })();
