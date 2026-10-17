@@ -531,7 +531,7 @@
     return "основание: не проверено …";
   }
   function confLabel(c) {
-    return { high: "высокая", medium: "средняя", low: "низкая", "low-demo": "низкая (учебный разбор)", unknown: "неизвестно" }[c] || c;
+    return { high: "высокая", medium: "средняя", low: "низкая", "low-demo": "низкая (встроенный помощник)", unknown: "неизвестно" }[c] || c;
   }
   function sigLabel(st) {
     return { draft: "черновик", pending: "на проверке", confirmed: "подтверждён", returned: "возвращён" }[st] || st;
