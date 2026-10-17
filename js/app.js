@@ -145,7 +145,7 @@
     home: ["SAQ QURYLYS", "Главная · начните с проверки объявления"],
     overview: ["Объекты", "Өскемен · учебные сценарии и записи реестра разрешений"],
     detail: ["Карточка ЖК", "история · источники · факторы риска"],
-    ads: ["Мониторинг рекламы", "все публикации · подозрительные формулировки подсвечены"],
+    ads: ["Публикации", "все объявления · подозрительные формулировки подсвечены"],
     analyze: ["Проверка", "вставьте текст — помощник подскажет, решать вам"],
     signal: ["Сигнальная карточка", "факторы · доказательства · статус проверки"],
     registries: ["Открытые реестры РК", "внешние источники · живой интеграции в демо нет"],
@@ -161,7 +161,7 @@
   function nav(view, param, push) {
     state.route = { view, ...param };
     document.body.dataset.view = view;
-    document.querySelectorAll("#nav button").forEach((b) => b.setAttribute("aria-current", b.dataset.view === view || (((view === "detail" || view === "signal" || view === "ads") && b.dataset.view === "overview")) ? "page" : "false"));
+    document.querySelectorAll("#nav button").forEach((b) => b.setAttribute("aria-current", b.dataset.view === view || (((view === "detail" || view === "signal") && b.dataset.view === "overview")) ? "page" : "false"));
     const t = TITLES[view] || TITLES.overview;
     $("#page-title").textContent = t[0]; $("#page-sub").textContent = t[1];
     window.scrollTo(0, 0);
@@ -671,6 +671,7 @@
       <div class="panel" style="padding:14px 18px"><div class="tline">${tlineHtml(zk, sig)}</div></div>`;
 
     $("#d-back").onclick = () => nav("overview");
+    $("#page-sub").textContent = "Объекты / " + zk.name;
     $("#d-signal").onclick = () => nav("signal", { zkId });
     $("#d-analyze").onclick = () => nav("analyze", { prefill: { zkId } });
     page.querySelectorAll("[data-confirm]").forEach((b) => b.onclick = () => askReviewer(`Подтвердить ${b.dataset.confirm} — ${zk.name}`, (r, c) => {
@@ -1012,6 +1013,7 @@
         </div>
       </div>`;
     $("#sg-back").onclick = () => nav("detail", { zkId });
+    $("#page-sub").textContent = "Объекты / " + zk.name + " / Сигнал";
     $("#sg-print").onclick = () => window.print();
     $("#sg-confirm").onclick = () => askReviewer("Подтвердить сигнал", (r, c) => { setSignal(zkId, "confirmed", r, c); toast("Сигнал подтверждён"); render(); });
     $("#sg-return").onclick = () => askReviewer("Вернуть на доработку", (r, c) => { setSignal(zkId, "returned", r, c); toast("Сигнал возвращён"); render(); });
