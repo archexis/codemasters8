@@ -1,0 +1,150 @@
+{
+  "source": "docs/sprints/S1.md S1.5; weights and zones per contract. Expected fixed by contract, NOT computed by code.",
+  "weights": {
+    "R1": 35,
+    "R2": 25,
+    "R3": 10,
+    "R4": 15,
+    "R5": 10,
+    "R6": 5
+  },
+  "zoneRule": "red = score>=60 AND R1+R2 both confirmed; else score>=25 -> yellow; else green. Confirmed factors only.",
+  "cases": [
+    {
+      "id": "S-EMPTY",
+      "confirmed": [],
+      "expected": {
+        "score": 0,
+        "zone": "green"
+      },
+      "note": "empty set = 0 green"
+    },
+    {
+      "id": "S-R3R5",
+      "confirmed": [
+        "R3",
+        "R5"
+      ],
+      "expected": {
+        "score": 20,
+        "zone": "green"
+      },
+      "note": "10+10=20 green"
+    },
+    {
+      "id": "S-R2",
+      "confirmed": [
+        "R2"
+      ],
+      "expected": {
+        "score": 25,
+        "zone": "yellow"
+      },
+      "note": "25 yellow"
+    },
+    {
+      "id": "S-R1R3R4",
+      "confirmed": [
+        "R1",
+        "R3",
+        "R4"
+      ],
+      "expected": {
+        "score": 60,
+        "zone": "yellow"
+      },
+      "note": "35+10+15=60 but R2 not confirmed -> yellow"
+    },
+    {
+      "id": "S-R1R2",
+      "confirmed": [
+        "R1",
+        "R2"
+      ],
+      "expected": {
+        "score": 60,
+        "zone": "red"
+      },
+      "note": "35+25=60 with R1+R2 -> red"
+    },
+    {
+      "id": "S-ALL",
+      "confirmed": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6"
+      ],
+      "expected": {
+        "score": 100,
+        "zone": "red"
+      },
+      "note": "sum=100 cap 100 red"
+    },
+    {
+      "id": "S-R2-DUP",
+      "confirmed": [
+        "R2",
+        "R2"
+      ],
+      "expected": {
+        "score": 25,
+        "zone": "yellow"
+      },
+      "note": "duplicate R2 counts once"
+    },
+    {
+      "id": "S-NONCONF",
+      "confirmed": [],
+      "statuses": [
+        "hypothesis",
+        "rejected",
+        "needs-verification"
+      ],
+      "expected": {
+        "score": 0,
+        "zone": "green"
+      },
+      "note": "non-confirmed statuses give 0"
+    }
+  ],
+  "zoneBoundaries": [
+    {
+      "score": 24,
+      "confirmedIncludesR1": false,
+      "confirmedIncludesR2": false,
+      "expectedZone": "green",
+      "note": "zone-fn check; 24 unreachable by weights"
+    },
+    {
+      "score": 25,
+      "confirmedIncludesR1": false,
+      "confirmedIncludesR2": false,
+      "expectedZone": "yellow",
+      "note": "yellow threshold"
+    },
+    {
+      "score": 59,
+      "confirmedIncludesR1": false,
+      "confirmedIncludesR2": false,
+      "expectedZone": "yellow",
+      "note": "zone-fn check; 59 unreachable by weights"
+    },
+    {
+      "score": 60,
+      "confirmedIncludesR1": false,
+      "confirmedIncludesR2": true,
+      "expectedZone": "yellow",
+      "note": "60 without R1+R2 pair -> yellow"
+    },
+    {
+      "score": 60,
+      "confirmedIncludesR1": true,
+      "confirmedIncludesR2": true,
+      "expectedZone": "red",
+      "note": "60 with R1+R2 -> red"
+    }
+  ]
+}

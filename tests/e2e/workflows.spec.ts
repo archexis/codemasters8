@@ -19,6 +19,7 @@ test('analysis, rejection and confirmation persist through reload', async ({ pag
   await page.getByLabel('Текст объявления').fill('Депозит 345 000 тенге для новой квартиры.');
   await page.getByRole('button',{name:'Проанализировать',exact:true}).click();
   await expect(page.getByText('R2 · гипотеза')).toBeVisible();
+  await page.getByLabel('Обоснование аналитика').fill('Гипотеза не подтверждается текстом');
   await page.getByRole('button',{name:'Отклонить гипотезу'}).click();
   await expect(page.getByText('Публикация и решение сохранены.')).toBeVisible();
   await page.reload();
@@ -28,6 +29,7 @@ test('analysis, rejection and confirmation persist through reload', async ({ pag
   await page.goto('/#/analyze/SQ-001');
   await page.getByLabel('Текст объявления').fill('Новая платная бронь 765 000 тенге для квартиры.');
   await page.getByRole('button',{name:'Проанализировать',exact:true}).click();
+  await page.getByLabel('Обоснование аналитика').fill('Цитата дословна, предложение оплаты явное');
   await page.getByRole('button',{name:'Подтвердить R2'}).click();
   await expect(page.getByText('Публикация и решение сохранены.')).toBeVisible();
 });
@@ -35,6 +37,8 @@ test('R1 guard, signal decisions and printable snapshot', async ({ page }) => {
   await page.goto('/#/detail/SQ-001');
   await page.getByRole('combobox',{name:/^Фактор/}).selectOption('R1');
   await page.getByLabel('Источник доказательства').fill('Ручная сверка');
+  await page.getByLabel(/Содержание правовой сверки/).fill('Сверка гарантии Единого оператора: основание отсутствует, отказ в выдаче разрешения МИО');
+  await page.getByLabel(/Комментарий аналитика/).fill('Попытка подтвердить R1 без акта об отсутствии');
   await page.getByRole('button',{name:'Сохранить решение'}).click();
   await expect(page.getByRole('alert')).toContainText('R1 требует');
   await page.goto('/#/signal/SQ-002');

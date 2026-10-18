@@ -21,6 +21,20 @@ def get_settings() -> Settings:
     return Settings()
 
 
+WEIGHTS = {"R1": 35, "R2": 25, "R3": 10, "R4": 15, "R5": 10, "R6": 5}
+
+
+def score_for(confirmed: set[str]) -> int:
+    """Deterministic score: sum of confirmed weights, capped at 100. Mirrors src/lib/scoring.ts."""
+    return min(100, sum(WEIGHTS.get(code, 0) for code in set(confirmed)))
+
+
+def zone_for(score: int, confirmed: set[str]) -> str:
+    """Red = score>=60 AND R1+R2 both confirmed; else score>=25 -> yellow; else green."""
+    has = set(confirmed)
+    return "red" if score >= 60 and {"R1", "R2"} <= has else "yellow" if score >= 25 else "green"
+
+
 app = FastAPI(title="SAQ QURYLYS API", version="2.0.0")
 app.add_middleware(
     CORSMiddleware,
@@ -68,16 +82,28 @@ async def health(settings: Settings = Depends(get_settings)) -> dict:
 
 @app.get("/api/summary")
 async def summary(workspace: dict = Depends(fetch_workspace)) -> dict:
-    weights = {"R1": 35, "R2": 25, "R3": 10, "R4": 15, "R5": 10, "R6": 5}
     zones = {"red": 0, "yellow": 0, "green": 0}
     for building in workspace["data"]["complexes"]:
         confirmed = {f["code"] for f in building["factors"] if f["status"] == "confirmed"}
-        score = min(100, sum(weights.get(code, 0) for code in confirmed))
-        zone = "red" if score >= 60 and {"R1", "R2"} <= confirmed else "yellow" if score >= 25 else "green"
-        zones[zone] += 1
+        zones[zone_for(score_for(confirmed), confirmed)] += 1
     return {"version": workspace["version"], "complexes": len(workspace["data"]["complexes"]), "ads": len(workspace["data"]["ads"]), "zones": zones}
 
 
 @app.get("/api/export")
 async def export(workspace: dict = Depends(fetch_workspace)) -> JSONResponse:
-    return JSONResponse(workspace, headers={"Content-Disposition": 'attachment; filename="saq-workspace.json"', "Cache-Control": "no-store"})
+    # S2.5 (C3). Обычный /api/export — это экспорт ДАННЫХ, а не полный backup:
+    # без байтов media и manifest он для restore непригоден. Метки ниже делают
+    # это различие явным для клиентов и отчётов; поведение и тело неизменны.
+    # S4.4. X-Export-Template фиксирует версию шаблона: workspace-data/v1 —
+    # сырой экспорт данных; сигнальные карточки (signal-card/v1,
+    # src/lib/export.ts) скачиваются клиентской кнопкой экспорта отдельно.
+    return JSONResponse(
+        workspace,
+        headers={
+            "Content-Disposition": 'attachment; filename="saq-workspace-data-export.json"',
+            "Cache-Control": "no-store",
+            "X-Export-Kind": "data-only",
+            "X-Export-Template": "workspace-data/v1",
+            "X-Export-Note": "Data export only, not a full backup: no media bytes or manifest. Use the backup ZIP (manifest.json + workspace.json + files/) for restore.",
+        },
+    )

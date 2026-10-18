@@ -1,0 +1,171 @@
+{
+  "source": "docs/sprints/S1.md S1.2. Score/scoreDelta — expected из таблицы S1.2, НЕ вычислены кодом. Материалы I03/I08/I10/I16 — synthetic fixtures, не утверждения о реальных застройщиках.",
+  "rule": "Все confirmed/rejected/needs-verification решения требуют непустой comment аналитика; гипотезы модели не становятся confirmed автоматически.",
+  "cases": [
+    {
+      "id": "I01",
+      "given": "Объект C (гарантия verified, R3 confirmed, score 10)",
+      "action": "Подтвердить R1 с generic source без материала legal-review",
+      "then": {
+        "accepted": false,
+        "score": 10,
+        "note": "generic source недостаточен для R1"
+      }
+    },
+    {
+      "id": "I02",
+      "given": "Основание unknown (реестр недоступен)",
+      "action": "Подтвердить R1 на основании unknown",
+      "then": {
+        "accepted": false,
+        "legalBasisUnchanged": true,
+        "note": "unknown/недоступность реестра не доказывает R1"
+      }
+    },
+    {
+      "id": "I03",
+      "given": "absent-verified + полный review того же ЖК (synthetic fixture)",
+      "action": "Подтвердить R1 с полным материалом",
+      "then": {
+        "accepted": true,
+        "scoreDelta": 35,
+        "dedup": "один раз"
+      }
+    },
+    {
+      "id": "I04",
+      "given": "Ручная factor-команда R2",
+      "action": "Указать непустую выдуманную quote без adId",
+      "then": {
+        "accepted": false,
+        "note": "quote обязана быть точной подстрокой ad.text своего ЖК"
+      }
+    },
+    {
+      "id": "I05",
+      "given": "R2 quote существует, но ad принадлежит другому ЖК",
+      "action": "Подтвердить R2 с чужим adId",
+      "then": {
+        "accepted": false
+      }
+    },
+    {
+      "id": "I06",
+      "given": "R2: точная quote, ad своего ЖК, валидные comment/date/source",
+      "action": "Подтвердить R2",
+      "then": {
+        "accepted": true,
+        "scoreDelta": 25
+      }
+    },
+    {
+      "id": "I07",
+      "given": "R3: ad свой, но нет датированного подтверждения что объект не введён",
+      "action": "Подтвердить R3",
+      "then": {
+        "accepted": false
+      }
+    },
+    {
+      "id": "I08",
+      "given": "R3: ad свой + датированный beforeCommissioning-материал {source,date,text}",
+      "action": "Подтвердить R3",
+      "then": {
+        "accepted": true,
+        "scoreDelta": 10
+      }
+    },
+    {
+      "id": "I09",
+      "given": "R4: generic source без текста обращения",
+      "action": "Подтвердить R4",
+      "then": {
+        "accepted": false
+      }
+    },
+    {
+      "id": "I10",
+      "given": "R4: текст коллективного обращения о привлечении средств + дата/ЖК/источник/comment",
+      "action": "Подтвердить R4",
+      "then": {
+        "accepted": true,
+        "scoreDelta": 15
+      }
+    },
+    {
+      "id": "I11",
+      "given": "R5: claimed 55 / confirmed 35, два источника/даты",
+      "action": "Отдельное решение подтвердить R5",
+      "then": {
+        "accepted": true,
+        "scoreDelta": 10
+      }
+    },
+    {
+      "id": "I12",
+      "given": "R5: claimed 35 / confirmed 55, два источника/даты",
+      "action": "Отдельное решение подтвердить R5",
+      "then": {
+        "accepted": true,
+        "scoreDelta": 10
+      }
+    },
+    {
+      "id": "I13",
+      "given": "R5: gap 19, либо null, либо отсутствует один source/date",
+      "action": "Подтвердить R5",
+      "then": {
+        "accepted": false
+      }
+    },
+    {
+      "id": "I14",
+      "given": "R5: gap 21 с корректным материалом (два observation, оба source/date)",
+      "action": "Подтвердить R5",
+      "then": {
+        "accepted": true,
+        "scoreDelta": 10
+      }
+    },
+    {
+      "id": "I15",
+      "given": "R6: только строка «просрочено» без материала",
+      "action": "Подтвердить R6",
+      "then": {
+        "accepted": false
+      }
+    },
+    {
+      "id": "I16",
+      "given": "R6: датированный факт + срок/период простоя + explanation аналитика",
+      "action": "Подтвердить R6",
+      "then": {
+        "accepted": true,
+        "scoreDelta": 5
+      }
+    },
+    {
+      "id": "I17",
+      "given": "Любой confirmed фактор",
+      "action": "Отклонить (rejected) с comment",
+      "then": {
+        "accepted": true,
+        "scoreRemoved": true,
+        "auditKept": true,
+        "note": "баллы сняты, прошлое событие не удалено"
+      }
+    },
+    {
+      "id": "I18",
+      "given": "Невалидная операция ad+confirm (плохой adId/quote)",
+      "action": "Применить одной транзакцией",
+      "then": {
+        "accepted": false,
+        "noNewAd": true,
+        "noNewFactor": true,
+        "noNewAudit": true,
+        "noVersionBump": true
+      }
+    }
+  ]
+}

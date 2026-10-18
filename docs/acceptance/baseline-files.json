@@ -1,0 +1,404 @@
+{
+  "baseline_commit": "406bf6967d6a5162570ad4556cb25f120494bc50",
+  "generated": "2026-10-18",
+  "scope": "tracked+untracked sources; excludes secrets, dependencies, generated output, acceptance (own-report scope)",
+  "fileCount": 79,
+  "files": [
+    {
+      "path": ".env.example",
+      "sha256": "4b62beae74f8982f3a138e5c05ae43397386bc47dc395af079c9024c92109219",
+      "tracked": true
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "4a9764122c74ca16941cbd63b16003c037f697598d0c999db1dc2eb03ead4b87",
+      "tracked": true
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "a5a6b50565903577dd2635fd908ae688261cec13a3a2d4e5a41339eaac67b311",
+      "tracked": true
+    },
+    {
+      "path": ".impeccable/critique/index-html/2026-10-15-2050.md",
+      "sha256": "f11fdee55fd5bcb25e71e832a8ece5d9df79136981fc10878743df7a4142247d",
+      "tracked": true
+    },
+    {
+      "path": "README.md",
+      "sha256": "1f352dd7b91fc8de0364b54ff8dccc08db228ec2a7225d5748cdb6394c12a37b",
+      "tracked": true
+    },
+    {
+      "path": "backend/Dockerfile",
+      "sha256": "eddc86fe9af3131cdf50b7cfe99a28527b8a5d786c2ab3f237d9d3007bca7a76",
+      "tracked": true
+    },
+    {
+      "path": "backend/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tracked": true
+    },
+    {
+      "path": "backend/app/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tracked": true
+    },
+    {
+      "path": "backend/app/main.py",
+      "sha256": "c68b0ce65cf07a16d991f8d0af11594fd343cfe9e43d55a980b73fd8ea42f78e",
+      "tracked": true
+    },
+    {
+      "path": "backend/requirements.lock.txt",
+      "sha256": "8d2bff877411ffdb24de13fe7da0c34fd5d67e800eca5b03aaa97fa100a2a97c",
+      "tracked": true
+    },
+    {
+      "path": "backend/requirements.txt",
+      "sha256": "fee9dec4282f4e5352f1776d5ce3ef131dcfee97b869994b797276a995e59e65",
+      "tracked": true
+    },
+    {
+      "path": "backend/tests/test_api.py",
+      "sha256": "fb96ac27d9fe47d9054d8ca6b891888b249cdeed61b57c3a16c9228b33336511",
+      "tracked": true
+    },
+    {
+      "path": "docs/CODEBASE_AUDIT.md",
+      "sha256": "13df9c88c73934f0236a86ffc3b0a65744ca138fbf530094f97985ea4016f494",
+      "tracked": true
+    },
+    {
+      "path": "docs/DEEPSEEK_TEST_REPORT.json",
+      "sha256": "d15a000fd0fed88b8150e1f424aee7499b92207dca977408eb5bd958bf067655",
+      "tracked": true
+    },
+    {
+      "path": "docs/FEATURE_INVENTORY.md",
+      "sha256": "f02c3c5a133f6b1d5502f338f93233574db3af9c7e8c6687f977b13881ddaf60",
+      "tracked": true
+    },
+    {
+      "path": "docs/IMPLEMENTATION_HANDOFF.md",
+      "sha256": "784121d8f372e4e7b7d8982aa2de2ae3f9dbaa9fe8b7ff9a595f36d78453df96",
+      "tracked": true
+    },
+    {
+      "path": "docs/REQUIREMENTS_MATRIX.md",
+      "sha256": "621fdf2ac225c9117536e5ba9c102063c8f57a6653ed657d6c074f80e69a7328",
+      "tracked": true
+    },
+    {
+      "path": "docs/SPRINT_PLAN.md",
+      "sha256": "59e311464f76a351ba1cffc7b253e971f5a8c02026b56d63c5fef8426d9193ac",
+      "tracked": true
+    },
+    {
+      "path": "docs/SPRINT_PLAN_V1_ARCHIVE.md",
+      "sha256": "4d87710a33f13077d7b0dcd210edd16d0b27f54119a93a15a8e018d057c0e477",
+      "tracked": true
+    },
+    {
+      "path": "docs/STACK_MIGRATION.md",
+      "sha256": "17837ef7d4df581147f920e0856c6901c5256c7942a273b69103e41a880b27cd",
+      "tracked": true
+    },
+    {
+      "path": "docs/sprints/BASELINE.md",
+      "sha256": "6dfdbcb501b3cc2e66470524973a6a6f2b172c78b97c128b0c0a628d66521fdc",
+      "tracked": true
+    },
+    {
+      "path": "docs/sprints/CONTRACTS.md",
+      "sha256": "cb64b36b4ab1c10989b55f20426d09224b07b9fb43873049d763ad5bed7d1f05",
+      "tracked": true
+    },
+    {
+      "path": "docs/sprints/EXECUTION.md",
+      "sha256": "9cc8929730f08ce3fbe866a4cbeb5f5a1fbc8c345c3396a427148206d7bb5c19",
+      "tracked": true
+    },
+    {
+      "path": "docs/sprints/PLAN_INDEX.json",
+      "sha256": "e5bcde89e31b92f13917f8952ffe5894a5dc86a54b6d3f54cf7281449d556111",
+      "tracked": true
+    },
+    {
+      "path": "docs/sprints/S0.md",
+      "sha256": "d8bf976fa196569f19732a4dbf0b3db38de4031d51a44f33e5491f55054a679e",
+      "tracked": true
+    },
+    {
+      "path": "docs/sprints/S1.md",
+      "sha256": "d5c3c015e5daeec7c76c1b8884edb3958f2955277eeb0a4dab3140ac810f1898",
+      "tracked": true
+    },
+    {
+      "path": "docs/sprints/S2.md",
+      "sha256": "79909149ad19adeba94f9776c6ca83f83719580792066b04afa832a528514965",
+      "tracked": true
+    },
+    {
+      "path": "docs/sprints/S3.md",
+      "sha256": "c632a18e510110db7d9c4eac5a89f980f2941df280c19d9cc9fd2e9f8716b4fc",
+      "tracked": true
+    },
+    {
+      "path": "docs/sprints/S4.md",
+      "sha256": "81ae215f8a86b7eb9c7038da0cb755e86ab46289229443af053cacaabb1162d7",
+      "tracked": true
+    },
+    {
+      "path": "docs/sprints/S5.md",
+      "sha256": "2163b0c346c8ee5774e37a5476f80e2f430add0243152eccaadb9b6a6d0ad8e6",
+      "tracked": true
+    },
+    {
+      "path": "docs/sprints/S6.md",
+      "sha256": "5c4d2317e75f60dceec8ab22ec29ffb6474358f71395e42a392922acb67873b9",
+      "tracked": true
+    },
+    {
+      "path": "docs/sprints/START_HERE.md",
+      "sha256": "892f3479c99e95a20296e6aae23ed1a04be9ae92448e111a3705fec4919d7da9",
+      "tracked": true
+    },
+    {
+      "path": "index.html",
+      "sha256": "dced32f7cf82b28f5815c3e94da3e384b2383aa7b25d784c41d677e3e780f4ee",
+      "tracked": true
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "cf55b0748605e15f1baffdaf2ea04a47f5947b30b2bdc97f8282f78c1de36075",
+      "tracked": true
+    },
+    {
+      "path": "package.json",
+      "sha256": "23a5204d1a43b813f6330695f1d3bb5d1a2ef2eabacbbd87b736ef019835d7ff",
+      "tracked": "modified",
+      "worktree_sha256": "23a5204d1a43b813f6330695f1d3bb5d1a2ef2eabacbbd87b736ef019835d7ff"
+    },
+    {
+      "path": "playwright.cloud.config.ts",
+      "sha256": "158a8b4ab96167ed21a642b8bce08b4cc4e1040052f0178fbb438fb77c2f50f2",
+      "tracked": true
+    },
+    {
+      "path": "playwright.config.ts",
+      "sha256": "67ac539877448d402a8c894a3397d5ddd75b2e66f2165b2b7feecf49c24e81c3",
+      "tracked": true
+    },
+    {
+      "path": "playwright.live.config.ts",
+      "sha256": "79bad403551fa1934ad9eabe1b5bc5cd3ab1cfb0a7024a1be9062e6f75959837",
+      "tracked": true
+    },
+    {
+      "path": "scrollcraft/FINGERPRINTS.md",
+      "sha256": "6d7fbe97408806c5c2186b5261709b2a6836cf54cfbdcae6a92930c543cc9645",
+      "tracked": true
+    },
+    {
+      "path": "skills-lock.json",
+      "sha256": "a39357c106ce9e177c349dd95a69fb48eef3ee368cdb19fbf621bcf1c5d0b381",
+      "tracked": true
+    },
+    {
+      "path": "src/App.svelte",
+      "sha256": "13dc053a82a795a633640f9f2ad86df3d158e5bdd5a918be0dd9b6b1c1e3d068",
+      "tracked": true
+    },
+    {
+      "path": "src/app.css",
+      "sha256": "89a509a064dcf61ae7602e3a89aecd124570855e1b1d7f93e065f9aa97f39517",
+      "tracked": true
+    },
+    {
+      "path": "src/components/Analyze.svelte",
+      "sha256": "f2143505ea1b1f471a158c71f5be6ba4c975d77267ccd91591448475a7549ece",
+      "tracked": true
+    },
+    {
+      "path": "src/components/ComplexForm.svelte",
+      "sha256": "8211a557a90119a020fe659c08e8fc97bcc7906971979ed41a827ebea8e62192",
+      "tracked": true
+    },
+    {
+      "path": "src/components/Detail.svelte",
+      "sha256": "6f147b48870a7b072409cd49be5bcfca8a7ba9cab20e5d93787e99dfdb20f0fd",
+      "tracked": true
+    },
+    {
+      "path": "src/components/MediaCard.svelte",
+      "sha256": "3265146629dd71ead39d37e120a0a072df880a7e2d78ca1fe5c2b4ccd10f2416",
+      "tracked": true
+    },
+    {
+      "path": "src/components/RiskMap.svelte",
+      "sha256": "61e3b771747db57dbb515c4f8cd4ae3e45a7346a402178984b6fdd2a5dc94a2a",
+      "tracked": true
+    },
+    {
+      "path": "src/lib/analysis.ts",
+      "sha256": "d270f414a55a7984b664f0394a0cebfcd892432064da2eabbfb01b983c04e32f",
+      "tracked": true
+    },
+    {
+      "path": "src/lib/domain.ts",
+      "sha256": "73bca1d455d8db80bb921c0197e88f25d3452ebf0f4b07c7d94a157d3a9ce27c",
+      "tracked": true
+    },
+    {
+      "path": "src/lib/parser.ts",
+      "sha256": "91241c20ffc5df8abf0592404901e4cd1cf9737e7ff8bcfb391d282386a216e8",
+      "tracked": true
+    },
+    {
+      "path": "src/lib/repository.ts",
+      "sha256": "8a74b272f0972286553cd1cf809c839a42cf7226267fc8a025c6144f3b07ca0c",
+      "tracked": true
+    },
+    {
+      "path": "src/lib/scoring.ts",
+      "sha256": "15cf79cf7115bbba87cbbf25fcdca1cd831937ff266e6c6d13efeb54a9b7df40",
+      "tracked": true
+    },
+    {
+      "path": "src/lib/seed.json",
+      "sha256": "fba4d0659f87318379c9d2a044d4d971d6d22757ef2d92131ab050a87b869a83",
+      "tracked": true
+    },
+    {
+      "path": "src/lib/supabase.ts",
+      "sha256": "e2c7088ad5a2dfb6be6517d183ca12d5ef7e71270a4576711eadb20c9529d87b",
+      "tracked": true
+    },
+    {
+      "path": "src/lib/types.ts",
+      "sha256": "ff5b70c4e5674c482042687bac7a36e8245be559c3154d3bdc53d0113694a497",
+      "tracked": true
+    },
+    {
+      "path": "src/main.ts",
+      "sha256": "0db1e46fcae6c698584e76503fd02983500046009b6f8942fb138c537ed36b92",
+      "tracked": true
+    },
+    {
+      "path": "supabase/.branches/_current_branch",
+      "sha256": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "tracked": true
+    },
+    {
+      "path": "supabase/config.toml",
+      "sha256": "2f86fb63d52a4c5d8dc72a4240d06be515901b4b49c31c1340ad3c063467abea",
+      "tracked": true
+    },
+    {
+      "path": "supabase/functions/analyze/index.test.ts",
+      "sha256": "37430224006c13df36f3800b6001d043d453de2041b43d05e25f086894240124",
+      "tracked": true
+    },
+    {
+      "path": "supabase/functions/analyze/index.ts",
+      "sha256": "04948cfa65c3d06bcc027291237868638e57a27f4f1e008eec9152256e46f842",
+      "tracked": true
+    },
+    {
+      "path": "supabase/migrations/202610180001_workspace.sql",
+      "sha256": "48bd001dc7e21e40199bfaa85c17360b49cf861d9910c447a1d4220284fe5ab7",
+      "tracked": true
+    },
+    {
+      "path": "supabase/migrations/202610180002_seed.sql",
+      "sha256": "ce5466f459b42269685ec63c54170cbee6a55b85262d59d09eb4aba1fa188d27",
+      "tracked": true
+    },
+    {
+      "path": "svelte.config.js",
+      "sha256": "3c328d509de22605aa7d1bcfd4a34941b99c2ecaea7026dde935785d8b6661e4",
+      "tracked": true
+    },
+    {
+      "path": "tests/cloud/supabase.spec.ts",
+      "sha256": "585d77c4f786e09a3e2c438f5b0be834f5410ffdc92c0017840412de3b5bc9f3",
+      "tracked": true
+    },
+    {
+      "path": "tests/e2e/workflows.spec.ts",
+      "sha256": "55501a2f3bcfed7d3e93703aeb92a60e3b2e27f3b9992ac05193573b259a7cd9",
+      "tracked": true
+    },
+    {
+      "path": "tests/fixtures/legacy-parser.cjs",
+      "sha256": "4ecf43c62b97da5c8856af761c88a745972ea11ea4e1a22d2650281f769a8cee",
+      "tracked": true
+    },
+    {
+      "path": "tests/fixtures/legacy-scoring.cjs",
+      "sha256": "f31487ecc49f3d421618368b3e13e06f8d3a06dc47bf93c143af1ecab15a7622",
+      "tracked": true
+    },
+    {
+      "path": "tests/fixtures/legacy-sources.cjs",
+      "sha256": "13fb0f004769bcbba5c216e2b4e96e51f1a7446c09f652db38d079ee53f53adc",
+      "tracked": true
+    },
+    {
+      "path": "tests/live/supabase.spec.ts",
+      "sha256": "e85b8cd1ea880ac6d4d59a9de726b6bcb8fd00951f1045cab13a2fe307481a3c",
+      "tracked": true
+    },
+    {
+      "path": "tests/unit/database.test.ts",
+      "sha256": "790cb36c0d44158ba3cf7524b16ed5e86c08380bad1d54d43f1af5cf0ed274d5",
+      "tracked": true
+    },
+    {
+      "path": "tests/unit/domain.test.ts",
+      "sha256": "5239fd21649aaec093bbf0d2f982f796bafcf0471c30e4397e2a7affb3a460ca",
+      "tracked": true
+    },
+    {
+      "path": "tests/unit/legacy-regression.test.ts",
+      "sha256": "9be187d9bc95a73deee6fea3d3165fecfecb277f3517f81f65af54711d3d442b",
+      "tracked": true
+    },
+    {
+      "path": "tests/unit/sprint-gate.test.ts",
+      "sha256": "6bbbf0f0ff47267ae037432ff1f8e9ac11942deeaad9bb10654e7a00a238ec70",
+      "tracked": false
+    },
+    {
+      "path": "tools/check-sprint-gate.mjs",
+      "sha256": "04e51e1a65ed9ea13a9d8907fc1b51dc1887d305c3e4b07cd34ce855d13da87d",
+      "tracked": false
+    },
+    {
+      "path": "tools/deepseek-smoke.mjs",
+      "sha256": "b70e76baf3019b9dfec2c1b2eeadd4b513f6104b44b67580feca7d21dc513c1f",
+      "tracked": true
+    },
+    {
+      "path": "tools/local-smoke.mjs",
+      "sha256": "623588b5e711d91154dadf334f7156dd1869e38596a0c5ebe69fd88362ddf4ed",
+      "tracked": true
+    },
+    {
+      "path": "tools/verify_ashyq.py",
+      "sha256": "9cb9305c3ad8f3b7c9976dbf2e3379eae4b8e6751fad0ad2e8894c26708897cc",
+      "tracked": true
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "973074e0265f05f6d241cb3c66a4d8696ef9877b3df323d98447216b85471a4a",
+      "tracked": true
+    },
+    {
+      "path": "vite.config.ts",
+      "sha256": "49f7a2c55480acad0472420b4ba662af00cdff6f64d065a3d0efb2009c427ed0",
+      "tracked": true
+    }
+  ]
+}

@@ -34,6 +34,8 @@ interface SourceInfo { url?: string; platform?: string; text?: string }
     /алғашқы\s+жарна/i, /бастапқы\s+жарна/i,
     /алдын ала.{0,25}(?:төле|төлем|жарна|ақы)/i,
   ];
+  // KZ «емес» ограничен границами слова: частое «немесе» («или») отрицанием не является.
+  const NEG_BOUND_EMEC = /(?:^|[^\wа-яёәіңғүұқөһ])емес(?:$|[^\wа-яёәіңғүұқөһ])/i;
   const NEG = /никак|(?:без|нет)\s+(?:оплат|предоплат|задат|залог|взнос|депозит|аванс|платн|брон)|не\s+(?:нужна|нужен|нужны|требуется|требуются)|(?:оплат|предоплат|задат|залог|взнос|депозит|аванс|брон)[^,;]{0,25}отсутств|только по договору|шарт\s+бойынша|эскроу|тегін|жоқ|бесплатн|(?:^|\D)0\s*(тенге|теңге|тг|₸)/i;
   const ESCROW_DENIED = /не\s+(?:через\s+)?эскроу|без\s+эскроу|эскроу\s+жоқ/i;
 
@@ -120,6 +122,15 @@ interface SourceInfo { url?: string; platform?: string; text?: string }
     return sent.trim();
   }
 
+  // Спан указывает ровно на обрезанный матч: text.slice(start, end) === value.
+  // Индексы — UTF-16 кодовые единицы JS (те же, что использует String.slice).
+  function trimSpan(base: number, index: number, raw: string) {
+    const value = raw.trim();
+    const lead = value ? raw.length - raw.trimStart().length : 0;
+    const start = base + index + lead;
+    return { value, start, end: start + value.length };
+  }
+
   function paymentCues(sent: string) {
     const cues: string[] = [];
     // Scope negation to a clause, and only to payment/legal expressions.
@@ -130,7 +141,7 @@ interface SourceInfo { url?: string; platform?: string; text?: string }
         const m = re.exec(clause);
         if (!m) continue;
         const scoped = clause.replace(ESCROW_DENIED, '');
-        if (NEG.test(scoped)) continue;
+        if (NEG.test(scoped) || NEG_BOUND_EMEC.test(scoped)) continue;
         cues.push(m[0]);
       }
     }
@@ -159,38 +170,40 @@ interface SourceInfo { url?: string; platform?: string; text?: string }
       if (hasPay) for (const c of cues) if (!paymentCueSet.includes(c)) paymentCueSet.push(c);
       let m: RegExpExecArray | null;
       const scan = (re: RegExp, fn: (m: RegExpExecArray) => void) => { re.lastIndex = 0; while ((m = re.exec(sent))) fn(m); };
+      const sp = (m: RegExpExecArray, raw: string) => trimSpan(base, m.index, raw);
       scan(RE_MONEY, (m) => {
         const kzt = normalizeMoney(m[1], m[2]);
-        push("money", "Сумма", m[0].trim(), sent, base + m.index, base + m.index + m[0].length,
+        const s = sp(m, m[0]);
+        push("money", "Сумма", s.value, sent, s.start, s.end,
           hasPay ? "high" : "medium", kzt == null ? undefined : { valueKzt: kzt });
       });
-      scan(RE_PHONE, (m) => push("phone", "Телефон", m[1].trim(), sent, base + m.index, base + m.index + m[1].length, "high"));
+      scan(RE_PHONE, (m) => { const s = sp(m, m[1]); push("phone", "Телефон", s.value, sent, s.start, s.end, "high"); });
       scan(RE_PERCENT, (m) => {
         const ready = /(готов|дайын|выполнен|орындал)/i.test(sent);
         push("readiness", "Готовность", m[1] + "%", sent, base + m.index, base + m.index + m[0].length, ready ? "high" : "medium");
       });
-      scan(RE_AREA, (m) => push("area", "Площадь", m[0].trim(), sent, base + m.index, base + m.index + m[0].length, "high"));
-      scan(RE_YEAR, (m) => push("date", "Срок", m[0].trim(), sent, base + m.index, base + m.index + m[0].length, "high"));
-      scan(RE_QUARTER, (m) => push("date", "Квартал", m[1].trim(), sent, base + m.index, base + m.index + m[1].length, "high"));
-      scan(RE_DEADLINE, (m) => push("deadline", "Маркер срока", m[1].trim(), sent, base + m.index, base + m.index + m[1].length, "medium"));
-      scan(RE_GUARANTEE, (m) => push("legal", "Упоминание гарантии", m[1].trim(), sent, base + m.index, base + m.index + m[1].length, "medium"));
-      scan(RE_PERMIT, (m) => push("legal", "Упоминание разрешения", m[1].trim(), sent, base + m.index, base + m.index + m[1].length, "medium"));
-      scan(RE_ESCROW, (m) => push("legal", "Эскроу", m[1].trim(), sent, base + m.index, base + m.index + m[1].length, "medium"));
-      scan(RE_CONTRACT, (m) => push("legal", "Договор", m[1].trim(), sent, base + m.index, base + m.index + m[1].length, "medium"));
-      scan(RE_HANDLE, (m) => push("contact", "Контакт", m[1].trim(), sent, base + m.index, base + m.index + m[1].length, "high"));
-      scan(RE_URL, (m) => push("contact", "Ссылка", m[1].trim(), sent, base + m.index, base + m.index + m[1].length, "high"));
-      scan(RE_EMAIL, (m) => push("contact", "Почта", m[1].trim(), sent, base + m.index, base + m.index + m[1].length, "high"));
-      scan(RE_RELATIVE, (m) => push("date", "Относит. срок", m[0].trim(), sent, base + m.index, base + m.index + m[0].length, "medium"));
-      scan(RE_SEASON, (m) => push("date", "Сезон сдачи", m[1].trim(), sent, base + m.index, base + m.index + m[1].length, "medium"));
+      scan(RE_AREA, (m) => { const s = sp(m, m[0]); push("area", "Площадь", s.value, sent, s.start, s.end, "high"); });
+      scan(RE_YEAR, (m) => { const s = sp(m, m[0]); push("date", "Срок", s.value, sent, s.start, s.end, "high"); });
+      scan(RE_QUARTER, (m) => { const s = sp(m, m[1]); push("date", "Квартал", s.value, sent, s.start, s.end, "high"); });
+      scan(RE_DEADLINE, (m) => { const s = sp(m, m[1]); push("deadline", "Маркер срока", s.value, sent, s.start, s.end, "medium"); });
+      scan(RE_GUARANTEE, (m) => { const s = sp(m, m[1]); push("legal", "Упоминание гарантии", s.value, sent, s.start, s.end, "medium"); });
+      scan(RE_PERMIT, (m) => { const s = sp(m, m[1]); push("legal", "Упоминание разрешения", s.value, sent, s.start, s.end, "medium"); });
+      scan(RE_ESCROW, (m) => { const s = sp(m, m[1]); push("legal", "Эскроу", s.value, sent, s.start, s.end, "medium"); });
+      scan(RE_CONTRACT, (m) => { const s = sp(m, m[1]); push("legal", "Договор", s.value, sent, s.start, s.end, "medium"); });
+      scan(RE_HANDLE, (m) => { const s = sp(m, m[1]); push("contact", "Контакт", s.value, sent, s.start, s.end, "high"); });
+      scan(RE_URL, (m) => { const s = sp(m, m[1]); push("contact", "Ссылка", s.value, sent, s.start, s.end, "high"); });
+      scan(RE_EMAIL, (m) => { const s = sp(m, m[1]); push("contact", "Почта", s.value, sent, s.start, s.end, "high"); });
+      scan(RE_RELATIVE, (m) => { const s = sp(m, m[0]); push("date", "Относит. срок", s.value, sent, s.start, s.end, "medium"); });
+      scan(RE_SEASON, (m) => { const s = sp(m, m[1]); push("date", "Сезон сдачи", s.value, sent, s.start, s.end, "medium"); });
       for (const re of LURE) {
         re.lastIndex = 0;
         const lm = re.exec(sent);
-        if (lm) push("lure", "Инвест-приманка", lm[0].trim(), sent, base + lm.index, base + lm.index + lm[0].length, "medium");
+        if (lm) { const s = sp(lm, lm[0]); push("lure", "Инвест-приманка", s.value, sent, s.start, s.end, "medium"); }
       }
       for (const re of CHANNEL) {
         re.lastIndex = 0;
         const cm = re.exec(sent);
-        if (cm) push("channel", "Увод в мессенджер", cm[0].trim(), sent, base + cm.index, base + cm.index + cm[0].length, "medium");
+        if (cm) { const s = sp(cm, cm[0]); push("channel", "Увод в мессенджер", s.value, sent, s.start, s.end, "medium"); }
       }
       if (hasPay) paymentQuotes.push(quote(sent));
       else if (channelCues(sent).length) channelQuotes.push(quote(sent));
@@ -290,20 +303,116 @@ interface SourceInfo { url?: string; platform?: string; text?: string }
     return ph + "|" + head;
   }
 
+  /* ------------------------------------------------------------------ */
+  /* S3.2 (C4). Единый канонический ключ дедупа: zkId|canonicalText.     */
+  /* Паритет с validation.adDedupeKey и SQL public.ad_dedupe_key        */
+  /* (серверный пересчёт, клиентскому ключу никто не доверяет): полный  */
+  /* текст, телефоны 8XXXXXXXXXX → +7XXXXXXXXXX, схлопнутые пробелы,     */
+  /* нижний регистр. Сравнение — строго в пределах одного ЖК: тот же     */
+  /* текст в другом ЖК допустим. Старый dedupeKey оставлен для           */
+  /* совместимости черновиков без zkId (CSV-строки до сопоставления).    */
+  /* ------------------------------------------------------------------ */
+
+  /** KZ-телефон вида +7/8 + 10 цифр (зеркало AD_PHONE_RE из validation.ts). */
+  const AD_PHONE_RE = /((?:\+7|8)[\s\-()]?\d{3}[\s\-()]?\d{3}[\s\-()]?\d{2}[\s\-()]?\d{2})/g;
+
+  function normKzPhone(m: string): string | null {
+    let d = m.replace(/\D/g, '');
+    if (d.length === 11 && d[0] === '8') d = '7' + d.slice(1);
+    if (d.length === 10) d = '7' + d;
+    return d.length >= 10 ? '+' + d : null;
+  }
+
+  /** Канонический текст публикации для дедупа: телефоны → +7, пробелы/регистр. */
+  export function canonicalAdText(text: string): string {
+    AD_PHONE_RE.lastIndex = 0;
+    const canon = String(text ?? '').replace(AD_PHONE_RE, (m) => normKzPhone(m) ?? m);
+    return canon.replace(/\s+/g, ' ').trim().toLowerCase();
+  }
+
+  /**
+   * Полный ключ дедупа C4: область (zkId) + канонический текст.
+   * Без zkId (несопоставленный черновик) — голый канон: такое сравнение
+   * глобально и повтором не считается, только подсказка для preview.
+   */
+  export function adDedupeKey(zkId: string, text: string): string;
+  export function adDedupeKey(ad: { text: string; zkId?: string }): string;
+  export function adDedupeKey(zkIdOrAd: string | { text: string; zkId?: string }, text?: string): string {
+    const zkId = typeof zkIdOrAd === 'string' ? zkIdOrAd : (zkIdOrAd.zkId ?? '');
+    const body = typeof zkIdOrAd === 'string' ? String(text ?? '') : String(zkIdOrAd.text ?? '');
+    const canon = canonicalAdText(body);
+    return zkId ? `${zkId}|${canon}` : canon;
+  }
+
+
+import type { CsvHintKind, CsvParseResult, CsvRow } from './types';
 
 const CSV_COLS: Record<string, string[]> = {
  text: ['text', 'текст', 'объявление', 'публикация'], platform: ['platform', 'площадка', 'источник'],
  account: ['account', 'аккаунт'], date: ['date', 'дата'], url: ['url', 'ссылка'], zkHint: ['zk', 'жк', 'объект']
 };
-export function parseCsvAds(input: string) {
- const result = Papa.parse<Record<string, string>>(input.trim(), { header: true, skipEmptyLines: true, transformHeader: h => h.trim().toLowerCase().replace(/^\uFEFF/, '') });
+// Локальная проверка календарной даты (без импорта validation: тот модуль
+// ссылается на парсер в комментариях стыка, цикл здесь не нужен).
+const CSV_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+function isCsvCalendarDate(value: string) {
+ if (!CSV_DATE_RE.test(value)) return false;
+ const [y, m, d] = value.split('-').map(Number);
+ const t = Date.UTC(y, m - 1, d);
+ const dt = new Date(t);
+ return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
+}
+/**
+ * S3.3 (C4). Подсказка ЖК из CSV: точное совпадение ID → предсопоставление;
+ * уникальное совпадение имени (без учёта регистра/пробелов) → предложение;
+ * пусто/неизвестно/двусмысленно → null. Предыдущий выбор UI не наследуется:
+ * вызывающий обязан явно подтвердить mappedZkId или выбрать ЖК вручную.
+ */
+export function resolveCsvHint(hint: string, targets: { id: string; name: string }[]): { mappedZkId: string | null; suggestionId: string | null; kind: CsvHintKind } {
+ const h = String(hint || '').trim();
+ if (!h) return { mappedZkId: null, suggestionId: null, kind: 'unknown' };
+ const byId = targets.find(t => t.id === h) || targets.find(t => t.id.toLowerCase() === h.toLowerCase());
+ if (byId) return { mappedZkId: byId.id, suggestionId: null, kind: 'id' };
+ const norm = (s: string) => String(s || '').replace(/\s+/g, ' ').trim().toLowerCase();
+ const named = targets.filter(t => norm(t.name) === norm(h) || (norm(h).length >= 3 && norm(t.name).includes(norm(h))));
+ if (named.length === 1) return { mappedZkId: null, suggestionId: named[0].id, kind: 'name' };
+ if (named.length > 1) return { mappedZkId: null, suggestionId: null, kind: 'ambiguous' };
+ return { mappedZkId: null, suggestionId: null, kind: 'unknown' };
+}
+export function parseCsvAds(input: string): CsvParseResult {
+ const src = String(input || '').replace(/^\uFEFF/, '');
+ if (!src.trim()) throw new Error('Пустой CSV');
+ const result = Papa.parse<Record<string, string>>(src, { header: true, skipEmptyLines: true, transformHeader: h => h.trim().toLowerCase().replace(/^\uFEFF/, '') });
  const fields = result.meta.fields || [];
  if (!fields.some(f => CSV_COLS.text.includes(f))) throw new Error('Нет колонки текста (text/текст)');
  const errors = result.errors.map(e => `Строка ${(e.row ?? 0) + 2}: ${e.message}`);
- const rows = result.data.flatMap((row, index) => {
-  const get = (key: string) => row[fields.find(f => CSV_COLS[key].includes(f)) || ''] || '';
-  if (!get('text').trim()) { errors.push(`Строка ${index + 2}: пустой текст`); return []; }
-  return [{ text: get('text'), platform: get('platform'), account: get('account'), date: get('date'), url: get('url'), zkHint: get('zkHint') }];
+ const rows: CsvRow[] = (result.data as Record<string, unknown>[]).map((rawRow, index) => {
+  const row = (rawRow || {}) as Record<string, unknown>;
+  const get = (key: string): string => {
+   const f = fields.find(ff => CSV_COLS[key].includes(ff));
+   const v = f ? row[f] : '';
+   return String(v ?? '').trim();
+  };
+  const rowNumber = index + 2;
+  const rowErrors: string[] = [];
+  const text = get('text');
+  if (!text) rowErrors.push(`Строка ${rowNumber}: пустой текст`);
+  const dateRaw = get('date');
+  let date: string | null = null;
+  if (dateRaw) {
+   if (isCsvCalendarDate(dateRaw)) date = dateRaw;
+   else { rowErrors.push(`Строка ${rowNumber}: неверная дата «${dateRaw}» (нужна реальная YYYY-MM-DD)`); }
+  }
+  // Ошибки PapaParse, привязанные к этой строке данных, блокируют её save.
+  for (const e of result.errors) {
+   if ((e.row ?? -1) === index) rowErrors.push(`Строка ${rowNumber}: ${e.message}`);
+  }
+  return {
+   rowId: `csv-r${index + 1}`, rowNumber, text,
+   platform: get('platform'), account: get('account'),
+   date, dateRaw, url: get('url'), zkHint: get('zkHint'),
+   errors: rowErrors, hintKind: 'unknown' as CsvHintKind,
+   mappedZkId: null, suggestionId: null, savedAdId: null,
+  };
  });
  return { rows, errors, delim: result.meta.delimiter };
 }

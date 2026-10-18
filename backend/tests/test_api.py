@@ -1,7 +1,9 @@
 from fastapi.testclient import TestClient
-from backend.app.main import app, fetch_workspace, get_settings, Settings
+from backend.app.main import app, fetch_workspace, get_settings, Settings, score_for, zone_for
 import httpx
+import json
 import pytest
+from pathlib import Path
 
 client = TestClient(app)
 
@@ -52,3 +54,48 @@ def test_summary_and_export_use_authenticated_workspace():
         assert exported.headers['cache-control'] == 'no-store'
     finally:
         app.dependency_overrides.clear()
+
+def load_scoring_corpus():
+    """S1.5 golden corpus shared with TS. Expected values come from the JSON, never hand-copied."""
+    root = Path(__file__).resolve().parents[2]
+    return json.loads((root / 'tests/fixtures/contracts/scoring.json').read_text(encoding='utf-8'))
+
+def factors_of(case):
+    factors = [{'code': c, 'status': 'confirmed'} for c in case.get('confirmed', [])]
+    for status in case.get('statuses', []):
+        factors.append({'code': 'R2', 'status': status})
+    return factors
+
+def test_python_matches_golden_scoring_corpus():
+    corpus = load_scoring_corpus()
+    # Per-case: same helpers that /api/summary uses, expected from the JSON.
+    for case in corpus['cases']:
+        confirmed = {f['code'] for f in factors_of(case) if f['status'] == 'confirmed'}
+        score = score_for(confirmed)
+        assert score == case['expected']['score'], case['id']
+        assert zone_for(score, confirmed) == case['expected']['zone'], case['id']
+    # Aggregate: one workspace complex per case, zone tally derived from the JSON.
+    workspace = {'version': 1, 'data': {'complexes': [{'factors': factors_of(c)} for c in corpus['cases']], 'ads': []}}
+    app.dependency_overrides[fetch_workspace] = lambda: workspace
+    try:
+        result = client.get('/api/summary')
+        assert result.status_code == 200
+        body = result.json()
+        expected_zones = {'red': 0, 'yellow': 0, 'green': 0}
+        for case in corpus['cases']:
+            expected_zones[case['expected']['zone']] += 1
+        assert body['zones'] == expected_zones
+        assert body['complexes'] == len(corpus['cases'])
+    finally:
+        app.dependency_overrides.clear()
+
+def test_zone_boundaries_via_zone_function():
+    """24/25 and 59/60 edges go through zone_for directly — such scores are unreachable via weights."""
+    corpus = load_scoring_corpus()
+    for boundary in corpus['zoneBoundaries']:
+        confirmed = set()
+        if boundary['confirmedIncludesR1']:
+            confirmed.add('R1')
+        if boundary['confirmedIncludesR2']:
+            confirmed.add('R2')
+        assert zone_for(boundary['score'], confirmed) == boundary['expectedZone'], boundary

@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "kind": "acceptance-criteria-index",
+  "generatedFrom": {
+    "planIndex": "docs/sprints/PLAN_INDEX.json",
+    "instructions": [
+      "docs/sprints/S0.md",
+      "docs/sprints/S1.md",
+      "docs/sprints/S2.md",
+      "docs/sprints/S3.md",
+      "docs/sprints/S4.md",
+      "docs/sprints/S5.md",
+      "docs/sprints/S6.md"
+    ],
+    "protocol": "docs/sprints/EXECUTION.md"
+  },
+  "note": "Перечень обязательных package/DoD IDs. Сверено с PLAN_INDEX.json и текстом S0–S6.md. Это план проверок, а не готовые результаты: PASS проставляется только протоколом gate по отчёту docs/acceptance/sprint-N.json с доказательствами.",
+  "sprints": [
+    {
+      "sprint": 0,
+      "packages": ["S0.1", "S0.2", "S0.3", "S0.4", "S0.5"],
+      "criteria": [
+        { "id": "D0.1", "evidence": "Manifest + проверенный backup; версии и исходный dirty status" },
+        { "id": "D0.2", "evidence": "Независимые SQL-тесты, полный loader миграций, все legacy assertions сохранены" },
+        { "id": "D0.3", "evidence": "T/U/B/E/C/A/F/L PASS; семь маршрутов и 16/13/11 сохранены" },
+        { "id": "D0.4", "evidence": "Gate negative/positive tests PASS; матрица покрывает требования и A/B findings" },
+        { "id": "D0.5", "evidence": "Отчёт S0 с источниками/артефактами" }
+      ]
+    },
+    {
+      "sprint": 1,
+      "packages": ["S1.1", "S1.2", "S1.3", "S1.4", "S1.5"],
+      "criteria": [
+        { "id": "D1.1", "evidence": "I01–I18 проходят независимо в TS и SQL, rollback проверен" },
+        { "id": "D1.2", "evidence": "Все invalidate cases PASS, повторное подтверждение явно требуется" },
+        { "id": "D1.3", "evidence": "Seed integrity PASS, A/B/C 35/70/10; legacy не обогащён выдуманными данными" },
+        { "id": "D1.4", "evidence": "Scoring corpus TS/Python совпадает; UI и прямой RPC защищены" },
+        { "id": "D1.5", "evidence": "T/U/B/E/A/L PASS, D0 регрессия актуальна" }
+      ]
+    },
+    {
+      "sprint": 2,
+      "packages": ["S2.1", "S2.2", "S2.3", "S2.4", "S2.5", "S2.6"],
+      "criteria": [
+        { "id": "D2.1", "evidence": "Все schema/legacy/future/corrupt cases PASS без молчаливого сброса" },
+        { "id": "D2.2", "evidence": "Retry, conflict, response loss и session switch PASS в SQL/repository/browser" },
+        { "id": "D2.3", "evidence": "Все fault cases upload/commit/cleanup PASS; referenced files не удаляются" },
+        { "id": "D2.4", "evidence": "История и signal versions неизменны, все решения доступны после reload" },
+        { "id": "D2.5", "evidence": "Полный backup/restore с байтами PASS; zip-path/size/missing-file negative tests PASS" },
+        { "id": "D2.6", "evidence": "Реальные two-user RLS/Storage/expiry PASS; T/U/B/E/C/A/L, предыдущая регрессия" }
+      ]
+    },
+    {
+      "sprint": 3,
+      "packages": ["S3.1", "S3.2", "S3.3", "S3.4"],
+      "criteria": [
+        { "id": "D3.1", "evidence": "extraction corpus и legacy RU/KZ PASS, все quote/span дословны" },
+        { "id": "D3.2", "evidence": "TS/SQL dedupe и URL corpus совпадают; cross-JK поведение явно проверено" },
+        { "id": "D3.3", "evidence": "CSV multiline/BOM/errors/mapping/date/reset/retry PASS" },
+        { "id": "D3.4", "evidence": "Roundtrip после reload PASS, unknown не заменён вымышленным" },
+        { "id": "D3.5", "evidence": "T/U/B/E/C/L, накопленная регрессия" }
+      ]
+    },
+    {
+      "sprint": 4,
+      "packages": ["S4.1", "S4.2", "S4.3", "S4.4", "S4.5"],
+      "criteria": [
+        { "id": "D4.1", "evidence": "Server run provenance, ownership, duplicate и error tests PASS" },
+        { "id": "D4.2", "evidence": "Несколько гипотез имеют независимые решения, один ad, human comment, reload PASS" },
+        { "id": "D4.3", "evidence": "Все stale/abort/session cases PASS" },
+        { "id": "D4.4", "evidence": "12 реальных eval-кейсов и новый browser input PASS, отчёт сохранён" },
+        { "id": "D4.5", "evidence": "T/U/B/E/C/A/F/L/AI и накопленная регрессия PASS; секретов нет в bundle/storage/Git" }
+      ]
+    },
+    {
+      "sprint": 5,
+      "packages": ["S5.1", "S5.2", "S5.3", "S5.4"],
+      "criteria": [
+        { "id": "D5.1", "evidence": "Все переходы и повторные команды проверены, версии append-only" },
+        { "id": "D5.2", "evidence": "v1 неизменна при новых фактах; header/body/exports согласованы" },
+        { "id": "D5.3", "evidence": "Три PDF созданы, текст сверён, все страницы визуально просмотрены" },
+        { "id": "D5.4", "evidence": "Новый полный connected кейс + отказ + reload/direct link/mobile PASS" },
+        { "id": "D5.5", "evidence": "T/U/B/E/C/A/L + нужный live AI кейс, прежняя регрессия" }
+      ]
+    },
+    {
+      "sprint": 6,
+      "packages": ["S6.1", "S6.2", "S6.3", "S6.4", "S6.5"],
+      "criteria": [
+        { "id": "D6.1", "evidence": "Вся security matrix PASS, нет неисправленных утечек/обходов/потери данных" },
+        { "id": "D6.2", "evidence": "Desktop/mobile/keyboard/empty/error/deep-link matrix PASS" },
+        { "id": "D6.3", "evidence": "Clean-room DEMO/connected + fresh/upgrade/restore проверены по инструкции" },
+        { "id": "D6.4", "evidence": "Manifest/SHA, сценарий, PDF и резервные материалы готовы; адресат может получить сдаваемые исходники" },
+        { "id": "D6.5", "evidence": "Все обязательные требования и профили PASS на candidate" }
+      ]
+    }
+  ]
+}
