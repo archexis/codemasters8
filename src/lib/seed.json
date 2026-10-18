@@ -1,0 +1,1412 @@
+{
+  "COMPLEXES": [
+    {
+      "origin": "scenario",
+      "id": "SQ-001",
+      "demo": true,
+      "scenario": "A",
+      "name": "Ертіс Толқыны",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "ул. Вымышленная, 12 (DEMO)",
+      "lat": 49.9841,
+      "lng": 82.6132,
+      "developer": "ТОО «Демо Құрылыс-1» (DEMO)",
+      "bin": "990100000001",
+      "stage": "Коробка, 9 из 12 этажей",
+      "readinessClaimed": 62,
+      "readinessConfirmed": null,
+      "readinessSources": [
+        {
+          "value": 62,
+          "source": "Сайт застройщика (DEMO-снимок)",
+          "date": "2026-10-02"
+        }
+      ],
+      "legalBasis": {
+        "type": "unknown",
+        "status": "unknown",
+        "source": "Не проверено — реестры недоступны в демо",
+        "checkedAt": "2026-10-10"
+      },
+      "note": "Сценарий A: основание не проверено, есть платная бронь. R1 не применяется.",
+      "factors": [
+        {
+          "code": "R2",
+          "status": "confirmed",
+          "evidence": {
+            "adId": "AD-001",
+            "quote": "Бронь квартиры — всего 500 000 тенге, сумма идёт в зачёт стоимости",
+            "source": "Скриншот объявления (DEMO)"
+          },
+          "reviewer": "demo.analyst",
+          "updatedAt": "2026-10-11T10:20:00+05:00"
+        },
+        {
+          "code": "R3",
+          "status": "confirmed",
+          "evidence": {
+            "adId": "AD-001",
+            "quote": "Старт продаж в строящемся доме, сдача в 2027 году",
+            "source": "Текст объявления (DEMO)"
+          },
+          "reviewer": "demo.analyst",
+          "updatedAt": "2026-10-11T10:20:00+05:00"
+        },
+        {
+          "code": "R1",
+          "status": "needs-verification",
+          "evidence": {
+            "source": "Правовое основание не проверено",
+            "date": "2026-10-10"
+          }
+        }
+      ],
+      "events": [
+        {
+          "date": "2026-09-18",
+          "text": "Опубликованы объявления о старте продаж (AD-001, AD-002)."
+        },
+        {
+          "date": "2026-10-11",
+          "text": "Аналитик подтвердил R2 и R3 по фрагментам объявлений."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Снимок объявления AD-001",
+          "date": "2026-10-02"
+        },
+        {
+          "title": "Карточка застройщика (демо)",
+          "date": "2026-10-10"
+        }
+      ]
+    },
+    {
+      "origin": "scenario",
+      "id": "SQ-002",
+      "demo": true,
+      "scenario": "B",
+      "name": "Сарыарқа Парк",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "пр. Вымышленный, 45 (DEMO)",
+      "lat": 49.9782,
+      "lng": 82.6215,
+      "developer": "ТОО «Демо Құрылыс-2» (DEMO)",
+      "bin": "990100000002",
+      "stage": "Котлован и фундамент",
+      "readinessClaimed": 55,
+      "readinessConfirmed": 12,
+      "readinessSources": [
+        {
+          "value": 55,
+          "source": "Рекламный пост (DEMO-снимок)",
+          "date": "2026-09-25"
+        },
+        {
+          "value": 12,
+          "source": "Выездной осмотр, фотофиксация (DEMO)",
+          "date": "2026-10-08"
+        }
+      ],
+      "legalBasis": {
+        "type": "absent",
+        "status": "absent-verified",
+        "source": "Проверено аналитиком: гарантия и разрешение МИО отсутствуют (демо-акт сверки)",
+        "checkedAt": "2026-10-09"
+      },
+      "note": "Сценарий B: установлено отсутствие законного основания + депозит. Ожидает подтверждения человеком.",
+      "factors": [
+        {
+          "code": "R1",
+          "status": "confirmed",
+          "evidence": {
+            "source": "Акт сверки с реестрами (DEMO)",
+            "date": "2026-10-09"
+          },
+          "reviewer": "demo.analyst",
+          "updatedAt": "2026-10-09T15:00:00+05:00"
+        },
+        {
+          "code": "R2",
+          "status": "confirmed",
+          "evidence": {
+            "adId": "AD-003",
+            "quote": "Депозит 1 000 000 тенге для фиксации цены, остаток в рассрочку от застройщика",
+            "source": "Скриншот объявления (DEMO)"
+          },
+          "reviewer": "demo.analyst",
+          "updatedAt": "2026-10-09T15:10:00+05:00"
+        },
+        {
+          "code": "R3",
+          "status": "confirmed",
+          "evidence": {
+            "adId": "AD-003",
+            "quote": "Продажа квартир на этапе котлована, сдача через 18 месяцев",
+            "source": "Текст объявления (DEMO)"
+          },
+          "reviewer": "demo.analyst",
+          "updatedAt": "2026-10-09T15:10:00+05:00"
+        },
+        {
+          "code": "R5",
+          "status": "hypothesis",
+          "evidence": {
+            "quote": "Готовность 55% в рекламе против 12% по осмотру",
+            "source": "Нужно подтверждение второго источника"
+          }
+        }
+      ],
+      "events": [
+        {
+          "date": "2026-09-25",
+          "text": "Зафиксирована реклама продаж на этапе котлована."
+        },
+        {
+          "date": "2026-10-08",
+          "text": "Осмотр площадки: готовность ~12%."
+        },
+        {
+          "date": "2026-10-09",
+          "text": "Сформирован сигнал, ожидает решения аналитика."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Снимок объявления AD-003",
+          "date": "2026-09-25"
+        },
+        {
+          "title": "Фотофиксация осмотра (демо)",
+          "date": "2026-10-08"
+        },
+        {
+          "title": "Акт сверки правового основания (демо)",
+          "date": "2026-10-09"
+        }
+      ]
+    },
+    {
+      "origin": "scenario",
+      "id": "SQ-003",
+      "demo": true,
+      "scenario": "C",
+      "name": "Достық Үйі",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "ул. Демонстрационная, 7 (DEMO)",
+      "lat": 49.9903,
+      "lng": 82.6054,
+      "developer": "ТОО «Демо Құрылыс-3» (DEMO)",
+      "bin": "990100000003",
+      "stage": "Чистовая отделка",
+      "readinessClaimed": 88,
+      "readinessConfirmed": 84,
+      "readinessSources": [
+        {
+          "value": 88,
+          "source": "Паспорт объекта (DEMO-снимок)",
+          "date": "2026-10-01"
+        },
+        {
+          "value": 84,
+          "source": "Осмотр (DEMO)",
+          "date": "2026-10-07"
+        }
+      ],
+      "legalBasis": {
+        "type": "guarantee",
+        "status": "verified",
+        "source": "Договор гарантии Единого оператора № DEMO-2026-031 (демо-копия)",
+        "checkedAt": "2026-10-07"
+      },
+      "note": "Сценарий C: действующая гарантия подтверждена, обычное объявление. Отсутствие отдельного разрешения МИО — не R1.",
+      "factors": [
+        {
+          "code": "R3",
+          "status": "confirmed",
+          "evidence": {
+            "adId": "AD-005",
+            "quote": "Открыты продажи в строящемся доме, сдача — IV квартал 2026",
+            "source": "Текст объявления (DEMO)"
+          },
+          "reviewer": "demo.analyst",
+          "updatedAt": "2026-10-07T12:00:00+05:00"
+        }
+      ],
+      "events": [
+        {
+          "date": "2026-10-01",
+          "text": "Опубликован паспорт объекта."
+        },
+        {
+          "date": "2026-10-07",
+          "text": "Подтверждена гарантия Единого оператора (демо-копия)."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Демо-копия договора гарантии",
+          "date": "2026-10-07"
+        },
+        {
+          "title": "Снимок объявления AD-005",
+          "date": "2026-10-05"
+        }
+      ]
+    },
+    {
+      "origin": "scenario",
+      "id": "SQ-004",
+      "demo": true,
+      "name": "Altai Residence",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "ул. Набережная вымышленная, 3 (DEMO)",
+      "lat": 49.9721,
+      "lng": 82.6298,
+      "developer": "ТОО «Демо Құрылыс-4» (DEMO)",
+      "bin": "990100000004",
+      "stage": "Введён в эксплуатацию (демо)",
+      "readinessClaimed": 100,
+      "readinessConfirmed": 100,
+      "readinessSources": [
+        {
+          "value": 100,
+          "source": "Акт ввода (демо)",
+          "date": "2026-08-20"
+        }
+      ],
+      "legalBasis": {
+        "type": "guarantee",
+        "status": "verified",
+        "source": "Гарантия закрыта вводом объекта (демо-запись)",
+        "checkedAt": "2026-08-20"
+      },
+      "note": "Контрольный спокойный объект: активных продаж строящегося жилья нет.",
+      "factors": [],
+      "events": [
+        {
+          "date": "2026-08-20",
+          "text": "Дом введён в эксплуатацию (демо-запись)."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Акт ввода (демо)",
+          "date": "2026-08-20"
+        }
+      ]
+    },
+    {
+      "origin": "scenario",
+      "id": "SQ-005",
+      "demo": true,
+      "name": "Наурыз Квартал",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "ул. Праздничная вымышленная, 21 (DEMO)",
+      "lat": 49.9877,
+      "lng": 82.5981,
+      "developer": "ТОО «Демо Құрылыс-5» (DEMO)",
+      "bin": "990100000005",
+      "stage": "Монолит, 5 из 9 этажей",
+      "readinessClaimed": 48,
+      "readinessConfirmed": 44,
+      "readinessSources": [
+        {
+          "value": 48,
+          "source": "Сайт застройщика (DEMO-снимок)",
+          "date": "2026-09-30"
+        },
+        {
+          "value": 44,
+          "source": "Осмотр (DEMO)",
+          "date": "2026-10-06"
+        }
+      ],
+      "legalBasis": {
+        "type": "mio-permit",
+        "status": "verified",
+        "source": "Разрешение МИО № DEMO-2026-118 (демо-копия)",
+        "checkedAt": "2026-10-06"
+      },
+      "note": "Разрешение МИО есть, но в рекламе — требование предоплаты. R2+R3+R6 = 40.",
+      "factors": [
+        {
+          "code": "R2",
+          "status": "confirmed",
+          "evidence": {
+            "adId": "AD-007",
+            "quote": "Первоначальный взнос от 2 000 000 тенге напрямую застройщику до заключения договора",
+            "source": "Скриншот объявления (DEMO)"
+          },
+          "reviewer": "demo.analyst",
+          "updatedAt": "2026-10-06T14:00:00+05:00"
+        },
+        {
+          "code": "R3",
+          "status": "confirmed",
+          "evidence": {
+            "adId": "AD-007",
+            "quote": "Продажи в строящемся доме, ключи в 2027 году",
+            "source": "Текст объявления (DEMO)"
+          },
+          "reviewer": "demo.analyst",
+          "updatedAt": "2026-10-06T14:00:00+05:00"
+        },
+        {
+          "code": "R6",
+          "status": "confirmed",
+          "evidence": {
+            "source": "Акт осмотра: простой башенного крана 6 недель (демо)",
+            "date": "2026-10-06"
+          },
+          "reviewer": "demo.analyst",
+          "updatedAt": "2026-10-06T14:30:00+05:00"
+        }
+      ],
+      "events": [
+        {
+          "date": "2026-09-30",
+          "text": "Опубликовано объявление с требованием первоначального взноса."
+        },
+        {
+          "date": "2026-10-06",
+          "text": "Осмотр зафиксировал простой техники."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Снимок объявления AD-007",
+          "date": "2026-09-30"
+        },
+        {
+          "title": "Демо-копия разрешения МИО",
+          "date": "2026-10-06"
+        },
+        {
+          "title": "Акт осмотра (демо)",
+          "date": "2026-10-06"
+        }
+      ]
+    },
+    {
+      "origin": "scenario",
+      "id": "SQ-006",
+      "demo": true,
+      "name": "Жастар Сити",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "ул. Молодёжная вымышленная, 9 (DEMO)",
+      "lat": 49.9952,
+      "lng": 82.6177,
+      "developer": "ТОО «Демо Құрылыс-6» (DEMO)",
+      "bin": "990100000006",
+      "stage": "Отделка фасада",
+      "readinessClaimed": 74,
+      "readinessConfirmed": 70,
+      "readinessSources": [
+        {
+          "value": 74,
+          "source": "Паспорт объекта (DEMO-снимок)",
+          "date": "2026-09-28"
+        },
+        {
+          "value": 70,
+          "source": "Осмотр (DEMO)",
+          "date": "2026-10-05"
+        }
+      ],
+      "legalBasis": {
+        "type": "unknown",
+        "status": "unknown",
+        "source": "Не проверено (демо)",
+        "checkedAt": "2026-10-05"
+      },
+      "note": "Коллективное обращение + активная реклама. R3+R4 = 25.",
+      "factors": [
+        {
+          "code": "R3",
+          "status": "confirmed",
+          "evidence": {
+            "adId": "AD-009",
+            "quote": "Продаём квартиры в строящемся доме, сдача весной",
+            "source": "Текст объявления (DEMO)"
+          },
+          "reviewer": "demo.analyst",
+          "updatedAt": "2026-10-05T11:00:00+05:00"
+        },
+        {
+          "code": "R4",
+          "status": "confirmed",
+          "evidence": {
+            "source": "Коллективное обращение 14 дольщиков, вх. № DEMO-441 (демо-копия)",
+            "date": "2026-10-03"
+          },
+          "reviewer": "demo.analyst",
+          "updatedAt": "2026-10-05T11:20:00+05:00"
+        },
+        {
+          "code": "R1",
+          "status": "needs-verification",
+          "evidence": {
+            "source": "Правовое основание не проверено",
+            "date": "2026-10-05"
+          }
+        }
+      ],
+      "events": [
+        {
+          "date": "2026-10-03",
+          "text": "Зарегистрировано коллективное обращение (демо)."
+        },
+        {
+          "date": "2026-10-05",
+          "text": "Факторы R3 и R4 подтверждены аналитиком."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Демо-копия обращения",
+          "date": "2026-10-03"
+        },
+        {
+          "title": "Снимок объявления AD-009",
+          "date": "2026-10-01"
+        }
+      ]
+    },
+    {
+      "origin": "scenario",
+      "id": "SQ-007",
+      "demo": true,
+      "name": "Көктем Шаңырағы",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "ул. Весенняя вымышленная, 17 (DEMO)",
+      "lat": 49.9812,
+      "lng": 82.6344,
+      "developer": "ТОО «Демо Құрылыс-7» (DEMO)",
+      "bin": "990100000007",
+      "stage": "Кладка стен",
+      "readinessClaimed": 41,
+      "readinessConfirmed": null,
+      "readinessSources": [
+        {
+          "value": 41,
+          "source": "Реклама (DEMO-снимок)",
+          "date": "2026-10-04"
+        }
+      ],
+      "legalBasis": {
+        "type": "unknown",
+        "status": "unknown",
+        "source": "Не проверено (демо)",
+        "checkedAt": "2026-10-04"
+      },
+      "note": "Заявленная готовность не подтверждена вторым источником — R5 только гипотеза.",
+      "factors": [
+        {
+          "code": "R3",
+          "status": "confirmed",
+          "evidence": {
+            "adId": "AD-011",
+            "quote": "Квартиры в строящемся доме по стартовым ценам",
+            "source": "Текст объявления (DEMO)"
+          },
+          "reviewer": "demo.analyst",
+          "updatedAt": "2026-10-04T09:00:00+05:00"
+        },
+        {
+          "code": "R5",
+          "status": "hypothesis",
+          "evidence": {
+            "quote": "Заявлено 41%, независимого замера нет",
+            "source": "Требуется осмотр"
+          }
+        },
+        {
+          "code": "R1",
+          "status": "needs-verification",
+          "evidence": {
+            "source": "Правовое основание не проверено",
+            "date": "2026-10-04"
+          }
+        }
+      ],
+      "events": [
+        {
+          "date": "2026-10-04",
+          "text": "Зафиксировано объявление, заявленная готовность требует проверки."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Снимок объявления AD-011",
+          "date": "2026-10-04"
+        }
+      ]
+    },
+    {
+      "origin": "scenario",
+      "id": "SQ-008",
+      "demo": true,
+      "name": "Шығыс Жұлдызы",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "адрес уточняется (DEMO, без координат)",
+      "developer": "ТОО «Демо Құрылыс-8» (DEMO)",
+      "bin": "990100000008",
+      "stage": "Проектная документация",
+      "readinessClaimed": 5,
+      "readinessConfirmed": 5,
+      "readinessSources": [
+        {
+          "value": 5,
+          "source": "Презентация проекта (DEMO)",
+          "date": "2026-10-09"
+        }
+      ],
+      "legalBasis": {
+        "type": "unknown",
+        "status": "unknown",
+        "source": "Не проверено (демо)",
+        "checkedAt": "2026-10-09"
+      },
+      "note": "Координаты отсутствуют — метка на карте не строится (так задумано).",
+      "factors": [
+        {
+          "code": "R3",
+          "status": "confirmed",
+          "evidence": {
+            "adId": "AD-013",
+            "quote": "Презентация будущего дома, запись на просмотр планировок",
+            "source": "Текст объявления (DEMO)"
+          },
+          "reviewer": "demo.analyst",
+          "updatedAt": "2026-10-09T16:00:00+05:00"
+        }
+      ],
+      "events": [
+        {
+          "date": "2026-10-09",
+          "text": "Добавлена презентация проекта без точного адреса."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Презентация проекта (демо)",
+          "date": "2026-10-09"
+        }
+      ]
+    },
+    {
+      "id": "SQ-R01",
+      "origin": "public-snapshot",
+      "registryId": "3741",
+      "name": "ЖК «Жаным»",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "пр. Есенберлина, 92",
+      "lat": 49.89745,
+      "lng": 82.60153,
+      "geoApprox": true,
+      "developer": "ТОО «Biryuza Development»",
+      "bin": null,
+      "authOrg": "ТОО «УК Шанырак Строй»",
+      "stage": "Сроки по реестру: 2023-07-24 — 2025-03-21",
+      "readinessClaimed": null,
+      "readinessConfirmed": null,
+      "readinessSources": [],
+      "legalBasis": {
+        "type": "mio-permit",
+        "status": "verified",
+        "source": "Ashyq Data: номер ДПГ-23-16-068/155, запись id 3741",
+        "checkedAt": "2026-10-15"
+      },
+      "note": "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов). Номер в наборе не является юридическим выводом.",
+      "factors": [],
+      "events": [
+        {
+          "date": "2026-10-15",
+          "text": "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ashyq Data · Объекты с долевым участием · запись id 3741",
+          "date": "2026-10-15",
+          "url": "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8"
+        }
+      ]
+    },
+    {
+      "id": "SQ-R02",
+      "origin": "public-snapshot",
+      "registryId": "4989",
+      "name": "Золотой квадрат, Пятно 1",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "ул. Кайсенова, участок 55/1",
+      "lat": 49.94539,
+      "lng": 82.62387,
+      "geoApprox": true,
+      "developer": "ТОО «НАУАН Корп»",
+      "bin": null,
+      "authOrg": "ТОО «SA-Инжиниринг»",
+      "stage": "Сроки по реестру: 2025-06-01 — 2026-07-31",
+      "readinessClaimed": null,
+      "readinessConfirmed": null,
+      "readinessSources": [],
+      "legalBasis": {
+        "type": "mio-permit",
+        "status": "verified",
+        "source": "Ashyq Data: номер ДПГ-25-16-078/194, запись id 4989",
+        "checkedAt": "2026-10-15"
+      },
+      "note": "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов).",
+      "factors": [],
+      "events": [
+        {
+          "date": "2026-10-15",
+          "text": "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ashyq Data · Объекты с долевым участием · запись id 4989",
+          "date": "2026-10-15",
+          "url": "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8"
+        }
+      ]
+    },
+    {
+      "id": "SQ-R03",
+      "origin": "public-snapshot",
+      "registryId": "6176",
+      "name": "ЖК «ASYLYM», Пятно 1",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "ул. Кокжал Барака, 18б",
+      "lat": 49.89637,
+      "lng": 82.60913,
+      "geoApprox": true,
+      "developer": "ТОО «EKM COMPANY»",
+      "bin": null,
+      "authOrg": "ТОО «EKM Invest»",
+      "stage": "Сроки по реестру: 2025-08-15 — 2026-05-15",
+      "readinessClaimed": null,
+      "readinessConfirmed": null,
+      "readinessSources": [],
+      "legalBasis": {
+        "type": "mio-permit",
+        "status": "verified",
+        "source": "Ashyq Data: номер ДПГ-25-16-082/200, запись id 6176",
+        "checkedAt": "2026-10-15"
+      },
+      "note": "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов).",
+      "factors": [],
+      "events": [
+        {
+          "date": "2026-10-15",
+          "text": "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ashyq Data · Объекты с долевым участием · запись id 6176",
+          "date": "2026-10-15",
+          "url": "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8"
+        }
+      ]
+    },
+    {
+      "id": "SQ-R04",
+      "origin": "public-snapshot",
+      "registryId": "6078",
+      "name": "ЖК Orda, Здание 1",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "ул. Кокжал Барака, 19а",
+      "lat": 49.88952,
+      "lng": 82.61521,
+      "geoApprox": true,
+      "developer": "ТОО «СЕО GROUP»",
+      "bin": null,
+      "authOrg": "ТОО «ВОСТОК СТРОЙАЛЬЯНС»",
+      "stage": "Сроки по реестру: 2024-10-17 — 2027-02-28",
+      "readinessClaimed": null,
+      "readinessConfirmed": null,
+      "readinessSources": [],
+      "legalBasis": {
+        "type": "mio-permit",
+        "status": "verified",
+        "source": "Ashyq Data: номер 1383/МҚЗТ-С-331, запись id 6078",
+        "checkedAt": "2026-10-15"
+      },
+      "note": "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов).",
+      "factors": [],
+      "events": [
+        {
+          "date": "2026-10-15",
+          "text": "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ashyq Data · Объекты с долевым участием · запись id 6078",
+          "date": "2026-10-15",
+          "url": "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8"
+        }
+      ]
+    },
+    {
+      "id": "SQ-R05",
+      "origin": "public-snapshot",
+      "registryId": "6516",
+      "name": "Tumar Towers Oskemen, Здание 1",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "пр. Победы, 2",
+      "lat": 49.95009,
+      "lng": 82.6168,
+      "geoApprox": true,
+      "developer": "ТОО «TUMAR Group»",
+      "bin": null,
+      "authOrg": "ТОО «Baiterek Invest»",
+      "stage": "Сроки по реестру: 2025-02-04 — 2026-07-04",
+      "readinessClaimed": null,
+      "readinessConfirmed": null,
+      "readinessSources": [],
+      "legalBasis": {
+        "type": "mio-permit",
+        "status": "verified",
+        "source": "Ashyq Data: номер KZ26VWE00002487, запись id 6516",
+        "checkedAt": "2026-10-15"
+      },
+      "note": "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов).",
+      "factors": [],
+      "events": [
+        {
+          "date": "2026-10-15",
+          "text": "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ashyq Data · Объекты с долевым участием · запись id 6516",
+          "date": "2026-10-15",
+          "url": "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8"
+        }
+      ]
+    },
+    {
+      "id": "SQ-R06",
+      "origin": "public-snapshot",
+      "registryId": "5495",
+      "name": "ЖК «AINALAIYN», Пятно 1",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "пр. Есенберлина, участок 2",
+      "lat": 49.89128,
+      "lng": 82.59565,
+      "geoApprox": true,
+      "developer": "ТОО «АА2А»",
+      "bin": null,
+      "authOrg": "ТОО «АА2А Invest»",
+      "stage": "Сроки по реестру: 2024-10-24 — 2025-12-31",
+      "readinessClaimed": null,
+      "readinessConfirmed": null,
+      "readinessSources": [],
+      "legalBasis": {
+        "type": "mio-permit",
+        "status": "verified",
+        "source": "Ashyq Data: номер KZ40VWE00002526, запись id 5495",
+        "checkedAt": "2026-10-15"
+      },
+      "note": "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов).",
+      "factors": [],
+      "events": [
+        {
+          "date": "2026-10-15",
+          "text": "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ashyq Data · Объекты с долевым участием · запись id 5495",
+          "date": "2026-10-15",
+          "url": "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8"
+        }
+      ]
+    },
+    {
+      "id": "SQ-R07",
+      "origin": "public-snapshot",
+      "registryId": "6512",
+      "name": "ЖК «ASYLTAS», Очередь 1",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "ул. Кокжал Барака, участок №1",
+      "lat": 49.89493,
+      "lng": 82.60783,
+      "geoApprox": true,
+      "developer": "ТОО «EKM COMPANY»",
+      "bin": null,
+      "authOrg": "ТОО «EKM Garant»",
+      "stage": "Сроки по реестру: 2025-12-23 — 2026-12-31",
+      "readinessClaimed": null,
+      "readinessConfirmed": null,
+      "readinessSources": [],
+      "legalBasis": {
+        "type": "mio-permit",
+        "status": "verified",
+        "source": "Ashyq Data: номер KZ53VWE00002680, запись id 6512",
+        "checkedAt": "2026-10-15"
+      },
+      "note": "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов).",
+      "factors": [],
+      "events": [
+        {
+          "date": "2026-10-15",
+          "text": "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ashyq Data · Объекты с долевым участием · запись id 6512",
+          "date": "2026-10-15",
+          "url": "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8"
+        }
+      ]
+    },
+    {
+      "id": "SQ-R08",
+      "origin": "public-snapshot",
+      "registryId": "3098",
+      "name": "Diamond",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "19-й жилой район, пересечение ул. Увалиева и ул. Кокжал Барака (точный адрес в наборе не указан, координат нет)",
+      "developer": "ВВД-Құрылыс",
+      "bin": null,
+      "authOrg": "Sparkle Diamond",
+      "stage": "Сроки по реестру: 2022-05-10 — 2026-10-31",
+      "readinessClaimed": null,
+      "readinessConfirmed": null,
+      "readinessSources": [],
+      "legalBasis": {
+        "type": "mio-permit",
+        "status": "verified",
+        "source": "Ashyq Data: номер ДС №1 к ДПГ-22-16-055/120, запись id 3098",
+        "checkedAt": "2026-10-15"
+      },
+      "note": "Запись из публичного набора разрешений. Точного адреса нет — на карту не ставится (честно, как SQ-008). Объявлений в системе нет — оценивать нечего (0 баллов).",
+      "factors": [],
+      "events": [
+        {
+          "date": "2026-10-15",
+          "text": "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ashyq Data · Объекты с долевым участием · запись id 3098",
+          "date": "2026-10-15",
+          "url": "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8"
+        }
+      ]
+    }
+  ],
+  "ADS": [
+    {
+      "id": "AD-001",
+      "zkId": "SQ-001",
+      "platform": "Krisha (демо)",
+      "account": "@demo_sales_1",
+      "date": "2026-09-18",
+      "url": "https://example.invalid/ad-001",
+      "captureAt": "2026-10-02",
+      "text": "Старт продаж в строящемся доме ЖК «Ертіс Толқыны», сдача в 2027 году. Бронь квартиры — всего 500 000 тенге, сумма идёт в зачёт стоимости. Звоните сегодня!"
+    },
+    {
+      "id": "AD-002",
+      "zkId": "SQ-001",
+      "platform": "Instagram (демо)",
+      "account": "@demo_sales_1",
+      "date": "2026-09-20",
+      "url": "https://example.invalid/ad-002",
+      "captureAt": "2026-10-02",
+      "text": "Успейте выбрать этаж в строящемся доме! Рассрочка от застройщика, квартиры от 15 млн тенге. Подробности в директ."
+    },
+    {
+      "id": "AD-003",
+      "zkId": "SQ-002",
+      "platform": "Krisha (демо)",
+      "account": "@demo_broker_9",
+      "date": "2026-09-25",
+      "url": "https://example.invalid/ad-003",
+      "captureAt": "2026-09-25",
+      "text": "Продажа квартир на этапе котлована, сдача через 18 месяцев. Депозит 1 000 000 тенге для фиксации цены, остаток в рассрочку от застройщика. Готовность 55%!"
+    },
+    {
+      "id": "AD-004",
+      "zkId": "SQ-002",
+      "platform": "Telegram-канал (демо)",
+      "account": "@demo_channel",
+      "date": "2026-09-27",
+      "url": "https://example.invalid/ad-004",
+      "captureAt": "2026-09-27",
+      "text": "Инвестируйте на котловане — доходность до 30%! Задаток 800 000 тенге, договор бронирования. Пишите в личку."
+    },
+    {
+      "id": "AD-005",
+      "zkId": "SQ-003",
+      "platform": "Krisha (демо)",
+      "account": "@demo_official_3",
+      "date": "2026-10-05",
+      "url": "https://example.invalid/ad-005",
+      "captureAt": "2026-10-05",
+      "text": "Открыты продажи в строящемся доме, сдача — IV квартал 2026. Оформление строго по договору с гарантией Единого оператора, оплата через эскроу. Никаких взносов до договора!"
+    },
+    {
+      "id": "AD-006",
+      "zkId": "SQ-003",
+      "platform": "Сайт застройщика (демо)",
+      "account": "official",
+      "date": "2026-10-01",
+      "url": "https://example.invalid/ad-006",
+      "captureAt": "2026-10-01",
+      "text": "Ход строительства: готовность 88%. Квартиры в строящемся доме, отделка в подарок при заключении договора."
+    },
+    {
+      "id": "AD-007",
+      "zkId": "SQ-005",
+      "platform": "Krisha (демо)",
+      "account": "@demo_sales_5",
+      "date": "2026-09-30",
+      "url": "https://example.invalid/ad-007",
+      "captureAt": "2026-09-30",
+      "text": "Продажи в строящемся доме, ключи в 2027 году. Первоначальный взнос от 2 000 000 тенге напрямую застройщику до заключения договора. Разрешение МИО получено!"
+    },
+    {
+      "id": "AD-008",
+      "zkId": "SQ-005",
+      "platform": "Instagram (демо)",
+      "account": "@demo_sales_5",
+      "date": "2026-10-03",
+      "url": "https://example.invalid/ad-008",
+      "captureAt": "2026-10-03",
+      "text": "Обзор стройки: монолит растёт! Квартиры от 18 млн, бронь бесплатная, все платежи только по договору."
+    },
+    {
+      "id": "AD-009",
+      "zkId": "SQ-006",
+      "platform": "Telegram-канал (демо)",
+      "account": "@demo_channel",
+      "date": "2026-10-01",
+      "url": "https://example.invalid/ad-009",
+      "captureAt": "2026-10-01",
+      "text": "Продаём квартиры в строящемся доме, сдача весной. Цены ниже рынка, оформление быстрое. Торопитесь!"
+    },
+    {
+      "id": "AD-010",
+      "zkId": "SQ-006",
+      "platform": "Krisha (демо)",
+      "account": "@demo_broker_2",
+      "date": "2026-10-04",
+      "url": "https://example.invalid/ad-010",
+      "captureAt": "2026-10-04",
+      "text": "ЖК «Жастар Сити»: квартиры в строящемся доме. Предоплата 30% резервирует квартиру за вами. Документы покажем при встрече."
+    },
+    {
+      "id": "AD-011",
+      "zkId": "SQ-007",
+      "platform": "Krisha (демо)",
+      "account": "@demo_sales_7",
+      "date": "2026-10-04",
+      "url": "https://example.invalid/ad-011",
+      "captureAt": "2026-10-04",
+      "text": "Квартиры в строящемся доме по стартовым ценам. Готовность уже 41%! Запись на экскурсию по стройке."
+    },
+    {
+      "id": "AD-012",
+      "zkId": "SQ-007",
+      "platform": "Instagram (демо)",
+      "account": "@demo_sales_7",
+      "date": "2026-10-06",
+      "url": "https://example.invalid/ad-012",
+      "captureAt": "2026-10-06",
+      "text": "Недорогие квартиры на этапе кладки стен. Возможна рассрочка, все вопросы — в директ."
+    },
+    {
+      "id": "AD-013",
+      "zkId": "SQ-008",
+      "platform": "Сайт-визитка (демо)",
+      "account": "official",
+      "date": "2026-10-09",
+      "url": "https://example.invalid/ad-013",
+      "captureAt": "2026-10-09",
+      "text": "Презентация будущего дома: старт проекта, презентация планировок. Презентация будущего дома, запись на просмотр планировок. Продажи после получения документов!"
+    }
+  ],
+  "REGISTRIES": [
+    {
+      "name": "Жилищный портал КЖК (homeportal.kz)",
+      "url": "https://homeportal.kz",
+      "note": "Разрешения МИО и гарантии КЖК · открывается (проверено 15.10.2026)"
+    },
+    {
+      "name": "E-License (elicense.kz)",
+      "url": "https://elicense.kz",
+      "note": "Проверка разрешительных документов · открывается, медленно (проверено 15.10.2026)"
+    },
+    {
+      "name": "Qazreestr (qazreestr.kz)",
+      "url": "https://qazreestr.kz",
+      "note": "Реестр долевого строительства · открывается (проверено 15.10.2026)"
+    },
+    {
+      "name": "eQurylys — реестр стройорганизаций",
+      "url": "https://reestr.equrylys.kz/organizations",
+      "note": "Реестр строительных организаций · открывается (проверено 15.10.2026)"
+    },
+    {
+      "name": "eGov — проверка юрлиц",
+      "url": "https://egov.kz",
+      "note": "Проверка юридических лиц · открывается (проверено 15.10.2026)"
+    },
+    {
+      "name": "КГД — налоговая задолженность",
+      "url": "https://kgd.gov.kz",
+      "note": "Задолженность по налогам · открывается (проверено 15.10.2026)"
+    },
+    {
+      "name": "Реестр субъектов предпринимательства",
+      "url": "https://rsp.gov.kz",
+      "note": "Статус субъекта · открывается (проверено 15.10.2026)"
+    },
+    {
+      "name": "Публичная кадастровая карта",
+      "url": "https://map.gov4c.kz/egkn/",
+      "note": "Кадастровые данные · при проверке 15.10.2026 не открылась"
+    },
+    {
+      "name": "Открытые данные РК",
+      "url": "https://data.egov.kz",
+      "note": "Наборы открытых данных · открывается (проверено 15.10.2026)"
+    },
+    {
+      "name": "Реестр недобросовестных участников госзакупок",
+      "url": "https://procurement.gov.kz/ru/registry/rnu",
+      "note": "Проверка репутации · при проверке 15.10.2026 не открылся"
+    },
+    {
+      "name": "Ashyq Data — разрешения на привлечение денег дольщиков",
+      "url": "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8",
+      "note": "Открытый набор разрешений МИО · открывается (проверено 15.10.2026)"
+    }
+  ],
+  "REAL_COMPLEXES": [
+    {
+      "id": "SQ-R01",
+      "origin": "public-snapshot",
+      "registryId": "3741",
+      "name": "ЖК «Жаным»",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "пр. Есенберлина, 92",
+      "lat": 49.89745,
+      "lng": 82.60153,
+      "geoApprox": true,
+      "developer": "ТОО «Biryuza Development»",
+      "bin": null,
+      "authOrg": "ТОО «УК Шанырак Строй»",
+      "stage": "Сроки по реестру: 2023-07-24 — 2025-03-21",
+      "readinessClaimed": null,
+      "readinessConfirmed": null,
+      "readinessSources": [],
+      "legalBasis": {
+        "type": "mio-permit",
+        "status": "verified",
+        "source": "Ashyq Data: номер ДПГ-23-16-068/155, запись id 3741",
+        "checkedAt": "2026-10-15"
+      },
+      "note": "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов). Номер в наборе не является юридическим выводом.",
+      "factors": [],
+      "events": [
+        {
+          "date": "2026-10-15",
+          "text": "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ashyq Data · Объекты с долевым участием · запись id 3741",
+          "date": "2026-10-15",
+          "url": "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8"
+        }
+      ]
+    },
+    {
+      "id": "SQ-R02",
+      "origin": "public-snapshot",
+      "registryId": "4989",
+      "name": "Золотой квадрат, Пятно 1",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "ул. Кайсенова, участок 55/1",
+      "lat": 49.94539,
+      "lng": 82.62387,
+      "geoApprox": true,
+      "developer": "ТОО «НАУАН Корп»",
+      "bin": null,
+      "authOrg": "ТОО «SA-Инжиниринг»",
+      "stage": "Сроки по реестру: 2025-06-01 — 2026-07-31",
+      "readinessClaimed": null,
+      "readinessConfirmed": null,
+      "readinessSources": [],
+      "legalBasis": {
+        "type": "mio-permit",
+        "status": "verified",
+        "source": "Ashyq Data: номер ДПГ-25-16-078/194, запись id 4989",
+        "checkedAt": "2026-10-15"
+      },
+      "note": "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов).",
+      "factors": [],
+      "events": [
+        {
+          "date": "2026-10-15",
+          "text": "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ashyq Data · Объекты с долевым участием · запись id 4989",
+          "date": "2026-10-15",
+          "url": "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8"
+        }
+      ]
+    },
+    {
+      "id": "SQ-R03",
+      "origin": "public-snapshot",
+      "registryId": "6176",
+      "name": "ЖК «ASYLYM», Пятно 1",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "ул. Кокжал Барака, 18б",
+      "lat": 49.89637,
+      "lng": 82.60913,
+      "geoApprox": true,
+      "developer": "ТОО «EKM COMPANY»",
+      "bin": null,
+      "authOrg": "ТОО «EKM Invest»",
+      "stage": "Сроки по реестру: 2025-08-15 — 2026-05-15",
+      "readinessClaimed": null,
+      "readinessConfirmed": null,
+      "readinessSources": [],
+      "legalBasis": {
+        "type": "mio-permit",
+        "status": "verified",
+        "source": "Ashyq Data: номер ДПГ-25-16-082/200, запись id 6176",
+        "checkedAt": "2026-10-15"
+      },
+      "note": "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов).",
+      "factors": [],
+      "events": [
+        {
+          "date": "2026-10-15",
+          "text": "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ashyq Data · Объекты с долевым участием · запись id 6176",
+          "date": "2026-10-15",
+          "url": "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8"
+        }
+      ]
+    },
+    {
+      "id": "SQ-R04",
+      "origin": "public-snapshot",
+      "registryId": "6078",
+      "name": "ЖК Orda, Здание 1",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "ул. Кокжал Барака, 19а",
+      "lat": 49.88952,
+      "lng": 82.61521,
+      "geoApprox": true,
+      "developer": "ТОО «СЕО GROUP»",
+      "bin": null,
+      "authOrg": "ТОО «ВОСТОК СТРОЙАЛЬЯНС»",
+      "stage": "Сроки по реестру: 2024-10-17 — 2027-02-28",
+      "readinessClaimed": null,
+      "readinessConfirmed": null,
+      "readinessSources": [],
+      "legalBasis": {
+        "type": "mio-permit",
+        "status": "verified",
+        "source": "Ashyq Data: номер 1383/МҚЗТ-С-331, запись id 6078",
+        "checkedAt": "2026-10-15"
+      },
+      "note": "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов).",
+      "factors": [],
+      "events": [
+        {
+          "date": "2026-10-15",
+          "text": "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ashyq Data · Объекты с долевым участием · запись id 6078",
+          "date": "2026-10-15",
+          "url": "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8"
+        }
+      ]
+    },
+    {
+      "id": "SQ-R05",
+      "origin": "public-snapshot",
+      "registryId": "6516",
+      "name": "Tumar Towers Oskemen, Здание 1",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "пр. Победы, 2",
+      "lat": 49.95009,
+      "lng": 82.6168,
+      "geoApprox": true,
+      "developer": "ТОО «TUMAR Group»",
+      "bin": null,
+      "authOrg": "ТОО «Baiterek Invest»",
+      "stage": "Сроки по реестру: 2025-02-04 — 2026-07-04",
+      "readinessClaimed": null,
+      "readinessConfirmed": null,
+      "readinessSources": [],
+      "legalBasis": {
+        "type": "mio-permit",
+        "status": "verified",
+        "source": "Ashyq Data: номер KZ26VWE00002487, запись id 6516",
+        "checkedAt": "2026-10-15"
+      },
+      "note": "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов).",
+      "factors": [],
+      "events": [
+        {
+          "date": "2026-10-15",
+          "text": "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ashyq Data · Объекты с долевым участием · запись id 6516",
+          "date": "2026-10-15",
+          "url": "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8"
+        }
+      ]
+    },
+    {
+      "id": "SQ-R06",
+      "origin": "public-snapshot",
+      "registryId": "5495",
+      "name": "ЖК «AINALAIYN», Пятно 1",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "пр. Есенберлина, участок 2",
+      "lat": 49.89128,
+      "lng": 82.59565,
+      "geoApprox": true,
+      "developer": "ТОО «АА2А»",
+      "bin": null,
+      "authOrg": "ТОО «АА2А Invest»",
+      "stage": "Сроки по реестру: 2024-10-24 — 2025-12-31",
+      "readinessClaimed": null,
+      "readinessConfirmed": null,
+      "readinessSources": [],
+      "legalBasis": {
+        "type": "mio-permit",
+        "status": "verified",
+        "source": "Ashyq Data: номер KZ40VWE00002526, запись id 5495",
+        "checkedAt": "2026-10-15"
+      },
+      "note": "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов).",
+      "factors": [],
+      "events": [
+        {
+          "date": "2026-10-15",
+          "text": "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ashyq Data · Объекты с долевым участием · запись id 5495",
+          "date": "2026-10-15",
+          "url": "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8"
+        }
+      ]
+    },
+    {
+      "id": "SQ-R07",
+      "origin": "public-snapshot",
+      "registryId": "6512",
+      "name": "ЖК «ASYLTAS», Очередь 1",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "ул. Кокжал Барака, участок №1",
+      "lat": 49.89493,
+      "lng": 82.60783,
+      "geoApprox": true,
+      "developer": "ТОО «EKM COMPANY»",
+      "bin": null,
+      "authOrg": "ТОО «EKM Garant»",
+      "stage": "Сроки по реестру: 2025-12-23 — 2026-12-31",
+      "readinessClaimed": null,
+      "readinessConfirmed": null,
+      "readinessSources": [],
+      "legalBasis": {
+        "type": "mio-permit",
+        "status": "verified",
+        "source": "Ashyq Data: номер KZ53VWE00002680, запись id 6512",
+        "checkedAt": "2026-10-15"
+      },
+      "note": "Запись из публичного набора разрешений. Объявлений в системе нет — оценивать нечего (0 баллов).",
+      "factors": [],
+      "events": [
+        {
+          "date": "2026-10-15",
+          "text": "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ashyq Data · Объекты с долевым участием · запись id 6512",
+          "date": "2026-10-15",
+          "url": "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8"
+        }
+      ]
+    },
+    {
+      "id": "SQ-R08",
+      "origin": "public-snapshot",
+      "registryId": "3098",
+      "name": "Diamond",
+      "city": "Өскемен / Усть-Каменогорск",
+      "address": "19-й жилой район, пересечение ул. Увалиева и ул. Кокжал Барака (точный адрес в наборе не указан, координат нет)",
+      "developer": "ВВД-Құрылыс",
+      "bin": null,
+      "authOrg": "Sparkle Diamond",
+      "stage": "Сроки по реестру: 2022-05-10 — 2026-10-31",
+      "readinessClaimed": null,
+      "readinessConfirmed": null,
+      "readinessSources": [],
+      "legalBasis": {
+        "type": "mio-permit",
+        "status": "verified",
+        "source": "Ashyq Data: номер ДС №1 к ДПГ-22-16-055/120, запись id 3098",
+        "checkedAt": "2026-10-15"
+      },
+      "note": "Запись из публичного набора разрешений. Точного адреса нет — на карту не ставится (честно, как SQ-008). Объявлений в системе нет — оценивать нечего (0 баллов).",
+      "factors": [],
+      "events": [
+        {
+          "date": "2026-10-15",
+          "text": "Запись импортирована из публичного набора Ashyq Data (снимок 15.10.2026)."
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ashyq Data · Объекты с долевым участием · запись id 3098",
+          "date": "2026-10-15",
+          "url": "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8"
+        }
+      ]
+    }
+  ],
+  "GEO_NOTE": "Координаты приблизительные: геокодирование Nominatim/OSM по адресу из набора, 15.10.2026. Не заменяет кадастровые данные.",
+  "ASHYQ_URL": "https://ashyq.data.gov.kz/dataset/magda-ds-b80110e9-218a-42ba-b8c8-01fa5e4c82c8",
+  "RETRIEVED": "2026-10-15"
+}

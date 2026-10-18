@@ -1,0 +1,139 @@
+{
+  "kind": "plan-not-acceptance",
+  "version": 2,
+  "sprints": [
+    {
+      "sprint": 0,
+      "dependsOn": null,
+      "instruction": "S0.md",
+      "packages": [
+        "S0.1",
+        "S0.2",
+        "S0.3",
+        "S0.4",
+        "S0.5"
+      ],
+      "requiredCriteria": [
+        "D0.1",
+        "D0.2",
+        "D0.3",
+        "D0.4",
+        "D0.5"
+      ]
+    },
+    {
+      "sprint": 1,
+      "dependsOn": 0,
+      "instruction": "S1.md",
+      "packages": [
+        "S1.1",
+        "S1.2",
+        "S1.3",
+        "S1.4",
+        "S1.5"
+      ],
+      "requiredCriteria": [
+        "D1.1",
+        "D1.2",
+        "D1.3",
+        "D1.4",
+        "D1.5"
+      ]
+    },
+    {
+      "sprint": 2,
+      "dependsOn": 1,
+      "instruction": "S2.md",
+      "packages": [
+        "S2.1",
+        "S2.2",
+        "S2.3",
+        "S2.4",
+        "S2.5",
+        "S2.6"
+      ],
+      "requiredCriteria": [
+        "D2.1",
+        "D2.2",
+        "D2.3",
+        "D2.4",
+        "D2.5",
+        "D2.6"
+      ]
+    },
+    {
+      "sprint": 3,
+      "dependsOn": 2,
+      "instruction": "S3.md",
+      "packages": [
+        "S3.1",
+        "S3.2",
+        "S3.3",
+        "S3.4"
+      ],
+      "requiredCriteria": [
+        "D3.1",
+        "D3.2",
+        "D3.3",
+        "D3.4",
+        "D3.5"
+      ]
+    },
+    {
+      "sprint": 4,
+      "dependsOn": 3,
+      "instruction": "S4.md",
+      "packages": [
+        "S4.1",
+        "S4.2",
+        "S4.3",
+        "S4.4",
+        "S4.5"
+      ],
+      "requiredCriteria": [
+        "D4.1",
+        "D4.2",
+        "D4.3",
+        "D4.4",
+        "D4.5"
+      ]
+    },
+    {
+      "sprint": 5,
+      "dependsOn": 4,
+      "instruction": "S5.md",
+      "packages": [
+        "S5.1",
+        "S5.2",
+        "S5.3",
+        "S5.4"
+      ],
+      "requiredCriteria": [
+        "D5.1",
+        "D5.2",
+        "D5.3",
+        "D5.4",
+        "D5.5"
+      ]
+    },
+    {
+      "sprint": 6,
+      "dependsOn": 5,
+      "instruction": "S6.md",
+      "packages": [
+        "S6.1",
+        "S6.2",
+        "S6.3",
+        "S6.4",
+        "S6.5"
+      ],
+      "requiredCriteria": [
+        "D6.1",
+        "D6.2",
+        "D6.3",
+        "D6.4",
+        "D6.5"
+      ]
+    }
+  ]
+}

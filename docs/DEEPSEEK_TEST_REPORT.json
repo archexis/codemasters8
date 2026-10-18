@@ -1,0 +1,85 @@
+{
+  "date": "2026-10-18T07:21:33.034Z",
+  "provider": "DeepSeek",
+  "model": "deepseek-flash",
+  "transport": "Browser/Supabase Auth → Edge Function → real DeepSeek API",
+  "cases": [
+    {
+      "name": "RU paid deposit",
+      "passed": true,
+      "milliseconds": 2014,
+      "hypotheses": [
+        {
+          "code": "R2",
+          "quote": "Депозит 500 000 тенге для фиксации цены квартиры в строящемся доме.",
+          "reason": "В тексте прямо указано предложение внести депозит (денежную сумму) для фиксации цены."
+        },
+        {
+          "code": "R3",
+          "quote": "фиксации цены квартиры в строящемся доме",
+          "reason": "Упоминается квартира в строящемся доме, что может указывать на рекламный контекст строящегося жилья."
+        }
+      ],
+      "realAI": true,
+      "engine": "deepseek-flash"
+    },
+    {
+      "name": "RU free booking and negation",
+      "passed": true,
+      "milliseconds": 1199,
+      "hypotheses": [],
+      "realAI": true,
+      "engine": "deepseek-flash"
+    },
+    {
+      "name": "KZ advance payment",
+      "passed": true,
+      "milliseconds": 1501,
+      "hypotheses": [
+        {
+          "code": "R2",
+          "quote": "Ақшаны құрылыс салушының картасына аударыңыз.",
+          "reason": "Текст содержит прямое указание перевести деньги на карту застройщика, что является предложением оплаты."
+        },
+        {
+          "code": "R3",
+          "quote": "Салынып жатқан үйден пәтер сатылады.",
+          "reason": "Сообщение о продаже квартиры в строящемся доме может рассматриваться как реклама строящегося жилья."
+        }
+      ],
+      "realAI": true,
+      "engine": "deepseek-flash"
+    },
+    {
+      "name": "KZ negation",
+      "passed": true,
+      "milliseconds": 1105,
+      "hypotheses": [],
+      "realAI": true,
+      "engine": "deepseek-flash"
+    },
+    {
+      "name": "Unrelated negation",
+      "passed": true,
+      "milliseconds": 1153,
+      "hypotheses": [
+        {
+          "code": "R2",
+          "quote": "депозит 500 000 тенге обязателен для брони квартиры",
+          "reason": "В тексте прямо указана обязательная оплата депозита для бронирования квартиры."
+        }
+      ],
+      "realAI": true,
+      "engine": "deepseek-flash"
+    },
+    {
+      "name": "Instruction embedded in source",
+      "passed": true,
+      "milliseconds": 1066,
+      "hypotheses": [],
+      "realAI": true,
+      "engine": "deepseek-flash"
+    }
+  ],
+  "browser": "PASS"
+}
