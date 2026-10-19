@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
-  "status": "CANDIDATE_AI_PASS_PUBLICATION_PENDING",
+  "status": "PUBLISHED_DEMO_AI_LOCAL_PASS",
   "createdAt": "2026-10-19T12:36:50.981Z",
   "baseHead": "29344252e26b4efe35262f7ef7610b4db3c1a2f5",
-  "dirty": true,
-  "candidateSHA": null,
+  "dirty": false,
+  "candidateSHA": "99ec5736d78c3e3357f52791d0d4b1794f236013",
   "sourceByteManifest": {
     ".env.example": "ffd5af093dc86aac2aebde39b1ba8940623e62546b080a4b3d9223ffb10cb411",
     ".github/workflows/ci.yml": "4a9764122c74ca16941cbd63b16003c037f697598d0c999db1dc2eb03ead4b87",
@@ -312,29 +312,50 @@
       }
     },
     "paidAI": {
-      "status": "NOT_RUN",
-      "reason": "No explicitly agreed budget",
-      "proposedMaximumProviderCalls": 13
+      "status": "PASS",
+      "report": "docs/acceptance/score-maxxing/paid-ai/evaluation.json",
+      "budgetUSD": 1,
+      "providerCalls": 15,
+      "reasonForExtraCalls": "Two browser test harness fixes: URL wait and accessible combobox locator",
+      "peakRateCostUSD": 0.0029493,
+      "reservedUpperUSD": 0.0465186,
+      "actualAccountDebit": "NOT_VERIFIED"
     },
     "externalCityTerrain": {
       "status": "NOT_RUN"
     },
     "publicCI": {
-      "status": "NOT_RUN"
+      "status": "PASS",
+      "sha": "99ec5736d78c3e3357f52791d0d4b1794f236013",
+      "url": "https://github.com/archexis/codemasters8/actions/runs/39256363997",
+      "jobs": [
+        "frontend",
+        "backend",
+        "edge"
+      ]
     }
   },
   "repository": "https://github.com/archexis/codemasters8",
-  "recipientAccess": "NOT_VERIFIED_FOR_CURRENT_CANDIDATE",
-  "publication": "PENDING",
+  "recipientAccess": "VERIFIED_PUBLIC_HTTP_200_AND_HEADED_UI",
+  "publication": {
+    "status": "PASS",
+    "platform": "Vercel",
+    "mode": "DEMO",
+    "url": "https://saq-qurylys-pi.vercel.app",
+    "deploymentId": "dpl_4P8DznFFQBPkTgvjq66u8LWe81J4",
+    "candidateSHA": "99ec5736d78c3e3357f52791d0d4b1794f236013",
+    "sourceFilesVerified": 80,
+    "evidence": "docs/acceptance/score-maxxing/publication/publication.json"
+  },
   "submission": "NOT_SENT",
   "previousManifest": "docs/RELEASE_MANIFEST.pre-score-maxxing.json",
-  "note": "Source bytes identify this uncommitted candidate. This manifest does not assert completion of the full handoff or a score. Publication and submission require separate authorization.",
+  "note": "Published candidate SHA identifies the Git snapshot. sourceByteManifest hashes preserve original Windows working-copy bytes; Git normalizes line endings. Deployed file SHA1 values were independently matched against the Git archive. A later documentation-only commit records observed publication results; deployed app is the candidate SHA.",
   "previousTestedSource": {
     "sourceManifestSha256": "21870ffc2f4eb304a6921efc41403c571868dc176c790f32ce2208f4334a72bc",
     "offlineRuntimeDirectory": "test-results/score-maxxing/2026-10-19T12-28-55-351Z",
     "note": "Earlier full snapshot; final UI retry fix followed it."
   },
-  "updatedAt": "2026-10-19T12:57:53.958Z",
+  "updatedAt": "2026-10-19T13:04:56.886Z",
   "prePublicationSource": {
     "sourceByteManifest": {
       ".env.example": "ffd5af093dc86aac2aebde39b1ba8940623e62546b080a4b3d9223ffb10cb411",
@@ -515,17 +536,5 @@
       "vite.config.ts": "1a3ba236a32a68eff1cada16052ee1102e0f0ed4c6d72c08f975b96bb86a42e0"
     },
     "sourceManifestSha256": "1b2d8a8c046fb0a319638264ad42a7b8988cb3e653d8fd4a46cfee2ec3158144"
-  },
-  "validation": {
-    "paidAI": {
-      "status": "PASS",
-      "report": "docs/acceptance/score-maxxing/paid-ai/evaluation.json",
-      "budgetUSD": 1,
-      "providerCalls": 15,
-      "reasonForExtraCalls": "Two browser test harness fixes: URL wait and accessible combobox locator",
-      "peakRateCostUSD": 0.0029493,
-      "reservedUpperUSD": 0.0465186,
-      "actualAccountDebit": "NOT_VERIFIED"
-    }
   }
 }

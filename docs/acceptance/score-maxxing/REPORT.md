@@ -29,10 +29,10 @@ Runtime: Node 24.18.0, npm 11.16.0, Python 3.11.0, Deno 2.9.6, Supabase CLI 2.12
 | `npm run test:local` → live без external LLM | 0 | 8 passed; Auth/RPC/RLS/Storage/FastAPI/Edge, A/B/C, restore, shared account | [local-live-candidate.log](logs/local-live-candidate.log) |
 | Чистая установка npm/Python и clean check/build/API | 0 | npm ci 116 packages; locked isolated venv; финальные check/build exit 0; API21 на совпадающем backend | [clean-checks.json](logs/clean-checks.json), [final-clean-check.log](logs/final-clean-check.log), [final-clean-build.log](logs/final-clean-build.log), [final-clean-api.log](logs/final-clean-api.log) |
 | Адресная API-регрессия после PDF-ревью | 0 | 21 passed, включая rejected weight | [post-review-api.log](logs/post-review-api.log) |
-| Новый внешний AI/browser/provider | — | **NOT_RUN**, нет согласованного бюджета | архив 18 октября не переносится в текущий PASS |
+| Новый внешний AI/browser/provider | 0 | **PASS**, свежие12 eval и headed browser | [paid-ai](paid-ai/evaluation.json), бюджет1 USD |
 | WebGL / 2.5D в Chromium desktop/mobile | 0 | PASS: rendered fill-extrusion geometry, импорт GeoJSON и возврат в 2D | `ux-geometry.spec.ts`, полный E2E130 |
 | Внешние 3D city / terrain источники | — | **NOT_RUN** | реальные внешние данные отдельно |
-| Публичный CI / опубликованный кандидат | — | **NOT_RUN** для текущего dirty tree | публикация и сдача отдельно |
+| Публичный CI / опубликованный кандидат | 0 | **PASS** для SHA99ec573 | [CI](https://github.com/archexis/codemasters8/actions/runs/39256363997), [DEMO](https://saq-qurylys-pi.vercel.app) |
 
 Исходное противоречие unit было воспроизведено: 343 passed / 1 failed. Финальный набор имеет 350 passed. CI причиной не маскировался отключением теста; результат нового GitHub CI для этих незакоммиченных байтов не проверен.
 
@@ -82,3 +82,13 @@ Runtime: Node 24.18.0, npm 11.16.0, Python 3.11.0, Deno 2.9.6, Supabase CLI 2.12
 [Скачанный серверный PDF](paid-ai/server-case.pdf): 2 страницы, текст R2/25/цитата/обоснование проверен; обе страницы отрендерены, первая визуально просмотрена. [Проверка PDF](paid-ai/pdf-verification.json): PDF v1 до/после возврата **побайтно одинаков**. Screenshots пяти этапов рядом. Private traces, env, ключи, operator session и server logs в Git не включаются. Временные пользователи удалены.
 
 Vercel проект `saq-qurylys`, scope `spydonnys-projects`; публикация/CI пока PENDING. MCP403 обойдён CLI с собственной сессией; кириллический hostname в User-Agent CLI заменён на ASCII только внутри процесса. Remote main `5d4d9b3` — отдельный root snapshot; не перезаписывается. Публикуется отдельная ветка текущей истории.
+
+## Результат публикации
+
+Кандидат **`99ec5736d78c3e3357f52791d0d4b1794f236013`** опубликован в [ветке GitHub](https://github.com/archexis/codemasters8/tree/codex/saq-score-candidate) и [Vercel DEMO](https://saq-qurylys-pi.vercel.app). [GitHub CI](https://github.com/archexis/codemasters8/actions/runs/39256363997): frontend/backend/edge SUCCESS. Deployment `dpl_4P8DznFFQBPkTgvjq66u8LWe81J4` READY. [HTTP/assets/source proof](publication/publication.json): HTTP200 без авторизации, JS/CSS200; SHA1 всех80 доступных файлов deployment source manifest совпали с архивом candidate SHA. Private env/evidence не загружались; исключённые каталоги представлены пустыми папками в manifest. Windows/Linux сборки имеют разные chunk names, поэтому для привязки использованы исходные файлы deployment, а не заявлено совпадение cross-platform bundle hash.
+
+Публичный smoke вручную через headed Playwright CLI: карта → публикации13 → новый материал → DEMO parser R2 → принять → досье → дело → проверка факта с неизвестной датой сохраняет score0 → подтверждённый snapshot0. Это отдельная проверка безопасного unknown поведения, не paid AI. Desktop/mobile390×844 screenshots — publication/. Единственная console ошибка: отсутствует favicon.ico404; работа приложения и внешняя карта не блокировались. Полный connected AI + PDF25 проверен локально выше.
+
+Отдельный clean npm ci/build из Git archive PASS. Локальный svelte-check:0 ошибок/предупреждений. В текущем этапе код приложения/backend/SQL не изменялся; CI повторно проверил текущий кандидат. Обе страницы реального server-case.pdf визуально просмотрены: читаемы, без обрезания; v1 до/после возврата побайтно равны. Расход по peak usage $0.0029493, не выписка provider account. Финальный source manifest исходной Windows копии `bafc848535b22949469ae50e601b11abdfb204c3f2198ca64e48aa6a58bcb987`; normalized Git archive подтверждён отдельно.
+
+Эта секция заменяет прежние NOT_RUN/PENDING для paid AI и публикации; старые строки/архивные объяснения выше отражают этапы приёмки. Внешние3D city/terrain остаются NOT_RUN; конкурсная заявка не отправлялась. Remote main не переписывался. Публичный deployment остаётся SHA99ec573; следующий commit содержит только документацию и артефакты результатов.

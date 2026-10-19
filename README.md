@@ -55,3 +55,7 @@ Svelte 5/TypeScript/Vite/Tailwind, Supabase Auth/PostgreSQL JSONB/RLS/Storage/Ed
 Нет OCR, скрейпинга, живой сверки госреестров, CV дронов, общих организаций и полного двуязычного UI. Карта зависит от WebGL/OSM/Esri; независимый список остаётся рабочим. Seed содержит synthetic и явно датированный public snapshot. Исторические docs аудита не заменяют текущие CONTRACTS и приёмку.
 
 Текущая передача разработки: [score-maxxing REPORT](docs/acceptance/score-maxxing/REPORT.md). Архивы S4–S6 отражают прежний код и не заменяют эту приёмку.
+
+## Опубликованный кандидат
+
+[Открыть публичный DEMO](https://saq-qurylys-pi.vercel.app) · [кандидат99ec573](https://github.com/archexis/codemasters8/tree/codex/saq-score-candidate) · [успешный CI](https://github.com/archexis/codemasters8/actions/runs/39256363997). На сайте DEMO parser; настоящий DeepSeek проверен локально:12 eval + headed UI → snapshot/PDF, [доказательства](docs/acceptance/score-maxxing/paid-ai/evaluation.json). Свежие результаты заменяют прежние NOT_RUN в исторических разделах выше.
