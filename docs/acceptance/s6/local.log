@@ -1,0 +1,37 @@
+
+> saq-qurylys@2.0.0 test:local
+> node tools/local-smoke.mjs
+
+
+
+#
+# Fatal process out of memory: Zone
+#
+----- Native stack trace -----
+
+ 1: 00007FF6E90CE43D node::MultiIsolatePlatform::DisposeIsolate+8061
+ 2: 00007FF6E8533956 v8::base::FatalOOM+54
+ 3: 00007FF6E7DCDC05 v8::Function::NewInstance+245
+ 4: 00007FF6E7745B96 v8::SnapshotCreator::GetIsolate+56918
+ 5: 00007FF6E7301EC2 X509_get0_tbs_sigalg+8706
+ 6: 00007FF6E89C790A v8::platform::DelayedTaskQueue::Terminate+1771946
+ 7: 00007FF6E89C71F0 v8::platform::DelayedTaskQueue::Terminate+1770128
+ 8: 00007FF6E89BB068 v8::platform::DelayedTaskQueue::Terminate+1720584
+ 9: 00007FF6E89B8B3C v8::platform::DelayedTaskQueue::Terminate+1711068
+10: 00007FF6E89B4C78 v8::platform::DelayedTaskQueue::Terminate+1695000
+11: 00007FF6E89B47D9 v8::platform::DelayedTaskQueue::Terminate+1693817
+12: 00007FF6E89B4294 v8::platform::DelayedTaskQueue::Terminate+1692468
+13: 00007FF6E89B3821 v8::platform::DelayedTaskQueue::Terminate+1689793
+14: 00007FF6E89B357F v8::platform::DelayedTaskQueue::Terminate+1689119
+15: 00007FF6E87C1326 v8::Extension::auto_enable+352182
+16: 00007FF6E87C0040 v8::Extension::auto_enable+347344
+17: 00007FF6E8593DBB v8::internal::compiler::CompilationDependencies::FieldTypeDependencyOffTheRecord+192907
+18: 00007FF6E743CB26 std::vector<v8::CpuProfileDeoptInfo,std::allocator<v8::CpuProfileDeoptInfo> >::_Change_array+71302
+19: 00007FF6E7438263 std::vector<v8::CpuProfileDeoptInfo,std::allocator<v8::CpuProfileDeoptInfo> >::_Change_array+52675
+20: 00007FF6E7437B49 std::vector<v8::CpuProfileDeoptInfo,std::allocator<v8::CpuProfileDeoptInfo> >::_Change_array+50857
+21: 00007FF6E85A6C6F v8::platform::DefaultJobHandle::UpdatePriority+591
+22: 00007FF6E90C944B node::GetNodeReport+93163
+23: 00007FF6E7E22D76 uv_thread_detach+150
+24: 00007FF6E94CDC73 node::AsyncResource::CallbackScope::CallbackScope+2297011
+25: 00007FFA5CF1DDA7 BaseThreadInitThunk+23
+26: 00007FFA5EF3EE4C RtlUserThreadStart+44

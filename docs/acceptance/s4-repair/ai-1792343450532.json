@@ -1,0 +1,254 @@
+{
+  "date": "2026-10-18T17:10:50.531Z",
+  "model": "deepseek-flash",
+  "transport": "Auth → working analyze Edge → provider → server journal",
+  "cases": [
+    {
+      "id": "AI01",
+      "runId": "9651be0c-a8bc-4b2e-a25c-11d01770c331",
+      "expected": [
+        "R2"
+      ],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v3",
+      "inputHash": "fd80f42939d0824c19f8fada31e6c55bd9f4994ebed9be26cf4dc7147ac996bc",
+      "runStatus": "succeeded",
+      "actual": [
+        "R2"
+      ],
+      "hypotheses": [
+        {
+          "code": "R2",
+          "quote": "Депозит 500 000 тенге обязателен.",
+          "reason": "Текст прямо требует внести депозит, то есть содержит предложение внести деньги до заключения договора.",
+          "id": "9651be0c-a8bc-4b2e-a25c-11d01770c331-h1"
+        }
+      ],
+      "latencyMs": 1587
+    },
+    {
+      "id": "AI02",
+      "runId": "229f5467-ef3e-4f53-986e-68fb447a6f7a",
+      "expected": [
+        "R2"
+      ],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v3",
+      "inputHash": "4a8af84e8e779af8595b2dbaa20d4a50ed2618234bae48a04c8f532b2666b84c",
+      "runStatus": "succeeded",
+      "actual": [
+        "R2"
+      ],
+      "hypotheses": [
+        {
+          "code": "R2",
+          "quote": "Алғашқы жарна 500 000 теңге.",
+          "reason": "Текст содержит прямое указание на первоначальный взнос (алғашқы жарна) в размере 500 000 тенге, что является предложением внести деньги.",
+          "id": "229f5467-ef3e-4f53-986e-68fb447a6f7a-h1"
+        }
+      ],
+      "latencyMs": 1581
+    },
+    {
+      "id": "AI03",
+      "runId": "b60250c6-3b70-4353-85ea-bc0299c766bc",
+      "expected": [],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v3",
+      "inputHash": "c181782cc378fba974cf15436ad5745e1db2b63d7bc28890c230296b810d8417",
+      "runStatus": "succeeded",
+      "actual": [],
+      "hypotheses": [],
+      "latencyMs": 1253
+    },
+    {
+      "id": "AI04",
+      "runId": "be52ca0b-8b73-4700-ae84-fb79065c2527",
+      "expected": [],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v3",
+      "inputHash": "d16751332f67fba28330139e5a2efc93f0811f04907b033fdced4012f3424320",
+      "runStatus": "succeeded",
+      "actual": [],
+      "hypotheses": [],
+      "latencyMs": 703
+    },
+    {
+      "id": "AI05",
+      "runId": "96a2f93a-f7e1-45f8-b213-a4cd3b70d178",
+      "expected": [],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v3",
+      "inputHash": "0e3f54013d3fe0818a619f08c41635502477b29fd951de8a7c40e352730a973b",
+      "runStatus": "succeeded",
+      "actual": [],
+      "hypotheses": [],
+      "latencyMs": 1131
+    },
+    {
+      "id": "AI06",
+      "runId": "6a1ef86b-c9db-4ff1-a106-79629abdaa94",
+      "expected": [
+        "R2"
+      ],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v3",
+      "inputHash": "44834511125da4b6e93fbfaa73037577e0f12c897a5b8a6c17c9685002894db8",
+      "runStatus": "succeeded",
+      "actual": [
+        "R2"
+      ],
+      "hypotheses": [
+        {
+          "code": "R2",
+          "quote": "депозит 500 000 тенге",
+          "reason": "В тексте прямо указана сумма депозита, что является предложением внести деньги.",
+          "id": "6a1ef86b-c9db-4ff1-a106-79629abdaa94-h1"
+        }
+      ],
+      "latencyMs": 1329
+    },
+    {
+      "id": "AI07",
+      "runId": "793ed7e1-0ac6-4be5-8ede-ebe47a7daf70",
+      "expected": [
+        "R2"
+      ],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v3",
+      "inputHash": "7bc1054926e85f60dd0f518da8bdaf934ce60f4ee74c8586814d9d0fcef3f55a",
+      "runStatus": "succeeded",
+      "actual": [
+        "R2"
+      ],
+      "hypotheses": [
+        {
+          "code": "R2",
+          "quote": "депозит 500 000 тенге до договора",
+          "reason": "Текст прямо предлагает внести депозит до заключения договора, что соответствует признаку R2.",
+          "id": "793ed7e1-0ac6-4be5-8ede-ebe47a7daf70-h1"
+        }
+      ],
+      "latencyMs": 998
+    },
+    {
+      "id": "AI08",
+      "runId": "f71ffbca-1745-47fe-b75b-a83dc506dd02",
+      "expected": [
+        "R2"
+      ],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v3",
+      "inputHash": "03783142efb1e2dad67b01b347bc9fafb5b240cca47ef7137df76cee709f1377",
+      "runStatus": "succeeded",
+      "actual": [
+        "R2"
+      ],
+      "hypotheses": [
+        {
+          "code": "R2",
+          "quote": "депозит 500 000 тенге обязателен",
+          "reason": "Текст прямо указывает на обязательный депозит в размере 500 000 тенге, то есть содержит предложение внести деньги.",
+          "id": "f71ffbca-1745-47fe-b75b-a83dc506dd02-h1"
+        }
+      ],
+      "latencyMs": 1501
+    },
+    {
+      "id": "AI09",
+      "runId": "4f7996a7-537a-4518-a167-9e9bbd205af7",
+      "expected": [
+        "R3"
+      ],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v3",
+      "inputHash": "1ca7bbebe526adb3d54f76daaaaf10df0725827d44ed409615a70770d8303502",
+      "runStatus": "succeeded",
+      "actual": [
+        "R3"
+      ],
+      "hypotheses": [
+        {
+          "code": "R3",
+          "quote": "Продаём квартиры в строящемся ЖК Тестовый. Дом ещё не введён в эксплуатацию. Сдача в 2027 году.",
+          "reason": "Текст содержит рекламное предложение квартир в строящемся жилье с явным указанием, что дом не введён в эксплуатацию и срок сдачи в будущем (2027 год).",
+          "id": "4f7996a7-537a-4518-a167-9e9bbd205af7-h1"
+        }
+      ],
+      "latencyMs": 1397
+    },
+    {
+      "id": "AI10",
+      "runId": "fb6137dc-08db-449a-8da3-00678ddfed82",
+      "expected": [
+        "R2"
+      ],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v3",
+      "inputHash": "a988257de0cb22dc83be35c61cd219d4d636267a4cd7591d216de5817669a599",
+      "runStatus": "succeeded",
+      "actual": [
+        "R2"
+      ],
+      "hypotheses": [
+        {
+          "code": "R2",
+          "quote": "Депозит 500 000 тенге обязателен.",
+          "reason": "Текст прямо указывает на обязательный депозит в размере 500 000 тенге, то есть содержит предложение внести деньги.",
+          "id": "fb6137dc-08db-449a-8da3-00678ddfed82-h1"
+        }
+      ],
+      "latencyMs": 1490
+    },
+    {
+      "id": "AI11",
+      "runId": "8701b816-2bf9-4c20-9f24-0173378ec70f",
+      "expected": [],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v3",
+      "inputHash": "0cecb3bc788251e6331abb1fe163716af671427b0040a2697d755ccdcb216d89",
+      "runStatus": "succeeded",
+      "actual": [],
+      "hypotheses": [],
+      "latencyMs": 1256
+    },
+    {
+      "id": "AI12",
+      "runId": "ddbbf526-0ab2-4bc5-8c34-0be063101ba3",
+      "expected": [
+        "R2"
+      ],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v3",
+      "inputHash": "887be1d22ff0f6f218645b2a050ff9210046d8c4d91987081613fd84490ae8bf",
+      "runStatus": "succeeded",
+      "actual": [
+        "R2"
+      ],
+      "hypotheses": [
+        {
+          "code": "R2",
+          "quote": "Депозит 500 000 тенге обязателен.",
+          "reason": "Текст прямо указывает на обязательный депозит с конкретной суммой, то есть на предложение внести деньги до заключения договора.",
+          "id": "ddbbf526-0ab2-4bc5-8c34-0be063101ba3-h1"
+        }
+      ],
+      "latencyMs": 1443
+    }
+  ],
+  "browser": "NOT_RUN",
+  "status": "FAIL",
+  "error": "Browser failed: 1"
+}

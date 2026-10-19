@@ -129,3 +129,8 @@ out-of-scope MVP, не реализовывать ради gate (см. EXECUTION
 | B16 | database.test: hardcoded миграции, зависимость тестов | `tests/unit/database.test.ts`, `tests/helpers/database.ts` | U: каждый SQL-тест отдельно и вместе; 178 assertions | S0.2 |
 | B17 | Seed не валидирован; R3 SQ-001 vs AD-001 | `src/lib/seed.json`, `tools/generate-seed.mjs` | U: seed-integrity; quote — подстрока ad | S1.4 |
 | B18 | Формула Python отдельно от TS | `backend/app/*`, `tests/fixtures/contracts/scoring.json` | A+U: общий golden corpus совпадает | S1.5 |
+
+
+## Итог S6
+
+Полная построчная сверка: [requirements-results.json](s6/requirements-results.json). G01/G05 BLOCKED до публикации candidate SHA; остальные обязательные строки PASS по S6 profiles + сохранённой предметной приёмке S0–S5. §11 — out-of-scope. Локальная готовность не означает отправку заявки.

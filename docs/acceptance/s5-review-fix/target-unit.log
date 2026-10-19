@@ -1,0 +1,13 @@
+
+> saq-qurylys@2.0.0 test
+> vitest run tests/unit/export-gate.test.ts tests/unit/signal-s5.test.ts tests/unit/signal-history.test.ts tests/unit/signal-revision.test.ts
+
+
+ RUN  v5.0.5 C:/Users/BIGra/codemasters8
+
+
+ Test Files  4 passed (4)
+      Tests  24 passed (24)
+   Start at  22:53:11
+   Duration  8.04s (tests 93%, import 6%, transform 1%)
+

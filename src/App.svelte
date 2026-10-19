@@ -1,12 +1,14 @@
 <script lang="ts">
+  import { trackAuthSession, getSessionUser } from './lib/repository';
   import { onMount } from 'svelte';
   import type { AppState, Complex, Zone } from './lib/types';
   import type { Command } from './lib/domain';
   import { initialState, safeUrl } from './lib/domain';
   import { computeScore, zoneLabel, codes, WEIGHTS, FACTOR_META } from './lib/scoring';
   import { supabase, demoMode } from './lib/supabase';
-  import { loadState, saveCommand, resetDemo, initializeWorkspace, readDemoFileBytes } from './lib/repository';
+  import { loadState, saveCommand, resetDemo, initializeWorkspace, StaleConflictError } from './lib/repository';
   import { detectPlatform, relatedAds, parseAdText } from './lib/parser';
+  import {parseSignalRevision, signalRevisionError} from './lib/signal-revision';
   import { buildExport, exportFilename } from './lib/export';
   import seed from './lib/seed.json' with { type: 'json' };
   import RiskMap from './components/RiskMap.svelte';
@@ -24,17 +26,32 @@
   const baseRoute = $derived(route.split('?')[0]);
   const page = $derived(/^[a-z]+(?:\/[A-Za-z0-9-]+)?$/.test(baseRoute) ? baseRoute.split('/')[0] : 'missing');
   const zkId = $derived(baseRoute.split('/')[1] || '');
+  const exportRevision = $derived(parseSignalRevision(route.split('?')[1] || '') ?? undefined);
+  const exportRevisionError = $derived(signalRevisionError(workspace,zkId,exportRevision ?? null));
   const selected = $derived(workspace.complexes.find(z => z.id === zkId));
   const titles: Record<string,string> = { home: 'Главная', overview: 'Объекты', ads: 'Публикации', analyze: 'Проверка', registries: 'Реестры', detail: 'Карточка объекта', signal: 'Сигнал', backup: 'Резервная копия', export: 'Экспорт' };
   const shown = $derived(workspace.complexes.filter(z => `${z.id} ${z.name} ${z.address} ${z.developer} ${z.bin || ''}`.toLowerCase().includes(query.toLowerCase()) && (zone === 'all' || computeScore(z.factors).zone === zone)).sort((a,b) => computeScore(b.factors).score - computeScore(a.factors).score));
   const counts = $derived({ red: workspace.complexes.filter(z => computeScore(z.factors).zone === 'red').length, yellow: workspace.complexes.filter(z => computeScore(z.factors).zone === 'yellow').length, green: workspace.complexes.filter(z => computeScore(z.factors).zone === 'green').length });
   $effect(() => { document.title = `${titles[page] || 'Страница не найдена'} · SAQ QURYLYS`; });
-  async function reload() { loading = true; error = ''; try { workspace = await loadState(); } catch (e) { error = e instanceof Error ? e.message : String(e); } finally { loading = false; } }
+  let reloadGeneration = 0;
+  async function reload() { const generation = ++reloadGeneration; loading = true; error = ''; try { const state = await loadState(); if (generation === reloadGeneration) workspace = state; } catch (e) { if (generation === reloadGeneration) error = e instanceof Error ? e.message : String(e); } finally { if (generation === reloadGeneration) loading = false; } }
   onMount(() => {
     const update = () => { route = readRoute(); menu = false; creating = false; window.scrollTo(0,0); };
     window.addEventListener('hashchange', update);
     void reload();
     const listener = supabase?.auth.onAuthStateChange((_event, session) => {
+      const nextUser = session?.user.id ?? null;
+      const changedUser = getSessionUser() !== nextUser;
+      trackAuthSession(nextUser);
+      if (_event === 'TOKEN_REFRESHED' && !changedUser) {
+        reviewer = session?.user.email || 'Демо-аналитик';
+        return;
+      }
+      reloadGeneration++;
+      if (changedUser) {
+        workspace = { schemaVersion: 3, complexes: [], ads: [], media: [], signals: {}, signalVersions: {}, audit: [] };
+        error = ''; notice = '';
+      }
       reviewer = session?.user.email || 'Демо-аналитик';
       // Defer network calls outside the auth callback to avoid the SDK lock.
       // Без сессии — DEMO-конверт (loadState), рабочее место не блокируется.
@@ -42,7 +59,10 @@
     });
     return () => { window.removeEventListener('hashchange', update); listener?.data.subscription.unsubscribe(); };
   });
-  async function commit(command: Command) { workspace = await saveCommand($state.snapshot(workspace), $state.snapshot(command), reviewer); notice = 'Изменения сохранены'; }
+  async function commit(command: Command) {
+    try { workspace = await saveCommand($state.snapshot(workspace), $state.snapshot(command), reviewer); notice = 'Изменения сохранены'; }
+    catch (e) { if (e instanceof StaleConflictError) workspace = e.serverState; throw e; }
+  }
   // Регистрации нет: вход только по выданной оператору учётной записи
   // (временные аккаунты connected-режима). По умолчанию — DEMO без логина.
   async function auth() {
@@ -60,7 +80,7 @@
   function downloadSignalExport() {
     if (!selected) return;
     try {
-      const exp = buildExport($state.snapshot(workspace), selected.id);
+      const exp = buildExport($state.snapshot(workspace), selected.id, exportRevision);
       const blob = new Blob([JSON.stringify(exp, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob); const a = document.createElement('a');
       a.href = url; a.download = exportFilename(selected.id, exp.kind); a.click();
@@ -101,15 +121,16 @@
   {:else if page === 'detail' || page === 'signal'}{#if selected}{#key route}<Detail {workspace} complex={selected} {commit} signal={page === 'signal'}/>{/key}{:else}<h1>Объект не найден</h1><a href="#/overview">Вернуться к объектам</a>{/if}
   {:else if page === 'backup'}
     <div class="page-heading"><div><p class="eyebrow">ПОЛНЫЙ ПАКЕТ · MANIFEST + ФАЙЛЫ</p><h1>Резервная копия</h1></div></div>
-    <BackupPanel {workspace} getFileBytes={async (m) => readDemoFileBytes(m.path)} onRestoreDone={(s) => { workspace = s; notice = 'Workspace восстановлен из backup: решения требуют повторного подтверждения.'; }} />
+    <BackupPanel {workspace} onRestoreDone={(s) => { workspace = s; notice = 'Workspace восстановлен из backup: решения требуют повторного подтверждения.'; }} />
   {:else if page === 'ads'}
     <div class="page-heading"><div><p class="eyebrow">РУЧНОЙ СБОР · ПРОВЕРЯЕМЫЕ ИСТОЧНИКИ</p><h1>Публикации</h1></div><a class="button primary" href="#/analyze">Добавить публикацию</a></div><label class="mb-6 max-w-sm">Площадка<select bind:value={platform}><option value="all">Все площадки</option>{#each [...new Set(workspace.ads.map(a => detectPlatform(a).label))] as p}<option>{p}</option>{/each}</select></label>
     <div class="cards">{#each workspace.ads.filter(a => platform === 'all' || detectPlatform(a).label === platform) as ad}<article class="panel"><p class="eyebrow">{detectPlatform(ad).label} · {ad.date}</p><p class="my-4">{ad.text}</p><a href="#/detail/{ad.zkId}">{workspace.complexes.find(z => z.id === ad.zkId)?.name || ad.zkId} ↗</a> <a class="text-xs" href="#/export/{ad.zkId}">Экспорт сигнала ↗</a><p class="muted text-xs mt-3">{ad.id} · {ad.account} · {ad.decision || 'Исходный снимок'}</p>{#if safeUrl(ad.url)}<a class="text-xs" href={safeUrl(ad.url)} target="_blank" rel="noopener noreferrer">Источник ↗</a>{/if}{#each relatedAds(ad, workspace.ads).slice(0,3) as related}<p class="text-xs mt-2">Связь: {related.id} · {related.via}</p>{/each}</article>{/each}</div>
   {:else if page === 'registries'}
     <div class="page-heading"><div><p class="eyebrow">ПЕРВОИСТОЧНИКИ / РЕСПУБЛИКА КАЗАХСТАН</p><h1>Реестры и источники</h1></div></div><p class="muted mb-6">Ручная сверка. Ссылки не означают автоматическую интеграцию. Дата последней исходной проверки — 15.10.2026.</p><div class="cards">{#each seed.REGISTRIES as registry}<a class="panel registry" href={safeUrl(registry.url)} target="_blank" rel="noopener noreferrer"><span>↗</span><h3>{registry.name}</h3><p class="muted text-sm mt-3">{registry.note}</p></a>{/each}</div>
   {:else if page === 'export'}
-    {#if selected}{@const exp = buildExport(workspace, selected.id)}
-    <div class="page-heading"><div><p class="eyebrow">ШАБЛОН {exp.template} · БЕЗ SIGNED URL</p><h1>Экспорт сигнала · {selected.name}</h1></div><a class="button" href="#/detail/{selected.id}">К карточке объекта ↗</a></div>
+    {#if selected && exportRevisionError}<section class="panel"><p role="alert">{exportRevisionError}</p><a class="button" href="#/signal/{zkId}">К текущему сигналу</a></section>
+    {:else if selected}{@const exp = buildExport(workspace, selected.id, exportRevision)}
+    <div class="page-heading"><div><p class="eyebrow">ШАБЛОН {exp.template} · БЕЗ SIGNED URL</p><h1>Экспорт сигнала · {exp.complexName}</h1></div><a class="button" href="#/detail/{selected.id}">К карточке объекта ↗</a></div>
     <section class="panel"><p><b>{exp.kind === 'full' ? 'Полный экспорт' : exp.kind === 'draft' ? 'Черновик (сигнал не подтверждён)' : 'Заблокирован'}</b> · счёт {exp.score} · зона {exp.zone}</p>
     {#if exp.markers.length}<p class="muted text-xs mt-3">Метки: {exp.markers.join(', ')}</p>{/if}
     {#if exp.blockedReason}<p class="mt-3" role="alert">{exp.blockedReason}</p>{/if}

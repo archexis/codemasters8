@@ -1,0 +1,31 @@
+
+> saq-qurylys@2.0.0 test:local
+> node tools/local-smoke.mjs
+
+PASS actual Auth and seed migrations
+PASS actual PostgreSQL RLS and direct-write denial
+PASS actual transactional commands and stale-version guard
+PASS actual Storage upload, signed URL and cross-user denial
+PASS actual FastAPI → Supabase JWT validation → RLS data
+PASS actual Edge runtime rejects unauthenticated requests; external LLM tests run separately
+
+> saq-qurylys@2.0.0 test:live
+> playwright test --config playwright.live.config.ts --grep-invert real external LLM
+
+[WebServer] (node:54548) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 7 tests using 1 worker
+
+(node:59496) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\live\backup-isolation.spec.ts:73:3 › S2.6 backup/restore изоляция (connected) › B не читает workspace/media A; anonymous denied (31ms)
+  ok 2 tests\live\backup-isolation.spec.ts:83:3 › S2.6 backup/restore изоляция (connected) › expiry: короткий TTL истекает, новая own URL работает; чужая подпись — отказ (4.6s)
+  ok 3 tests\live\backup-isolation.spec.ts:101:3 › S2.6 backup/restore изоляция (connected) › backup A → restore в чистое C → сверка SHA256; поддельный confirmed даёт 0 (196ms)
+  ok 4 tests\live\security.spec.ts:6:1 › S6 actual Auth/RPC/Storage/API/Edge negative matrix (1.7s)
+  ok 5 tests\live\security.spec.ts:98:1 › S6 browser offline/expired save preserves form; no server secrets in storage/network (2.2s)
+  ok 6 tests\live\security.spec.ts:121:1 › S6 real A logout/B login discards an in-flight A workspace response (1.4s)
+  ok 7 tests\live\supabase.spec.ts:2:1 › real local Supabase Auth, RPC decisions, Storage upload and reload (1.2s)
+
+  7 passed (16.1s)
+PASS actual browser login, Storage, RPC and reload

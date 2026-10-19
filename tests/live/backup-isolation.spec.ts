@@ -20,8 +20,8 @@ const LIVE = Boolean(URL && ANON && SERVICE);
 const LOCAL_URL = /^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(URL);
 
 test.describe('S2.6 backup/restore изоляция (connected)', () => {
-  test.skip(!LIVE, 'Нужны SAQ_LIVE_SUPABASE_URL/KEY/SERVICE_KEY');
-  test.skip(LIVE && !LOCAL_URL, 'Только локальный Supabase URL');
+  test.beforeAll(()=>{expect(LIVE, 'Нужны SAQ_LIVE_SUPABASE_URL/KEY/SERVICE_KEY').toBe(true); expect(LOCAL_URL).toBe(true);});
+
 
   let admin: SupabaseClient;
   let clientA: SupabaseClient;

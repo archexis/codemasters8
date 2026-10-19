@@ -1,0 +1,28 @@
+{
+  "paths": [
+    "docs/acceptance/s6/README.md",
+    "docs/acceptance/s6/clean-runtime.json",
+    "docs/acceptance/s6/clean-ux-supplement.log",
+    "docs/acceptance/s6/staged-diff-check-crlf.log",
+    "docs/acceptance/s6/staged-diff-check.log",
+    "docs/acceptance/s6/staged-secrets.json",
+    "docs/acceptance/sprint-6.json"
+  ],
+  "excluded": [
+    ".agents/skills/supabase-server/SKILL.md",
+    "docs/UI-UX-FRESH+NEW-FUNC/00_PRODUCT_AND_NAVIGATION.md",
+    "docs/UI-UX-FRESH+NEW-FUNC/01_MAP_XRAY_2_5D.md",
+    "docs/UI-UX-FRESH+NEW-FUNC/02_PUBLICATIONS_AI.md",
+    "docs/UI-UX-FRESH+NEW-FUNC/03_REGISTRIES_AND_DOCUMENTS.md",
+    "docs/UI-UX-FRESH+NEW-FUNC/04_DOSSIER_AND_INVESTIGATION.md",
+    "docs/UI-UX-FRESH+NEW-FUNC/05_RISK_WEB.md",
+    "docs/UI-UX-FRESH+NEW-FUNC/06_TIME_MACHINE_AND_CONSTRUCTION.md",
+    "docs/UI-UX-FRESH+NEW-FUNC/07_EVIDENCE_RISK_AND_SIGNAL.md",
+    "docs/UI-UX-FRESH+NEW-FUNC/08_ENGINEERING_PERFORMANCE.md",
+    "docs/UI-UX-FRESH+NEW-FUNC/09_DELIVERY_AND_ACCEPTANCE.md",
+    "docs/UI-UX-FRESH+NEW-FUNC/10_UI_STATES_AND_COPY.md",
+    "docs/UI-UX-FRESH+NEW-FUNC/README.md",
+    "skills-lock.json"
+  ],
+  "policy": "Explicit allowlist for cumulative implemented S4/S5/S6 and their acceptance; no blind git add ."
+}

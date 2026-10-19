@@ -1,0 +1,21 @@
+[WebServer] (node:3220) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 2 workers
+
+(node:55132) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2536) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [chromium] › tests\e2e\signal-export.spec.ts:3:55 › S5 print long: immutable revision and full text (3.3s)
+  ok 1 [chromium] › tests\e2e\signal-export.spec.ts:3:55 › S5 print confirmed: immutable revision and full text (3.3s)
+  ok 3 [chromium] › tests\e2e\signal-export.spec.ts:3:55 › S5 print returned: immutable revision and full text (860ms)
+(node:44408) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 4 [mobile] › tests\e2e\signal-export.spec.ts:3:55 › S5 print confirmed: immutable revision and full text (575ms)
+(node:59212) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 5 [mobile] › tests\e2e\signal-export.spec.ts:3:55 › S5 print returned: immutable revision and full text (566ms)
+  ok 6 [mobile] › tests\e2e\signal-export.spec.ts:3:55 › S5 print long: immutable revision and full text (573ms)
+
+  6 passed (9.8s)

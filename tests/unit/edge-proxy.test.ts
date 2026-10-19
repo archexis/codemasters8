@@ -199,7 +199,7 @@ describe('S4.5 edge-proxy: валидация ответа провайдера'
     const res = await handleProxy(post({ text: 'Депозит 500 тенге', complexName: 'ЖК' }), env(), depsFor(seen, R2));
     expect(res.status).toBe(200);
     const body = (await res.json()) as Record<string, unknown>;
-    expect(body).toMatchObject({ realAI: true, engine: 'stub-model', prompt_version: 1, schema_version: 1 });
+    expect(body).toMatchObject({ realAI: true, engine: 'stub-model', prompt_version: 3, schema_version: 1 });
     expect(body.hypotheses).toEqual(R2);
     expect(typeof body.input_hash).toBe('string');
     expect((body.input_hash as string)).toMatch(/^[0-9a-f]{64}$/);

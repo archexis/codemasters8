@@ -1,5 +1,13 @@
 # Прогресс приёмки S0
 
+## Актуальное состояние после S4 v2 repair — PASS (2026-10-18)
+
+- Рабочий analyze → server analysis_runs → независимые review подключён; полный snapshot, replay/status/ownership и stale/abort/session защищены.
+- T/U/B/E/C/A/F/L/AI: 0 diagnostics, 297 unit, 68 E2E, 1 cloud, 9 API, 3 Edge + Deno check, 4 local, 12/12 real eval + новый browser input/review/reload.
+- Исторические S0–S4: `history/s4-before-repair/`; текущая переприёмка: `sprint-0.json` … `sprint-4.json`, точный SHA256 scope 115 файлов, gate 0–4 exit 0.
+- Локальные недостающие миграции применены без reset после backup БД/Storage в `.temp`; исходный `.env.edge` сохранён. Неудачные AI/transport/harness прогоны сохранены, expected не менялся.
+- Отчёт и все команды: [S4 repair](s4-repair/README.md). Незакрытых критериев S4 нет. Следующий разрешённый пакет — S5.1, здесь не начат; S6 не начат. Ниже сохранён исторический журнал, включая прежний BLOCKED вход S5.
+
 ## S0.1 — безопасная исходная точка — DONE (2026-10-18)
 
 - Артефакты: `docs/acceptance/baseline.md`, `docs/acceptance/baseline-files.json` (79 файлов),
@@ -140,3 +148,40 @@ S1 ЗАКРЫТ: `docs/acceptance/sprint-1.md` + `sprint-1.json`,
 - Доводка: metadata-guard в SQL (PGlite/live), mobile CSS-overlap fix (.csv-row wrap).
 - Проверки: check 0, U 215/215 (15), build ok, E2E csv 8/8 + roundtrip 2/2 + evidence 12/12, backend 9/9, live 3/3 (fresh db reset). S3 ЗАКРЫТ: gate 3 exit 0. Gates 0/1/2 перепроверены.
 - Следующий разрешённый пакет: S4.1.
+
+## Проверка входа S5 — BLOCKED (2026-10-18)
+
+- Исторические S0–S4 PASS сохранены неизменными; актуальный PASS не подтверждён.
+- `npm run gate -- 4`: exit 1, 101 проблема: 81 CRLF-only, 7 missing generated/cache,
+  13 изменённых по содержимому файлов. Манифест S4 включал generated output
+  вопреки EXECUTION. Хеши не переписаны; диагноз: `s5-entry/manifest-diagnosis.json`.
+- Свежие T/U/B/E/A/F PASS: 0 diagnostics, 283 unit, 48 desktop/mobile, 9 API,
+  3 Edge и Deno check. C и L не приняты: старый locator входа; независимая
+  connected isolation 2 PASS / 1 FAIL (нет restore_workspace).
+- Local БД: только исходные 2 миграции, old 2-arg apply_command, нет analysis_runs.
+  S4.md v2 не соответствует свидетельствам sprint-4.json: AI eval из 12 случаев
+  отсутствует, рабочий analyze не сохраняет trusted run. Это не лечится сменой SHA.
+- S5.1–S5.4 и D5.1–D5.5 NOT_RUN, закрытых ID S5 нет. PDF и полный connected кейс
+  не запускались: входной gate обязателен до S5. Платных AI вызовов не делалось.
+- Отчёты: `docs/acceptance/sprint-5.md`, `.json`; все воспроизведения и логи —
+  `docs/acceptance/s5-entry/README.md`. `npm run gate -- 5`: exit 1, 22 проблемы
+  из-за честно записанных NOT_RUN/BLOCKED и незакрытой регрессии; stale hashes нет.
+- Следующий разрешённый шаг: восстановить фактическую S4 v2 приёмку и gate 4,
+  затем S5.1. S6 не начат. Продуктовый код, dirty изменения, исторические отчёты
+  и рабочая схема БД этим исполнителем не менялись; reset/deploy/push отсутствуют.
+
+## S5.1–S5.4 — реализация и приёмка (2026-10-18)
+
+- S5.1: явный draft/reopen/decision, basedOnRevision/reason, append-only/replay TS+SQL; отдельный Signal.svelte и исторический выбор без редактирования.
+- S5.2: полные ads/manifests/used audit/server AI provenance; исторический export без live lookup; legacy incomplete честно маркирован.
+- S5.3: browser PDF fixtures confirmed / long RU+KZ+URL+quote>280 / returned, плюс PDF реального connected synthetic case. Текст/ID/revision/score проверены; PNG всех страниц и checklist в s5/pdf/.
+- S5.4: новый connected case 70/red → v1/reload/PDF → R2 снят → draft45/yellow → v1 immutable70/red → returned/history/direct/mobile; отдельный authenticated PGlite reject branch score0. Новый ordinary Analyze dedupe regression.
+- Подробный журнал, исправленные ошибки и честный подсчёт AI попыток: s5/README.md. S6 не начат; результат финальных gates будет записан в sprint-5.md/json.
+
+S5 финальный результат: S5.1–S5.4, D5.1–D5.5 PASS; gate5 exit0 (s5/gate5.log). Накопленные gates0–4 также exit0. Source manifest точный и свежий. Следующий шаг — независимое ревью исходного чата; S6 здесь не начат. Блокеров нет.
+
+S5 independent review fix completed: missing/invalid revision routing and export recovery; [report](s5-review-fix/README.md), [gates0–5 PASS](s5-review-fix/gates.log). Full unit305 and desktop/mobile E2E82 PASS. Awaiting parent review; S6 not started.
+
+## S6 — локальная приёмка, 2026-10-19
+S6.1–S6.3 и локальная S6.5 завершены; D6.4 BLOCKED до публикации candidate. T/U308/B/E92/C1/A9/F3+types/L7 PASS, clean-room DEMO20/connected7, fresh+upgrade/restore. Полный журнал s6/README.md; candidate SHA и gate6 в s6/candidate.json и s6/gate6.log. Push/deploy/submission не выполнялись. Ожидается независимый parent review.
+

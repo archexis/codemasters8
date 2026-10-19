@@ -4,6 +4,7 @@ export type Zone = 'green' | 'yellow' | 'red';
 
 /** C1. Минимальное доказательство: расширяет прежний {source,quote,date,adId}. */
 export type EvidenceKind = 'publication' | 'legal-review' | 'observation' | 'document';
+export interface BeforeCommissioning {source:string;date:string;text:string}
 export interface Evidence {
   id: string; zkId: string; kind: EvidenceKind;
   source: string; date: string; // реальная календарная YYYY-MM-DD
@@ -15,6 +16,7 @@ export interface Evidence {
    * проверяется по analysis_runs в S4 (ownership, успех run, совпадение
    * input/цитаты). Клиентский `realAI:true` provenance не даёт.
    */
+  beforeCommissioning?: BeforeCommissioning;
   runId?: string; hypothesisId?: string;
 }
 /**
@@ -27,6 +29,7 @@ export interface EvidenceInput {
   source: string; date?: string;
   adId?: string; quote?: string; text?: string; mediaIds?: string[];
   /** S2.1 (C5-задел): ссылка на серверный analysis run / гипотезу (проверка — S4). */
+  beforeCommissioning?: BeforeCommissioning;
   runId?: string; hypothesisId?: string;
 }
 
@@ -108,7 +111,7 @@ export interface Hypothesis {
   /** S2.1 (C5-задел, поток S4): стабильный ID гипотезы внутри analysis run. */
   id?: string;
 }
-export interface Analysis { engine: string; realAI: boolean; hypotheses: Hypothesis[] }
+export interface Analysis { input?: unknown; runId?: string; inputHash?: string; status?: 'succeeded'; engine: string; realAI: boolean; hypotheses: Hypothesis[] }
 export interface Media {
   id: string; zkId: string; name: string; kind: string; date: string; note: string; ready: number | null; path: string;
   /**
@@ -140,7 +143,7 @@ export interface AuditEvent {
   before?: unknown; after?: unknown; evidence?: unknown;
   details?: unknown;
 }
-export interface Signal { status: 'draft' | 'confirmed' | 'returned'; snapshot?: Complex; at: string; reviewer: string; comment: string }
+export interface Signal { basedOnRevision?: number | null; reason?: string; status: 'draft' | 'confirmed' | 'returned'; snapshot?: Complex; at: string; reviewer: string; comment: string }
 /**
  * S2.4 (C6). Манифест материалов, на которых основано решение версии сигнала.
  * Только относящиеся к решению записи: публикации, цитируемые подтверждёнными
@@ -149,6 +152,7 @@ export interface Signal { status: 'draft' | 'confirmed' | 'returned'; snapshot?:
  */
 export interface SignalMaterialManifest {
   kind: 'ad' | 'media'; id: string;
+  name?: string; mediaKind?: string; capturedAt?: string; note?: string;
   /** Только для media: стабильный путь в приватном bucket. */
   path?: string;
   /** Только для media: целостность байтов (могут отсутствовать у legacy metadata-only). */
@@ -159,7 +163,7 @@ export interface SignalMaterialManifest {
  * из evidence подтверждённых факторов версии. Клиентский `realAI:true`
  * provenance не даёт (проверка ownership/input — S4, таблица analysis_runs).
  */
-export interface SignalAiProvenance { code: Code; runId: string; hypothesisId?: string }
+export interface SignalAiProvenance { provider?:string; model?:string; promptVersion?:string; inputHash?:string; origin?:string; reason?:string; code: Code; runId: string; hypothesisId?: string }
 /**
  * S2 (C6, задел S2.1). Append-only версия сигнала. `signals[zkId]` остаётся
  * текущим draft/указателем на последнее решение (Detail читает его через
@@ -169,6 +173,8 @@ export interface SignalAiProvenance { code: Code; runId: string; hypothesisId?: 
  * signed URL как постоянная ссылка не хранится (только mediaId/path/hash).
  */
 export interface SignalVersion {
+  ads?: Ad[];
+  decisionAudit?: AuditEvent[];
   id: string; zkId: string; revision: number; status: Signal['status'];
   at: string; reviewer: string; comment: string;
   /** Версия workspace, из которой взят snapshot. */
@@ -222,7 +228,7 @@ export interface Registry { name: string; url: string; note: string }
 /** C1/S1.1. Входные команды: evidence частичное, reviewer запрещён (автор — серверный). */
 export type Command =
   | { type: 'factor'; zkId: string; code: Code; status: FactorStatus; evidence: EvidenceInput; comment: string }
-  | { type: 'ad'; ad: Ad; hypothesis?: { code: Code; quote: string; runId?: string; hypothesisId?: string }; decision: 'confirmed' | 'rejected' | 'saved'; comment: string; modelReason?: string }
+  | { type: 'ad'; ad: Ad; hypothesis?: { code: Code; quote: string; evidenceText?: string; beforeCommissioning?: BeforeCommissioning; runId?: string; hypothesisId?: string }; decision: 'confirmed' | 'rejected' | 'saved'; comment: string; modelReason?: string }
   | { type: 'media'; media: Media }
   | { type: 'readiness'; zkId: string; value: number; source: string; date: string }
   | { type: 'signal'; zkId: string; status: Signal['status']; comment: string }

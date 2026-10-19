@@ -105,6 +105,8 @@ const KindEnum = z.enum(['publication', 'legal-review', 'observation', 'document
 const IdField = (label: string) =>
   z.string().refine((v) => ID_RE.test(v), `${label}: неоднозначный идентификатор (допустимы латиница, цифры, дефис, 1–80 символов)`);
 
+const CommissioningSchema=z.strictObject({source:z.string().trim().min(1),date:z.string().refine(isCalendarDate,'Нужна реальная дата материала'),text:z.string().trim().min(1)});
+
 const EvidenceInputSchema = z.strictObject({
   id: IdField('evidence.id').optional(),
   zkId: IdField('evidence.zkId').optional(),
@@ -114,6 +116,7 @@ const EvidenceInputSchema = z.strictObject({
   adId: IdField('evidence.adId').optional(),
   quote: z.string().optional(),
   text: z.string().optional(),
+  beforeCommissioning: CommissioningSchema.optional(),
   mediaIds: z.array(z.string().min(1)).optional(),
   runId: IdField('evidence.runId').optional(),
   hypothesisId: IdField('evidence.hypothesisId').optional(),
@@ -148,6 +151,7 @@ const EvidenceFullSchema = z.strictObject({
   adId: IdField('evidence.adId').optional(),
   quote: z.string().optional(),
   text: z.string().optional(),
+  beforeCommissioning: CommissioningSchema.optional(),
   mediaIds: z.array(z.string()).optional(),
   runId: IdField('evidence.runId').optional(),
   hypothesisId: IdField('evidence.hypothesisId').optional(),
@@ -241,6 +245,8 @@ const AdCommandSchema = z.strictObject({
   hypothesis: z.strictObject({
     code: z.enum(['R2', 'R3']),
     quote: z.string().refine((q) => q.trim().length > 0, 'нужна дословная непустая цитата из текста публикации (Цитата отсутствует без точной подстроки)'),
+    evidenceText: z.string().max(20000).optional(),
+    beforeCommissioning: CommissioningSchema.optional(),
     runId: IdField('hypothesis.runId').optional(),
     hypothesisId: IdField('hypothesis.hypothesisId').optional(),
   }).optional(),
@@ -365,6 +371,7 @@ export function parseCommand(raw: unknown): ParsedCommand {
       ...(ev.adId !== undefined ? { adId: ev.adId } : {}),
       ...(ev.quote !== undefined ? { quote: ev.quote } : {}),
       ...(ev.text !== undefined ? { text: ev.text } : {}),
+      ...(ev.beforeCommissioning !== undefined ? {beforeCommissioning:ev.beforeCommissioning} : {}),
       ...(ev.mediaIds !== undefined ? { mediaIds: ev.mediaIds } : {}),
       // S2.1 (C5-задел): ссылка на серверный run переживает нормализацию.
       ...(ev.runId !== undefined ? { runId: ev.runId } : {}),
@@ -405,6 +412,7 @@ export function parseCommand(raw: unknown): ParsedCommand {
 /* ------------------------------------------------------------------ */
 
 const SeedEvidenceSchema = z.looseObject({
+  kind: KindEnum.optional(),
   source: z.string().optional(),
   quote: z.string().optional(),
   date: z.string().optional(),
@@ -490,7 +498,7 @@ export function normalizeSeedComplex(raw: unknown, ads: Ad[]): Complex {
         // S1.1-заглушка вида для legacy: adId → publication, иначе document.
         // Реальные виды/материалы фиксирует S1.4, ничего не додумывая.
         id: `seed-${zkId}-${f.code}`, zkId,
-        kind: f.evidence?.adId ? 'publication' : 'document',
+        kind: f.evidence?.kind ?? (f.evidence?.adId ? 'publication' : 'document'),
         source: f.evidence?.source ?? '',
         date: f.evidence?.date ?? adDate(f.evidence?.adId) ?? lb.checkedAt ?? '',
         ...(f.evidence?.adId ? { adId: f.evidence.adId } : {}),
@@ -546,6 +554,7 @@ const LoadedEvidenceSchema = z.strictObject({
   adId: IdField('evidence.adId').optional(),
   quote: z.string().optional(),
   text: z.string().optional(),
+  beforeCommissioning: CommissioningSchema.optional(),
   mediaIds: z.array(z.string()).optional(),
   runId: IdField('evidence.runId').optional(),
   hypothesisId: IdField('evidence.hypothesisId').optional(),
@@ -606,6 +615,8 @@ const LoadedMediaSchema = z.strictObject({
 });
 
 const LoadedSignalSchema = z.strictObject({
+  basedOnRevision: z.number().nullable().optional(),
+  reason: z.string().optional(),
   status: z.enum(['draft', 'confirmed', 'returned']),
   snapshot: LoadedComplexSchema.optional(),
   at: z.string(),
@@ -614,6 +625,8 @@ const LoadedSignalSchema = z.strictObject({
 });
 
 const LoadedSignalVersionSchema = z.strictObject({
+  ads: z.array(AdSchema).optional(),
+  decisionAudit: z.array(z.unknown()).optional(),
   id: z.string(),
   zkId: IdField('signalVersion.zkId'),
   revision: z.number(),
@@ -632,6 +645,7 @@ const LoadedSignalVersionSchema = z.strictObject({
   zone: z.enum(['green', 'yellow', 'red']).optional(),
   weightsVersion: z.number().optional(),
   mediaManifest: z.array(z.strictObject({
+    name:z.string().optional(),mediaKind:z.string().optional(),capturedAt:z.string().optional(),note:z.string().optional(),
     kind: z.enum(['ad', 'media']),
     id: z.string(),
     path: z.string().optional(),
@@ -639,6 +653,7 @@ const LoadedSignalVersionSchema = z.strictObject({
     bytes: z.number().nullable().optional(),
   })).optional(),
   aiProvenance: z.array(z.strictObject({
+    provider:z.string().optional(),model:z.string().optional(),promptVersion:z.string().optional(),inputHash:z.string().optional(),origin:z.string().optional(),reason:z.string().optional(),
     code: CodeEnum,
     runId: z.string(),
     hypothesisId: z.string().optional(),

@@ -1,0 +1,268 @@
+{
+  "date": "2026-10-18T17:09:26.665Z",
+  "model": "deepseek-flash",
+  "transport": "Auth → working analyze Edge → provider → server journal",
+  "cases": [
+    {
+      "id": "AI01",
+      "runId": "d803a070-94f7-4670-8b8a-906c4a3b0449",
+      "expected": [
+        "R2"
+      ],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v2",
+      "inputHash": "fd80f42939d0824c19f8fada31e6c55bd9f4994ebed9be26cf4dc7147ac996bc",
+      "runStatus": "succeeded",
+      "actual": [
+        "R2"
+      ],
+      "hypotheses": [
+        {
+          "code": "R2",
+          "quote": "Депозит 500 000 тенге обязателен.",
+          "reason": "Прямое указание на обязательный депозит с конкретной суммой — предложение внести деньги.",
+          "id": "d803a070-94f7-4670-8b8a-906c4a3b0449-h1"
+        }
+      ],
+      "latencyMs": 2693
+    },
+    {
+      "id": "AI02",
+      "runId": "3e6ef696-bec8-46c0-aeac-f2f67c93ffcc",
+      "expected": [
+        "R2"
+      ],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v2",
+      "inputHash": "4a8af84e8e779af8595b2dbaa20d4a50ed2618234bae48a04c8f532b2666b84c",
+      "runStatus": "succeeded",
+      "actual": [
+        "R2"
+      ],
+      "hypotheses": [
+        {
+          "code": "R2",
+          "quote": "Алғашқы жарна 500 000 теңге.",
+          "reason": "Текст содержит прямое указание суммы первоначального взноса (жарна), что является предложением внести деньги.",
+          "id": "3e6ef696-bec8-46c0-aeac-f2f67c93ffcc-h1"
+        }
+      ],
+      "latencyMs": 1450
+    },
+    {
+      "id": "AI03",
+      "runId": "45212673-3fcb-41ad-88da-177092c45a90",
+      "expected": [],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v2",
+      "inputHash": "c181782cc378fba974cf15436ad5745e1db2b63d7bc28890c230296b810d8417",
+      "runStatus": "succeeded",
+      "actual": [],
+      "hypotheses": [],
+      "latencyMs": 1060
+    },
+    {
+      "id": "AI04",
+      "runId": "902b1fe9-d1b1-4f6a-99c4-9d4469e5f246",
+      "expected": [],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v2",
+      "inputHash": "d16751332f67fba28330139e5a2efc93f0811f04907b033fdced4012f3424320",
+      "runStatus": "succeeded",
+      "actual": [],
+      "hypotheses": [],
+      "latencyMs": 983
+    },
+    {
+      "id": "AI05",
+      "runId": "28bb145e-626e-4056-92d3-aad98b3938f3",
+      "expected": [],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v2",
+      "inputHash": "0e3f54013d3fe0818a619f08c41635502477b29fd951de8a7c40e352730a973b",
+      "runStatus": "succeeded",
+      "actual": [],
+      "hypotheses": [],
+      "latencyMs": 944
+    },
+    {
+      "id": "AI06",
+      "runId": "d5cbddfd-be50-441d-a71c-577535f462e2",
+      "expected": [
+        "R2"
+      ],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v2",
+      "inputHash": "44834511125da4b6e93fbfaa73037577e0f12c897a5b8a6c17c9685002894db8",
+      "runStatus": "succeeded",
+      "actual": [
+        "R2"
+      ],
+      "hypotheses": [
+        {
+          "code": "R2",
+          "quote": "депозит 500 000 тенге",
+          "reason": "Прямое указание суммы депозита, который требуется внести.",
+          "id": "d5cbddfd-be50-441d-a71c-577535f462e2-h1"
+        }
+      ],
+      "latencyMs": 1434
+    },
+    {
+      "id": "AI07",
+      "runId": "5bb120b4-dae6-4111-b57d-ca6275ba3d93",
+      "expected": [
+        "R2"
+      ],
+      "status": "FAIL",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v2",
+      "inputHash": "7bc1054926e85f60dd0f518da8bdaf934ce60f4ee74c8586814d9d0fcef3f55a",
+      "runStatus": "succeeded",
+      "actual": [
+        "R2",
+        "R3"
+      ],
+      "hypotheses": [
+        {
+          "code": "R2",
+          "quote": "депозит 500 000 тенге до договора",
+          "reason": "Прямое предложение внести денежные средства (депозит) до заключения договора.",
+          "id": "5bb120b4-dae6-4111-b57d-ca6275ba3d93-h1"
+        },
+        {
+          "code": "R3",
+          "quote": "Не упустите квартиру",
+          "reason": "Рекламный призыв к приобретению квартиры.",
+          "id": "5bb120b4-dae6-4111-b57d-ca6275ba3d93-h2"
+        }
+      ],
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    'R2',\n+   'R3'\n  ]\n",
+      "latencyMs": 1197
+    },
+    {
+      "id": "AI08",
+      "runId": "4670cb87-8ace-4857-9f22-7c724b87e08c",
+      "expected": [
+        "R2"
+      ],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v2",
+      "inputHash": "03783142efb1e2dad67b01b347bc9fafb5b240cca47ef7137df76cee709f1377",
+      "runStatus": "succeeded",
+      "actual": [
+        "R2"
+      ],
+      "hypotheses": [
+        {
+          "code": "R2",
+          "quote": "депозит 500 000 тенге обязателен",
+          "reason": "Прямое указание на обязательный денежный депозит при бронировании.",
+          "id": "4670cb87-8ace-4857-9f22-7c724b87e08c-h1"
+        }
+      ],
+      "latencyMs": 1304
+    },
+    {
+      "id": "AI09",
+      "runId": "5277cf3a-9c20-4e8c-ae6b-38d19c4e1062",
+      "expected": [
+        "R3"
+      ],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v2",
+      "inputHash": "1ca7bbebe526adb3d54f76daaaaf10df0725827d44ed409615a70770d8303502",
+      "runStatus": "succeeded",
+      "actual": [
+        "R3"
+      ],
+      "hypotheses": [
+        {
+          "code": "R3",
+          "quote": "Продаём квартиры в строящемся ЖК Тестовый.",
+          "reason": "Прямая реклама продажи квартир в строящемся жилом комплексе.",
+          "id": "5277cf3a-9c20-4e8c-ae6b-38d19c4e1062-h1"
+        },
+        {
+          "code": "R3",
+          "quote": "Дом ещё не введён в эксплуатацию.",
+          "reason": "Указание на строящийся объект, что характерно для рекламы строящегося жилья.",
+          "id": "5277cf3a-9c20-4e8c-ae6b-38d19c4e1062-h2"
+        }
+      ],
+      "latencyMs": 1578
+    },
+    {
+      "id": "AI10",
+      "runId": "84a16e47-23bf-45e0-ac57-878d4b3131ad",
+      "expected": [
+        "R2"
+      ],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v2",
+      "inputHash": "a988257de0cb22dc83be35c61cd219d4d636267a4cd7591d216de5817669a599",
+      "runStatus": "succeeded",
+      "actual": [
+        "R2"
+      ],
+      "hypotheses": [
+        {
+          "code": "R2",
+          "quote": "Депозит 500 000 тенге обязателен.",
+          "reason": "Прямое указание на обязательный денежный взнос (депозит) с конкретной суммой.",
+          "id": "84a16e47-23bf-45e0-ac57-878d4b3131ad-h1"
+        }
+      ],
+      "latencyMs": 1725
+    },
+    {
+      "id": "AI11",
+      "runId": "a0cd374d-1de8-4756-89e4-04bfe5d7872b",
+      "expected": [],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v2",
+      "inputHash": "0cecb3bc788251e6331abb1fe163716af671427b0040a2697d755ccdcb216d89",
+      "runStatus": "succeeded",
+      "actual": [],
+      "hypotheses": [],
+      "latencyMs": 1053
+    },
+    {
+      "id": "AI12",
+      "runId": "d24a70e2-2be2-4016-9b8d-caad98030fb8",
+      "expected": [
+        "R2"
+      ],
+      "status": "PASS",
+      "model": "deepseek-flash",
+      "promptVersion": "s4-r2r3-v2",
+      "inputHash": "887be1d22ff0f6f218645b2a050ff9210046d8c4d91987081613fd84490ae8bf",
+      "runStatus": "succeeded",
+      "actual": [
+        "R2"
+      ],
+      "hypotheses": [
+        {
+          "code": "R2",
+          "quote": "Депозит 500 000 тенге обязателен.",
+          "reason": "Прямое указание на обязательный денежный депозит — предложение внести деньги.",
+          "id": "d24a70e2-2be2-4016-9b8d-caad98030fb8-h1"
+        }
+      ],
+      "latencyMs": 1188
+    }
+  ],
+  "browser": "NOT_RUN",
+  "status": "FAIL",
+  "error": "1 eval cases failed; preserved docs/acceptance/s4-repair/ai-1792343366666.json\n\n1 !== 0\n"
+}

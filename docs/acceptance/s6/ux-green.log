@@ -1,0 +1,21 @@
+[WebServer] (node:41668) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 2 workers
+
+(node:16428) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22152) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [chromium] › tests\e2e\s6-ux.spec.ts:3:1 › S6 seven direct routes, unknown IDs/routes/revisions and no-results (4.1s)
+  ok 1 [chromium] › tests\e2e\s6-ux.spec.ts:10:1 › S6 WebGL failure and empty workspace retain independent list (4.9s)
+  ok 3 [chromium] › tests\e2e\s6-ux.spec.ts:16:1 › S6 keyboard path, visible focus, labels and safe text rendering (1.4s)
+(node:40408) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:47628) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 5 [mobile] › tests\e2e\s6-ux.spec.ts:10:1 › S6 WebGL failure and empty workspace retain independent list (783ms)
+  ok 4 [mobile] › tests\e2e\s6-ux.spec.ts:3:1 › S6 seven direct routes, unknown IDs/routes/revisions and no-results (1.4s)
+  ok 6 [mobile] › tests\e2e\s6-ux.spec.ts:16:1 › S6 keyboard path, visible focus, labels and safe text rendering (1.0s)
+
+  6 passed (17.0s)

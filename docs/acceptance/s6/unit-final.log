@@ -1,0 +1,37 @@
+
+> saq-qurylys@2.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 C:/Users/BIGra/codemasters8
+
+ ❯ tests/unit/backup.test.ts (22 tests | 1 failed) 14479ms
+   ❯ S2.6 изоляция: RLS workspace/Storage, ссылки, restore RPC (8)
+     × restore в непустое workspace — отказ без изменений 1627ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/backup.test.ts > S2.6 изоляция: RLS workspace/Storage, ссылки, restore RPC > restore в непустое workspace — отказ без изменений
+Error: PGlite failed to initialize properly
+ ❯ p.ie node_modules/@electric-sql/pglite/src/pglite.ts:1347:13
+ ❯ p.x_ node_modules/@electric-sql/pglite/src/pglite.ts:605:17
+ ❯ p._checkReady node_modules/@electric-sql/pglite/src/pglite.ts:901:7
+ ❯ p.exec node_modules/@electric-sql/pglite/src/base.ts:238:5
+ ❯ createBackupTestDatabase tests/unit/backup.test.ts:52:3
+     50| async function createBackupTestDatabase() {
+     51|   const db = new PGlite();
+     52|   await db.exec(
+       |   ^
+     53|     `create role anon; create role authenticated; create schema auth; …
+     54| create table auth.users(id uuid primary key,email text);
+ ❯ freshDb tests/unit/backup.test.ts:326:21
+ ❯ tests/unit/backup.test.ts:423:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 24 passed (25)
+      Tests  1 failed | 306 passed (307)
+   Start at  23:06:22
+   Duration  74.53s (tests 96%, import 3%)
+

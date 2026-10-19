@@ -1,0 +1,12 @@
+
+> saq-qurylys@2.0.0 test:edge
+> npx --yes deno test --allow-env supabase/functions/analyze/index.test.ts
+
+Check supabase/functions/analyze/index.test.ts
+running 3 tests from ./supabase/functions/analyze/index.test.ts
+method, preflight and authentication boundary ... ok (37ms)
+grounded LLM response uses a server secret and user-scoped quota ... ok (14ms)
+invalid token, malformed input, invented quotes and provider failure are rejected ... ok (6ms)
+
+ok | 3 passed | 0 failed (64ms)
+

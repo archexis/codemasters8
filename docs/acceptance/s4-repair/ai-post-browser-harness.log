@@ -1,0 +1,27 @@
+
+> saq-qurylys@2.0.0 test:deepseek
+> node tools/deepseek-smoke.mjs --reuse-eval docs/acceptance/s4-repair/ai-1792343450532.json
+
+
+> saq-qurylys@2.0.0 test:live
+> playwright test --config playwright.live.config.ts --grep real external LLM
+
+[WebServer] (node:25420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:16260) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\live\supabase.spec.ts:28:1 › real external LLM analysis and confirmed evidence persist (4.4s)
+
+  1 passed (8.7s)
+file:///C:/Users/BIGra/codemasters8/tools/deepseek-smoke.mjs:71
+  assert.equal(workspace.data.data.signals['SQ-001'].status,'draft');
+                                                     ^
+
+TypeError: Cannot read properties of undefined (reading 'status')
+    at file:///C:/Users/BIGra/codemasters8/tools/deepseek-smoke.mjs:71:54
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+Node.js v24.18.0

@@ -1,0 +1,5 @@
+[
+  {"id":"missing-quote","provider":{"hypotheses":[{"code":"R2","reason":"Missing quote"}]},"http":502,"runStatus":"failed"},
+  {"id":"forbidden-code","provider":{"hypotheses":[{"code":"R6","quote":"Депозит","reason":"Forbidden code"}]},"http":502,"runStatus":"failed"},
+  {"id":"malformed-json","rawContent":"{broken","http":502,"runStatus":"failed"}
+]

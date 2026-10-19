@@ -1,0 +1,71 @@
+
+> saq-qurylys@2.0.0 test:local
+> node tools/local-smoke.mjs
+
+PASS actual Auth and seed migrations
+PASS actual PostgreSQL RLS and direct-write denial
+PASS actual transactional commands and stale-version guard
+PASS actual Storage upload, signed URL and cross-user denial
+PASS actual FastAPI → Supabase JWT validation → RLS data
+PASS actual Edge runtime rejects unauthenticated requests; external LLM tests run separately
+
+> saq-qurylys@2.0.0 test:live
+> playwright test --config playwright.live.config.ts
+
+[WebServer] (node:20280) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 5 tests using 1 worker
+
+  -  1 tests\live\backup-isolation.spec.ts:73:3 › S2.6 backup/restore изоляция (connected) › B не читает workspace/media A; anonymous denied
+  -  2 tests\live\backup-isolation.spec.ts:83:3 › S2.6 backup/restore изоляция (connected) › expiry: короткий TTL истекает, новая own URL работает; чужая подпись — отказ
+  -  3 tests\live\backup-isolation.spec.ts:101:3 › S2.6 backup/restore изоляция (connected) › backup A → restore в чистое C → сверка SHA256; поддельный confirmed даёт 0
+(node:9488) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  4 tests\live\supabase.spec.ts:2:1 › real local Supabase Auth, RPC decisions, Storage upload and reload (1.0m)
+(node:38736) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  -  5 tests\live\supabase.spec.ts:26:1 › real external LLM analysis and confirmed evidence persist
+
+
+  1) tests\live\supabase.spec.ts:2:1 › real local Supabase Auth, RPC decisions, Storage upload and reload 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: 'Войти в систему' })
+
+
+      4 |   const errors: string[] = []; page.on('pageerror',e => errors.push(e.message));
+      5 |   await page.goto('/');
+    > 6 |   await page.getByRole('button',{name:'Войти в систему'}).click();
+        |                                                           ^
+      7 |   await page.getByLabel('Email',{exact:true}).fill(process.env.SAQ_LIVE_EMAIL!);
+      8 |   await page.getByLabel('Пароль',{exact:true}).fill(process.env.SAQ_LIVE_PASSWORD!);
+      9 |   await page.getByRole('button',{name:'Войти',exact:true}).last().click();
+        at C:\Users\BIGra\codemasters8\tests\live\supabase.spec.ts:6:59
+
+    Error Context: test-results\live\supabase-real-local-Supaba-58398-s-Storage-upload-and-reload\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\live\supabase-real-local-Supaba-58398-s-Storage-upload-and-reload\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\live\supabase-real-local-Supaba-58398-s-Storage-upload-and-reload\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests\live\supabase.spec.ts:2:1 › real local Supabase Auth, RPC decisions, Storage upload and reload 
+  4 skipped
+file:///C:/Users/BIGra/codemasters8/tools/local-smoke.mjs:24
+    child.on('error',reject); child.on('exit',code => code===0 ? resolve() : reject(new Error(`npm exited ${code}`)));
+                                                                                    ^
+
+Error: npm exited 1
+    at ChildProcess.<anonymous> (file:///C:/Users/BIGra/codemasters8/tools/local-smoke.mjs:24:85)
+    at ChildProcess.emit (node:events:509:28)
+    at ChildProcess._handle.onexit (node:internal/child_process:295:12)
+
+Node.js v24.18.0

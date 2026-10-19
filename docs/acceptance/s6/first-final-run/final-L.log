@@ -1,0 +1,80 @@
+
+> saq-qurylys@2.0.0 test:local
+> node tools/local-smoke.mjs
+
+PASS actual Auth and seed migrations
+PASS actual PostgreSQL RLS and direct-write denial
+PASS actual transactional commands and stale-version guard
+PASS actual Storage upload, signed URL and cross-user denial
+PASS actual FastAPI → Supabase JWT validation → RLS data
+PASS actual Edge runtime rejects unauthenticated requests; external LLM tests run separately
+
+> saq-qurylys@2.0.0 test:live
+> playwright test --config playwright.live.config.ts --grep-invert real external LLM
+
+[WebServer] (node:14284) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 7 tests using 1 worker
+
+(node:23740) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\live\backup-isolation.spec.ts:73:3 › S2.6 backup/restore изоляция (connected) › B не читает workspace/media A; anonymous denied (28ms)
+  ok 2 tests\live\backup-isolation.spec.ts:83:3 › S2.6 backup/restore изоляция (connected) › expiry: короткий TTL истекает, новая own URL работает; чужая подпись — отказ (4.7s)
+  ok 3 tests\live\backup-isolation.spec.ts:101:3 › S2.6 backup/restore изоляция (connected) › backup A → restore в чистое C → сверка SHA256; поддельный confirmed даёт 0 (170ms)
+  ok 4 tests\live\security.spec.ts:6:1 › S6 actual Auth/RPC/Storage/API/Edge negative matrix (2.5s)
+  x  5 tests\live\security.spec.ts:98:1 › S6 browser offline/expired save preserves form; no server secrets in storage/network (7.3s)
+(node:21984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 6 tests\live\security.spec.ts:121:1 › S6 real A logout/B login discards an in-flight A workspace response (2.7s)
+  ok 7 tests\live\supabase.spec.ts:2:1 › real local Supabase Auth, RPC decisions, Storage upload and reload (1.5s)
+
+
+  1) tests\live\security.spec.ts:98:1 › S6 browser offline/expired save preserves form; no server secrets in storage/network 
+
+    Error: expect(locator).toHaveValue(expected) failed
+
+    Locator:  getByLabel('Подтверждённая готовность, %')
+    Expected: "17"
+    Received: ""
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveValue" getByLabel('Подтверждённая готовность, %') with timeout 5000ms
+      - waiting for getByLabel('Подтверждённая готовность, %')
+        13 × locator resolved to <input min="0" max="100" type="number"/>
+           - unexpected value ""
+
+
+      108 |  const value=page.getByLabel('Подтверждённая готовность, %'),source=page.getByLabel('Источник наблюдения');await value.fill('17');await source.fill('S6 offline observation');
+      109 |  await page.evaluate(async()=>{const path='/src/lib/supabase.ts';const {supabase}=await import(/* @vite-ignore */ path);const r=await supabase.auth.refreshSession();if(r.error)throw r.error;});
+    > 110 |  await expect(value).toHaveValue('17');await expect(source).toHaveValue('S6 offline observation');
+          |                      ^
+      111 |  await context.setOffline(true); await page.getByRole('button',{name:'Зафиксировать готовность'}).click(); await expect(page.getByRole('alert')).toBeVisible();
+      112 |  await expect(value).toHaveValue('17');await expect(source).toHaveValue('S6 offline observation');await context.setOffline(false);
+      113 |  await page.route('**/rest/v1/rpc/apply_command',r=>r.fulfill({status:401,contentType:'application/json',body:JSON.stringify({message:'JWT expired',code:'PGRST303'})}));
+        at C:\Users\BIGra\codemasters8\tests\live\security.spec.ts:110:22
+
+    Error Context: test-results\live\security-S6-browser-offlin-bbe5e--secrets-in-storage-network\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\live\security-S6-browser-offlin-bbe5e--secrets-in-storage-network\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\live\security-S6-browser-offlin-bbe5e--secrets-in-storage-network\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests\live\security.spec.ts:98:1 › S6 browser offline/expired save preserves form; no server secrets in storage/network 
+  6 passed (25.6s)
+file:///C:/Users/BIGra/codemasters8/tools/local-smoke.mjs:24
+    child.on('error',reject); child.on('exit',code => code===0 ? resolve() : reject(new Error(`npm exited ${code}`)));
+                                                                                    ^
+
+Error: npm exited 1
+    at ChildProcess.<anonymous> (file:///C:/Users/BIGra/codemasters8/tools/local-smoke.mjs:24:85)
+    at ChildProcess.emit (node:events:509:28)
+    at ChildProcess._handle.onexit (node:internal/child_process:295:12)
+
+Node.js v24.18.0

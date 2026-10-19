@@ -15,7 +15,7 @@ test('Supabase SDK login, server analysis, optimistic RPC save and logout', asyn
     if (path==='/rest/v1/workspaces') return respond({data,version});
     if (path==='/functions/v1/analyze') {
       sawAuthHeader = request.headers().authorization==='Bearer test-access-token';
-      return respond({realAI:true,engine:'Test LLM via Edge',hypotheses:[{code:'R2',quote:'Депозит 456 000 тенге',reason:'Платёжное предложение'}]});
+      return respond({realAI:true,engine:'Test LLM via Edge',status:'succeeded',runId:request.postDataJSON().runId,inputHash:'test-hash',hypotheses:[{id:'cloud-h1',code:'R2',quote:'Депозит 456 000 тенге',reason:'Платёжное предложение'}]});
     }
     if (path==='/rest/v1/rpc/apply_command') {
       const body = request.postDataJSON() as {command:Command;expected_version:number};
@@ -26,21 +26,24 @@ test('Supabase SDK login, server analysis, optimistic RPC save and logout', asyn
     return respond({error:`Unexpected request ${path}`},500);
   });
   await page.goto('/');
-  await page.getByRole('button',{name:'Войти в систему'}).click();
+  await page.getByRole('button',{name:'Демо-аналитик',exact:true}).click();
   await page.getByLabel('Email',{exact:true}).fill(user.email);
   await page.getByLabel('Пароль',{exact:true}).fill('not-a-real-password');
   await page.getByRole('button',{name:'Войти',exact:true}).last().click();
   await expect(page.getByRole('heading',{name:'Видеть риски. Действовать вовремя.'})).toBeVisible();
+  await expect(page.getByRole('button',{name:user.email,exact:true})).toBeVisible();
+  await expect(page.getByText('SUPABASE · персональное рабочее пространство',{exact:false})).toBeVisible();
   await page.goto('/#/analyze/SQ-001');
   await page.getByLabel('Текст объявления').fill('Депозит 456 000 тенге для квартиры.');
   await page.getByRole('button',{name:'Проанализировать',exact:true}).click();
   await expect(page.getByText('Test LLM via Edge')).toBeVisible();
+  await page.getByLabel('Обоснование аналитика').first().fill('Платёжное предложение проверено аналитиком');
   await page.getByRole('button',{name:'Подтвердить R2'}).click();
   await expect(page.getByText('Публикация и решение сохранены.')).toBeVisible();
   expect(sawAuthHeader).toBe(true); expect(data.ads[0].decision).toBe('confirmed');
   await page.reload();
   await page.getByRole('button',{name:user.email,exact:true}).click();
   await page.getByRole('button',{name:'Выйти',exact:true}).click();
-  await expect(page.getByRole('heading',{name:'Рабочее пространство аналитика'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Демо-аналитик',exact:true})).toBeVisible();
   await expect(page.getByText('Депозит 456 000 тенге для квартиры.')).toHaveCount(0);
 });

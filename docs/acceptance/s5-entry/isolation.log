@@ -1,0 +1,42 @@
+[WebServer] (node:3656) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:41916) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\live\backup-isolation.spec.ts:73:3 › S2.6 backup/restore изоляция (connected) › B не читает workspace/media A; anonymous denied (53ms)
+  ok 2 tests\live\backup-isolation.spec.ts:83:3 › S2.6 backup/restore изоляция (connected) › expiry: короткий TTL истекает, новая own URL работает; чужая подпись — отказ (4.7s)
+  x  3 tests\live\backup-isolation.spec.ts:101:3 › S2.6 backup/restore изоляция (connected) › backup A → restore в чистое C → сверка SHA256; поддельный confirmed даёт 0 (221ms)
+
+
+  1) tests\live\backup-isolation.spec.ts:101:3 › S2.6 backup/restore изоляция (connected) › backup A → restore в чистое C → сверка SHA256; поддельный confirmed даёт 0 
+
+    Error: expect(received).toBeNull()
+
+    Received: {"code": "PGRST202", "details": "Searched for the function public.restore_workspace with parameter backup or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache.", "hint": null, "message": "Could not find the function public.restore_workspace(backup) in the schema cache"}
+
+      137 |       backup: { manifest, workspace: state, staged: [{ mediaId: 'm-live', path: stagedPath }] },
+      138 |     });
+    > 139 |     expect(restored.error).toBeNull();
+          |                            ^
+      140 |     const data = restored.data.data as AppState;
+      141 |     expect(data.complexes[0].origin).toBe('imported');
+      142 |     expect(data.complexes[0].factors[0].status).toBe('needs-verification');
+        at C:\Users\BIGra\codemasters8\tests\live\backup-isolation.spec.ts:139:28
+
+    Error Context: test-results\live\backup-isolation-S2-6-back-e50a0-поддельный-confirmed-даёт-0\error-context.md
+
+    Error Context: test-results\live\backup-isolation-S2-6-back-e50a0-поддельный-confirmed-даёт-0\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\live\backup-isolation-S2-6-back-e50a0-поддельный-confirmed-даёт-0\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\live\backup-isolation-S2-6-back-e50a0-поддельный-confirmed-даёт-0\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests\live\backup-isolation.spec.ts:101:3 › S2.6 backup/restore изоляция (connected) › backup A → restore в чистое C → сверка SHA256; поддельный confirmed даёт 0 
+  2 passed (9.3s)

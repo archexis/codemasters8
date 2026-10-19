@@ -21,12 +21,14 @@ describe('S2.4 signal history (TS)', () => {
   it('confirm → returned → reconfirm: три audit-события, revision 1/2/3', () => {
     let s = initialState();
     s = applyCommand(s, confirm('SQ-002', 'первое подтверждение'), 'analyst');
+    s = applyCommand(s, {type:'signal',zkId:'SQ-002',status:'draft',comment:'Открыть пересмотр'}, 'analyst');
     s = applyCommand(s, returned('SQ-002', 'вернуть на доработку'), 'analyst');
+    s = applyCommand(s, {type:'signal',zkId:'SQ-002',status:'draft',comment:'Повторный пересмотр'}, 'analyst');
     s = applyCommand(s, confirm('SQ-002', 'повторное подтверждение'), 'analyst');
     const versions = s.signalVersions?.['SQ-002'] ?? [];
     expect(versions.map((v) => v.revision)).toEqual([1, 2, 3]);
     expect(versions.map((v) => v.status)).toEqual(['confirmed', 'returned', 'confirmed']);
-    const signalEvents = s.audit.filter((e) => e.action === 'signal' && e.zkId === 'SQ-002');
+    const signalEvents = s.audit.filter((e) => e.action === 'signal' && (e.details as any)?.status !== 'draft' && e.zkId === 'SQ-002');
     expect(signalEvents).toHaveLength(3);
     expect(() => validateLoadedState(s)).not.toThrow();
   });
@@ -90,7 +92,8 @@ describe('S2.4 signal history (TS)', () => {
     } as never);
     expect(marked).toContain('SQ-003');
     expect(needsSignalReverification(state, 'SQ-003')).toBe(true);
-    const reconfirmed = applyCommand(state, confirm('SQ-003', 'проверено заново'), 'analyst');
+    const reopened = applyCommand(state, {type:'signal',zkId:'SQ-003',status:'draft',comment:'Новая проверка'}, 'analyst');
+    const reconfirmed = applyCommand(reopened, confirm('SQ-003', 'проверено заново'), 'analyst');
     expect(needsSignalReverification(reconfirmed, 'SQ-003')).toBe(false);
     expect(reconfirmed.signalVersions?.['SQ-003']).toHaveLength(2);
   });

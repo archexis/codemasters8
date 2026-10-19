@@ -1,0 +1,11 @@
+NOTICE:  trigger "workspaces_no_future_schema" for relation "public.workspaces" does not exist, skipping
+NOTICE:  trigger "workspaces_history_append_only" for relation "public.workspaces" does not exist, skipping
+NOTICE:  policy "own_runs_select" for relation "public.analysis_runs" does not exist, skipping
+NOTICE:  relation "analysis_runs" already exists, skipping
+NOTICE:  policy "analysis_runs_owner_select" for relation "public.analysis_runs" does not exist, skipping
+NOTICE:  trigger "workspaces_no_future_schema" for relation "public.workspaces" does not exist, skipping
+NOTICE:  trigger "workspaces_history_append_only" for relation "public.workspaces" does not exist, skipping
+NOTICE:  policy "own_runs_select" for relation "public.analysis_runs" does not exist, skipping
+NOTICE:  relation "analysis_runs" already exists, skipping
+NOTICE:  policy "analysis_runs_owner_select" for relation "public.analysis_runs" does not exist, skipping
+PASS actual PostgreSQL fresh + legacy upgrade; disposable databases removed

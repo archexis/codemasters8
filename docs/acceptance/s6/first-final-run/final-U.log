@@ -1,0 +1,13 @@
+
+> saq-qurylys@2.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 C:/Users/BIGra/codemasters8
+
+
+ Test Files  25 passed (25)
+      Tests  308 passed (308)
+   Start at  23:13:56
+   Duration  73.57s (tests 96%, import 3%)
+

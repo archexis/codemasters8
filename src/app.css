@@ -73,3 +73,8 @@ footer { display: flex; gap: 24px; justify-content: space-between; padding: 24px
 @media(prefers-reduced-motion:reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
 @media print { body { background: #fff; color: #000; }.no-print, .topbar, footer { display: none !important; }main { padding: 0; max-width: none; }.panel { border: none; padding: 0; margin-bottom: 24px; }.signal-sheet { display: block; }.risk-score { background: none !important; border: 1px solid #999; }.factor-print { break-inside: avoid; }.page-heading a { display: none; }a { text-decoration: none; }.timeline-row { break-inside: avoid; } }
 }
+
+.signal-sheet { overflow-wrap:anywhere; } .publication-text {white-space:pre-wrap;} 
+@media print { @page {size:A4; margin:15mm;} .signal-sheet {border:0;box-shadow:none;padding:0;} .signal-sheet p,.signal-sheet blockquote {overflow:visible;overflow-wrap:anywhere;white-space:pre-wrap;} .factor-print {break-inside:auto !important;} h1,h2 {break-after:avoid;} nav,aside,header,.no-print {display:none !important;} main {margin:0 !important;padding:0 !important;} }
+
+@media print { :root, html, #app {background:#fff !important;} }

@@ -1,0 +1,59 @@
+[WebServer] (node:40832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:3264) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+SIGNAL STATE [ 'Error: column reference "status" is ambiguous' ]
+  x  1 tests\live\investigation.spec.ts:5:1 › real external LLM S5 new connected investigation (10.3s)
+
+
+  1) tests\live\investigation.spec.ts:5:1 › real external LLM S5 new connected investigation ───────
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('.signal-sheet')
+    Expected substring: "Подтверждён"
+    Received string:    "SAQ QURYLYS · СИГНАЛЬНАЯ КАРТОЧКА ЖК Синтетический S5 S5-f1827716Тестовый адрес, 5 ID S5-f1827716-draft · ЖК S5-f1827716 · revision draft · sourceVersion текущая Статус: Черновик · basedOnRevision нет не указано · автор: не указанОбоснование: не указано 70Красная зона Счёт: 70 · зона red · weightsVersion 1. Веса: R1 35; R2 25; R3 10; R4 15; R5 10; R6 5. Застройщик: Синтетический застройщик · БИН: не указан · стадия: Строительство · происхождение: manual  Сверка правового основанияabsent / absent-verified · S5 synthetic акт сверки КЖК и МИО · 2026-10-18Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения. R2 +25 · Прямое предложение внести деньги Решение: s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test · 2026-10-18T17:41:16.903ZМатериал 959f7756-f598-4d28-b765-fa1a14ca0f12 · источник: Источник не указан · дата: 2026-10-18T17:41:17.574Z Депозит 654 000 тенге обязателен для бронирования квартиры.  Комментарий аналитика: Синтетическое предложение оплаты проверено человеком Публикация AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1 · дата: 2026-10-18 · фиксация: 2026-10-18T17:41:17.574ZИсточник не указан ·  · https://example.test/s5/S5-f1827716Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году. Депозит 654 000 тенге обязателен для бронирования квартиры. Material IDs: нет файловR3 +10 · Активная реклама строящегося жилья Решение: s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test · 2026-10-18T17:41:17.100ZМатериал cf91c5e5-e252-4f01-a1d6-29664196f033 · источник: Источник не указан · дата: 2026-10-18 Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации. До ввода (заявление аналитика): S5 synthetic акт неввода · 2026-10-18 · Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации. Комментарий аналитика: Реклама до ввода проверена по материалу Публикация AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1 · дата: 2026-10-18 · фиксация: 2026-10-18T17:41:17.574ZИсточник не указан ·  · https://example.test/s5/S5-f1827716Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году. Депозит 654 000 тенге обязателен для бронирования квартиры. Material IDs: нет файловR1 +35 · Отсутствие применимого законного основания Решение: s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test · 2026-10-18T17:41:17.340ZМатериал af708570-bf1e-45c0-804d-5c408d67a931 · источник: S5 synthetic акт сверки КЖК и МИО · дата: 2026-10-18 Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения.  Комментарий аналитика: Проверены оба варианта основания  Material IDs: нет файлов Manifest: ad / AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1 ·  · SHA256 не указан · bytes не указаны AI provenance: R2 · run b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb · не указан / не указана · prompt не указан · hash не указан · hypothesis b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1AI provenance: R3 · run b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb · не указан / не указана · prompt не указан · hash не указан · hypothesis b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2 Признаки риска не устанавливают факт правонарушения. Решение принимает человек."
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toContainText" locator('.signal-sheet') with timeout 5000ms
+      - waiting for locator('.signal-sheet')
+        14 × locator resolved to <article class="panel signal-sheet">…</article>
+           - unexpected value "SAQ QURYLYS · СИГНАЛЬНАЯ КАРТОЧКА ЖК Синтетический S5 S5-f1827716Тестовый адрес, 5 ID S5-f1827716-draft · ЖК S5-f1827716 · revision draft · sourceVersion текущая Статус: Черновик · basedOnRevision нет не указано · автор: не указанОбоснование: не указано 70Красная зона Счёт: 70 · зона red · weightsVersion 1. Веса: R1 35; R2 25; R3 10; R4 15; R5 10; R6 5. Застройщик: Синтетический застройщик · БИН: не указан · стадия: Строительство · происхождение: manual  Сверка правового основанияabsent / absent-verified · S5 synthetic акт сверки КЖК и МИО · 2026-10-18Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения. R2 +25 · Прямое предложение внести деньги Решение: s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test · 2026-10-18T17:41:16.903ZМатериал 959f7756-f598-4d28-b765-fa1a14ca0f12 · источник: Источник не указан · дата: 2026-10-18T17:41:17.574Z Депозит 654 000 тенге обязателен для бронирования квартиры.  Комментарий аналитика: Синтетическое предложение оплаты проверено человеком Публикация AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1 · дата: 2026-10-18 · фиксация: 2026-10-18T17:41:17.574ZИсточник не указан ·  · https://example.test/s5/S5-f1827716Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году. Депозит 654 000 тенге обязателен для бронирования квартиры. Material IDs: нет файловR3 +10 · Активная реклама строящегося жилья Решение: s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test · 2026-10-18T17:41:17.100ZМатериал cf91c5e5-e252-4f01-a1d6-29664196f033 · источник: Источник не указан · дата: 2026-10-18 Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации. До ввода (заявление аналитика): S5 synthetic акт неввода · 2026-10-18 · Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации. Комментарий аналитика: Реклама до ввода проверена по материалу Публикация AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1 · дата: 2026-10-18 · фиксация: 2026-10-18T17:41:17.574ZИсточник не указан ·  · https://example.test/s5/S5-f1827716Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году. Депозит 654 000 тенге обязателен для бронирования квартиры. Material IDs: нет файловR1 +35 · Отсутствие применимого законного основания Решение: s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test · 2026-10-18T17:41:17.340ZМатериал af708570-bf1e-45c0-804d-5c408d67a931 · источник: S5 synthetic акт сверки КЖК и МИО · дата: 2026-10-18 Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения.  Комментарий аналитика: Проверены оба варианта основания  Material IDs: нет файлов Manifest: ad / AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1 ·  · SHA256 не указан · bytes не указаны AI provenance: R2 · run b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb · не указан / не указана · prompt не указан · hash не указан · hypothesis b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1AI provenance: R3 · run b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb · не указан / не указана · prompt не указан · hash не указан · hypothesis b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2 Признаки риска не устанавливают факт правонарушения. Решение принимает человек."
+
+
+      25 |  await expect(page.locator('.risk-score strong')).toHaveText('70');
+      26 |  }
+    > 27 |  await page.goto('/#/signal/'+id);await page.getByLabel('Обоснование решения').fill('Полный synthetic кейс проверен, v1');await page.getByRole('button',{name:'Подтвердить сигнал'}).click();console.log('SIGNAL STATE',await page.getByRole('alert').allTextContents());await expect(page.locator('.signal-sheet')).toContainText('Подтверждён');await page.pdf({path:'docs/acceptance/s5/pdf/connected.pdf',format:'A4'});await page.reload();await expect(page.locator('.signal-sheet')).toContainText('Счёт: 70');
+         |                                                                                                                                                                                                                                                                                                                      ^
+      28 |  const row=await client.from('workspaces').select('data,version').single();current=row.data;const state=current.data;const v1=state.signalVersions[id][0];const f=state.complexes.find((c:any)=>c.id===id).factors.find((f:any)=>f.code==='R2');
+      29 |  const run=(await client.from('analysis_runs').select('id,model,prompt_version,status,input_hash,input_snapshot').eq('id',f.evidence.runId).single()).data!;expect(run.status).toBe('succeeded');expect(run.input_snapshot.text).toBe(text);
+      30 |  await send({type:'factor',zkId:id,code:'R2',status:'rejected',evidence:f.evidence,comment:'Повторная сверка: предложение оплаты снято'});await page.reload();await expect(page.locator('.signal-sheet')).toContainText('Счёт: 45');await expect(page.locator('.signal-sheet')).toContainText('yellow');
+        at C:\Users\BIGra\codemasters8\tests\live\investigation.spec.ts:27:310
+
+    Error Context: test-results\live\investigation-real-externa-99cc7-new-connected-investigation\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\live\investigation-real-externa-99cc7-new-connected-investigation\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\live\investigation-real-externa-99cc7-new-connected-investigation\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests\live\investigation.spec.ts:5:1 › real external LLM S5 new connected investigation ────────
+Retained isolated local test account privately for resume, without another inference
+file:///C:/Users/BIGra/codemasters8/tools/s5-investigation.mjs:6
+try{await new Promise((resolve,reject)=>{const p=spawn(process.execPath,['node_modules/@playwright/test/cli.js','test','--config','playwright.live.config.ts','investigation.spec.ts'],{windowsHide:true,stdio:'inherit',env:{...process.env,SAQ_LIVE_SUPABASE_URL:c.API_URL,SAQ_LIVE_SUPABASE_KEY:c.ANON_KEY,SAQ_LIVE_EMAIL:account.email,SAQ_LIVE_PASSWORD:account.password}});p.on('exit',code=>code===0?resolve():reject(new Error('investigation exit '+code)));});success=true;}finally{if(success){await admin.auth.admin.deleteUser(account.id);await unlink('.temp/s5-account.json');}else console.log('Retained isolated local test account privately for resume, without another inference');}
+                                                                                                                                                                                                                                                                                                                                                                                                                             ^
+
+Error: investigation exit 1
+    at ChildProcess.<anonymous> (file:///C:/Users/BIGra/codemasters8/tools/s5-investigation.mjs:6:414)
+    at ChildProcess.emit (node:events:509:28)
+    at ChildProcess._handle.onexit (node:internal/child_process:295:12)
+
+Node.js v24.18.0

@@ -4,6 +4,8 @@ import type { Command } from './domain';
 import type { AppState, Media } from './types';
 import { FutureVersionError, RAW_BACKUP_KEY, V1_IMPORT_BACKUP_KEY, V1_STORAGE_KEY, loadStateFromText, migrateLegacyV1, previewLegacyV1 } from './state-migrations';
 import type { LegacyV1Preview } from './state-migrations';
+import { applyImportTransform, isRestoreTargetEmpty } from './backup';
+import type { ValidatedBackup } from './backup';
 
 export { FutureVersionError };
 
@@ -25,6 +27,8 @@ const ID_RE = /^[A-Za-z0-9-]{1,80}$/;
 let version = 0;
 let userId = '';
 let sessionGeneration = 0;
+const sessionListeners=new Set<()=>void>();
+export function onSessionChange(listener:()=>void):()=>void {sessionListeners.add(listener); return ()=>{sessionListeners.delete(listener);};}
 let sessionUser: string | null = null;
 let tail: Promise<unknown> = Promise.resolve();
 let lockDegraded = false;
@@ -166,8 +170,10 @@ export function getSessionUser(): string | null {
  */
 export function trackAuthSession(nextUserId: string | null): void {
   if (sessionUser !== nextUserId) {
+    userId = '';
     sessionUser = nextUserId;
     sessionGeneration += 1;
+    for(const listener of sessionListeners) listener();
     if (nextUserId == null) removeItem(SESSION_USER_KEY);
     else setItem(SESSION_USER_KEY, nextUserId);
   }
@@ -239,7 +245,7 @@ function canonicalEqual(a: unknown, b: unknown): boolean {
 /* ------------------------------------------------------------------ */
 /* S2.2 (C2). DEMO-конверт: state/version/receipts — одно значение.    */
 /* Чтение/запись сериализуются между вкладками Web Locks; без API —    */
-/* очередь вкладки + флаг деградации (защита не обещается). Legacy      */
+/* запись блокируется; чтение/экспорт остаются доступными. Legacy      */
 /* raw-state значение мигрирует в конверт при первой записи.           */
 /* ------------------------------------------------------------------ */
 
@@ -264,14 +270,27 @@ function isEnvelope(value: unknown): value is DemoEnvelope {
 function readDemoEnvelope(fallback: AppState): DemoEnvelope {
   const raw = getItem(KEY);
   if (!raw) return { envelope: 1, state: fallback, version: 0, receipts: {} };
+  let parsed: unknown;
   try {
-    const parsed: unknown = JSON.parse(raw);
-    if (isEnvelope(parsed)) {
-      if (typeof parsed.receipts !== 'object' || parsed.receipts === null) parsed.receipts = {};
-      return parsed;
-    }
+    parsed = JSON.parse(raw);
   } catch {
-    // ниже legacy-путь с понятным отказом S2.1
+    stashRawBackup(raw);
+    throw new Error('Сохранённый workspace повреждён: не JSON. Исходник сохранён отдельно.');
+  }
+  try {
+    if (isEnvelope(parsed)) {
+      if (!Number.isSafeInteger(parsed.version) || parsed.version < 0) throw new Error('Некорректная версия DEMO-конверта');
+      const loaded = loadStateFromText(JSON.stringify(parsed.state));
+      const env = { ...parsed, state: loaded.state, receipts: parsed.receipts ?? {} };
+      if (loaded.migrated) {
+        stashRawBackup(raw);
+        writeDemoEnvelope(env);
+      }
+      return env;
+    }
+  } catch (e) {
+    stashRawBackup(raw);
+    throw e;
   }
   // Legacy raw-state (до конверта): строгая проверка S2.1, исходник — в backup.
   try {
@@ -311,9 +330,9 @@ async function withDemoLock<T>(work: () => Promise<T> | T): Promise<T> {
   }
   lockDegraded = true;
   if (typeof console !== 'undefined') {
-    console.warn('[S2.2] Web Locks недоступны: межвкладочная сериализация демо-записи ограничена очередью вкладки, защита не обещается.');
+    console.warn('[S6] Web Locks недоступны: DEMO доступен только для чтения/экспорта.');
   }
-  return await work();
+  throw new Error('Web Locks недоступны: запись DEMO заблокирована. Чтение и экспорт доступны; откройте приложение в браузере с Web Locks.');
 }
 
 export function isDemoLockDegraded(): boolean {
@@ -333,7 +352,9 @@ export async function loadState(): Promise<AppState> {
     version = env.version;
     return env.state;
   }
+  const startedGeneration = sessionGeneration;
   const { data: { session } } = await supabase.auth.getSession();
+  if (sessionGeneration !== startedGeneration) throw new SessionSupersededError();
   if (!session) {
     // Регистрации нет: без сессии — DEMO-конверт по умолчанию, а не пустая заглушка.
     userId = '';
@@ -343,12 +364,15 @@ export async function loadState(): Promise<AppState> {
     return env.state;
   }
   const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (sessionGeneration !== startedGeneration) throw new SessionSupersededError();
   if (authError || !user) throw new Error('Войдите через Supabase Auth');
-  userId = user.id;
   // S2.2. Смена auth-пользователя (включая временные аккаунты) — новая сессия:
   // поздние ответы старой не заменят workspace новой.
   trackAuthSession(user.id);
+  userId = user.id;
+  const loadingGeneration = sessionGeneration;
   const { data, error } = await supabase.from('workspaces').select('data,version').eq('owner_id', userId).maybeSingle();
+  if (sessionGeneration !== loadingGeneration) throw new SessionSupersededError();
   if (error) throw error;
   version = data?.version ?? 0;
   const serverRaw = data?.data ?? { schemaVersion: 3, complexes: [], ads: [], media: [], signals: {}, signalVersions: {}, audit: [] };
@@ -361,7 +385,9 @@ export async function loadState(): Promise<AppState> {
 }
 export async function initializeWorkspace(): Promise<AppState> {
   if (!supabase) return resetDemo();
+  const generation = sessionGeneration;
   const { data, error } = await supabase.rpc('initialize_workspace');
+  if (sessionGeneration !== generation) throw new SessionSupersededError();
   if (error) throw error;
   version = data.version;
   return data.data;
@@ -443,7 +469,8 @@ function assertDemoMediaShape(media: Media, owner: string): void {
 }
 
 async function commitRemote(payload: Command, commandId: string): Promise<CommitResult> {
-  let response: { data: unknown; error: { message: string } | null };
+  const generation = sessionGeneration;
+  let response: { data: unknown; error: { message: string; code?: string } | null; status?: number };
   try {
     response = (await supabase!.rpc('apply_command', {
       command: payload,
@@ -459,8 +486,13 @@ async function commitRemote(payload: Command, commandId: string): Promise<Commit
     );
   }
   const { data, error } = response;
+  if (sessionGeneration !== generation) throw new SessionSupersededError();
   if (error) {
     const message = error.message ?? String(error);
+    // PostgREST often returns transport failures as { error, status: 0 }, not throws.
+    if (response.status === 0 || ((response.status ?? 0) >= 500 && !/^P\d{4}$/.test(error.code ?? '')) || /fetch failed|failed to fetch|network|timeout|timed out/i.test(message)) {
+      throw new UnknownCommitResultError(`Ответ сервера не получен (${commandId}); повторите отправку тем же ID.`, commandId);
+    }
     if (/STALE_VERSION/.test(message)) {
       // S2.2. Явное восстановление: перечитать, сохранить draft, показать конфликт.
       // Решение НЕ применяется к новым фактам автоматически.
@@ -473,7 +505,7 @@ async function commitRemote(payload: Command, commandId: string): Promise<Commit
       );
     }
     if (/COMMAND_ID_REUSED/.test(message)) {
-      throw new Error('Этот ID намерения уже использован с другим содержимым. Создайте новое решение (новый commandId).');
+      throw new UnknownCommitResultError('Этот ID уже применён с другим содержимым. Перезагрузите состояние и проверьте решение перед новой отправкой.', commandId);
     }
     throw new Error(message);
   }
@@ -517,9 +549,13 @@ async function commitDemo(base: AppState, payload: Command, commandId: string, r
       standaloneFull = sanitizeMediaForStore(cleanPayload.media);
       localPayload = { type: 'media', media: stripIntegrity(cleanPayload.media) };
     }
-    const next = applyCommand(env.state, localPayload, reviewer);
+    const next = applyCommand(env.state, localPayload, reviewer, { commandId, sourceVersion: env.version });
     if (fullMedia) {
       next.media.push(fullMedia);
+      if (cleanPayload.type === 'ad' && cleanPayload.decision === 'confirmed' && cleanPayload.hypothesis) {
+        const factor = next.complexes.find(z => z.id === cleanPayload.ad.zkId)?.factors.find(f => f.code === cleanPayload.hypothesis!.code);
+        if (factor?.evidence) factor.evidence.mediaIds = [...new Set([...(factor.evidence.mediaIds ?? []), fullMedia.id])];
+      }
       const head = next.audit[0];
       if (head) {
         head.commandId = commandId;
@@ -800,6 +836,36 @@ export async function readDemoFileBytes(path: string): Promise<Uint8Array> {
   return new Uint8Array(await blob.arrayBuffer());
 }
 
+/** Read from the same owner/storage used by uploads, including logged-out DEMO. */
+export async function readFileBytes(media: Media): Promise<Uint8Array> {
+  const owner = await requireOwner();
+  if (!supabase || owner === DEMO_OWNER) return readDemoFileBytes(media.path);
+  const { data, error } = await supabase.storage.from('evidence').download(media.path);
+  if (error || !data) throw new Error(`Файл ${media.id} не скачался: ${error?.message ?? 'пусто'}`);
+  return new Uint8Array(await data.arrayBuffer());
+}
+
+/** Restore through the repository so paths, version and persisted state agree. */
+export async function restoreDemoBackup(backup: ValidatedBackup): Promise<AppState> {
+  return withDemoLock(async () => {
+    const env = readDemoEnvelope(initialState());
+    if (!isRestoreTargetEmpty(env.state)) throw new Error('Восстановление — только в пустое workspace');
+    const imported = applyImportTransform(backup.workspace, 'demo');
+    for (const media of imported.media) {
+      const bytes = backup.files.get(media.id);
+      if (!bytes) throw new Error(`Файл отсутствует в пакете: ${media.id}`);
+      media.path = mediaPath(DEMO_OWNER, media.zkId, media.id, mediaExtFor(media.kind, media.name));
+      await blobStore('readwrite', media.path, new File([bytes as unknown as BlobPart], media.name, { type: media.kind }));
+    }
+    // Validate before publishing the restored workspace; never ACK an unloadable state.
+    const state = loadStateFromText(JSON.stringify(imported)).state;
+    const restoredVersion = env.version + 1;
+    writeDemoEnvelope({ envelope: 1, state, version: restoredVersion, receipts: {} });
+    version = restoredVersion;
+    return state;
+  });
+}
+
 async function demoBlobExists(path: string): Promise<boolean> {
   if (typeof indexedDB === 'undefined') return memoryBlobs.has(path);
   const blob = await blobStore('readonly', path);
@@ -860,7 +926,15 @@ export async function uploadFile(file: File, zkId: string, opts?: { mediaId?: st
   const path = mediaPath(owner, zkId, id, mediaExtFor(file.type, file.name));
   if (supabase && owner !== DEMO_OWNER) {
     const { error } = await supabase.storage.from('evidence').upload(path, file, { contentType: file.type });
-    if (error) throw error;
+    if (error) {
+      // Retry a lost upload response only when the existing bytes really match.
+      if (!/exists|duplicate|already|409/i.test(error.message)) throw error;
+      const { data: existing, error: readError } = await supabase.storage.from('evidence').download(path);
+      if (readError || !existing || existing.size !== file.size) throw error;
+      const actual = new Uint8Array(await existing.arrayBuffer());
+      const expected = new Uint8Array(await file.arrayBuffer());
+      if (!actual.every((b, i) => b === expected[i])) throw error;
+    }
   } else await blobStore('readwrite', path, file);
   return {
     id,
@@ -882,7 +956,11 @@ export async function removeFile(path: string) {
   if (supabase && owner !== DEMO_OWNER) {
     const { error } = await supabase.storage.from('evidence').remove([path]);
     if (error) throw error;
-  } else await blobStore('readwrite', path);
+  } else {
+    const env = readDemoEnvelope(initialState());
+    if (env.state.media.some(m => m.path === path)) throw new Error('Файл уже связан с сохранёнными данными — удаление запрещено.');
+    await blobStore('readwrite', path);
+  }
 }
 
 export async function mediaUrl(media: Media): Promise<string> {

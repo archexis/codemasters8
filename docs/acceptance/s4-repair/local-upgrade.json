@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "method": "pg_dump custom + raw Storage volume copy before migration up --local --include-all; no reset",
+  "backup": ".temp/s4-repair/backup-manifest.json",
+  "databaseBackupSha256": "abfacc4e86bd81bdb6852170116fc59089b0abaa6abcb22eda681b63b970bae2",
+  "backedUpFiles": 1,
+  "backedUpBytes": 446293,
+  "migrations": [
+    "202610180001_workspace.sql",
+    "202610180002_seed.sql",
+    "20261018104408_c1_command_schema.sql",
+    "20261018105750_s1_2_decision_contract.sql",
+    "20261018111105_s1_3_invalidation.sql",
+    "20261018112607_s1_4_seed_integrity.sql",
+    "20261018121836_s2_1_schema_version.sql",
+    "20261018130000_s2_2_receipts.sql",
+    "20261018175456_s2_5_restore.sql",
+    "20261018180000_s2_4_signals.sql",
+    "20261019000000_s4_1_runs.sql",
+    "20261019000100_s4_2_hypothesis.sql",
+    "20261019000200_review_fixes.sql",
+    "20261019000300_s4_trusted_path.sql",
+    "20261019000400_s4_commissioning_material.sql"
+  ]
+}

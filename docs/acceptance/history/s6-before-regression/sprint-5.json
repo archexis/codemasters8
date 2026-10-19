@@ -1,0 +1,1929 @@
+{
+  "sprint": 5,
+  "status": "PASS",
+  "source": {
+    "head": "d2d92a952c9184faad7941357494b16eb6274f79",
+    "manifest": {
+      ".env.example": "618f937b9c05b0ef5a0a6b3a5c9c59bd96df378ec69bfd4ae68a5ae380761b5e",
+      ".github/workflows/ci.yml": "4a9764122c74ca16941cbd63b16003c037f697598d0c999db1dc2eb03ead4b87",
+      ".gitignore": "ba9810179c34e0e6e0286bbd6643ff73a88e9a2570c2e7a7598757f3c6eac092",
+      "backend/app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "backend/app/main.py": "461210558a46399c07d641e688828401c460ee52555e43cf110dbd893294d79d",
+      "backend/requirements.lock.txt": "dc5ee4eaf60a8aa82bf3c1ec4f98cb21e646cbd2094cde41b811a591efa335a3",
+      "backend/requirements.txt": "fee9dec4282f4e5352f1776d5ce3ef131dcfee97b869994b797276a995e59e65",
+      "backend/tests/test_api.py": "e1779bd67b290c972b4887939f3b72196e686fa1b96c4c179ab21207e37a2742",
+      "index.html": "6e14176c32f9d48c8064aef317ec5b138bb7f6dcd99eddc411119bb453092647",
+      "package-lock.json": "cf55b0748605e15f1baffdaf2ea04a47f5947b30b2bdc97f8282f78c1de36075",
+      "package.json": "b88ff93b9b064c53cbcfcccf918d58702eb68257949f5de5ad3607f5b4e57e16",
+      "playwright.cloud.config.ts": "690c518fe5a1768ae501722f2d348f43ece68f29ce0833afc3af12dded4e95bb",
+      "playwright.config.ts": "67ac539877448d402a8c894a3397d5ddd75b2e66f2165b2b7feecf49c24e81c3",
+      "playwright.live.config.ts": "79bad403551fa1934ad9eabe1b5bc5cd3ab1cfb0a7024a1be9062e6f75959837",
+      "skills-lock.json": "829dbe236ed33e495f6b3bc3626e4fc645ba3f87e0426e41c2f601e6dedd65d3",
+      "src/App.svelte": "fc2303ec23ec257fcce271d0ff0ad99ee7712ee26c070daf28a6ce5c0cbaddce",
+      "src/app.css": "67168032b3bd130db09d2292ae559bf287b8e74525e5a6cc030cc789ed8266a8",
+      "src/components/Analyze.svelte": "fa0327b3585e0ce6e971710ae14f87879f26c3fbb9caa3bd7c6ed3626a95c074",
+      "src/components/BackupPanel.svelte": "aa247a5735a183d104a6a4197c0349ab92bb59407a35b2523f21084b5254a6a2",
+      "src/components/ComplexForm.svelte": "eadb3d08a4e3fef4cd094ab8c0002c02bfa04d06f66209f460ca9e0f8f59f221",
+      "src/components/Detail.svelte": "3f5e4e8195c6699a2b3cbed7c97e6d35f9874194427926d93624f3a8f4c83116",
+      "src/components/MediaCard.svelte": "3265146629dd71ead39d37e120a0a072df880a7e2d78ca1fe5c2b4ccd10f2416",
+      "src/components/RiskMap.svelte": "61e3b771747db57dbb515c4f8cd4ae3e45a7346a402178984b6fdd2a5dc94a2a",
+      "src/components/Signal.svelte": "8826f2d74b8635a2d9952cc602f089456952aacb56a73c9ebf64ed1fad32b935",
+      "src/lib/analysis.ts": "a327fd7130b1b041fe6bca23414034632d5278f90e4fed2d3e0a2c28a6def216",
+      "src/lib/backup.ts": "f964c442c12b8264f9ea04d44482d376d96441e531244f3d7522046923a79028",
+      "src/lib/domain.ts": "a2559fdaf0ab37d6721cf7a6d604542f56de0fc239f537b81ea9a72188e6adf7",
+      "src/lib/export.ts": "d1c075cdcaaa81f6d6d519bf17852a811d83ebc2c87073262e30562a33ba7f0b",
+      "src/lib/parser.ts": "4232c1a178bb375f1e3bc83046cfb43b6cf5ca9cb50f04185c6b887373e4c25c",
+      "src/lib/repository.ts": "a22f11430a06cd22f1cfd0ca2807c45a18ada4d20eff0b69004fd4a8165f641b",
+      "src/lib/scoring.ts": "c12d5dcc3e3fe9c0d57fdd5afd08dffc8355f50fe7fc83dafce14861fcd9d7ec",
+      "src/lib/seed.json": "111dc6e38a8096f571926a12de91624fc73b66d0c4611000115936c1fd1145e6",
+      "src/lib/signal-revision.ts": "a3d4d2424b36ed9cc9c159b079a9163e1d188d3d57fcecbb7ad7760c296773a4",
+      "src/lib/signal-snapshot.ts": "c9a3568e187dfade0653eaf02f94d95a94577f7978ad77db69255f49bef43fac",
+      "src/lib/state-migrations.ts": "b57d9fcbb41f5323e413db1ba901032d4be41d28a911edf1999456ae722dda8d",
+      "src/lib/supabase.ts": "e2c7088ad5a2dfb6be6517d183ca12d5ef7e71270a4576711eadb20c9529d87b",
+      "src/lib/types.ts": "a7b1be23f45cb0463d6ea545508b57c29f7d9b03b290adb039e82e7ee1d36801",
+      "src/lib/validation.ts": "1517ecbe357849e57422133c8e6a67ff3dc7da4fbdda71db212d263a36a1d205",
+      "src/main.ts": "0db1e46fcae6c698584e76503fd02983500046009b6f8942fb138c537ed36b92",
+      "supabase/config.toml": "2f86fb63d52a4c5d8dc72a4240d06be515901b4b49c31c1340ad3c063467abea",
+      "supabase/functions/analyze-proxy/index.ts": "f23017bd1dffdd790e28133cdc954df62a19e171b9e7090adb102c3ccacaf266",
+      "supabase/functions/analyze/index.test.ts": "4e30d232e0338cbc49d23fd82892b65c0fcccde112e40386538e44ae2d4d758a",
+      "supabase/functions/analyze/index.ts": "33084afd55df5ac3092160a9b4899550180e635fe3520293769c695992963ca8",
+      "supabase/migrations/202610180001_workspace.sql": "48bd001dc7e21e40199bfaa85c17360b49cf861d9910c447a1d4220284fe5ab7",
+      "supabase/migrations/202610180002_seed.sql": "6ab4cf12eaf42dcb71f33f17a023feddd501a0760bcf082bb05ad7044682837d",
+      "supabase/migrations/20261018104408_c1_command_schema.sql": "86d51aa423c93e687b4d602d0007772121ad8319effa91081cabb5340d2a0f25",
+      "supabase/migrations/20261018105750_s1_2_decision_contract.sql": "7f4206139675728243ac6cbd5fd7fc16d1e18ea6e792ea23e48c159f28535793",
+      "supabase/migrations/20261018111105_s1_3_invalidation.sql": "19678efe05b293e0675f12af3f779087cee2d6c0b1af633758ba104c8fb0b713",
+      "supabase/migrations/20261018112607_s1_4_seed_integrity.sql": "a8f79efa3081635999f5bbf3b876db6da609973412803edd7637a89d7bc875b6",
+      "supabase/migrations/20261018121836_s2_1_schema_version.sql": "a9bfeb6ebe28b2c9b00c512d6e318c7bfec90a365a3fb31837c542948480fdf2",
+      "supabase/migrations/20261018130000_s2_2_receipts.sql": "e89824ca2f0410f032e8fd0ed80cab3352eaa3d28adb0cc541b056980a818cc7",
+      "supabase/migrations/20261018175456_s2_5_restore.sql": "94459f597efb9dfba74a348cfe4bcfcc18292032360d4e7c500f0c96be4c2d48",
+      "supabase/migrations/20261018180000_s2_4_signals.sql": "095c1e771b7244ad2b07d40d0bfe500e85a8cc26751b827b127bac89e12e44d1",
+      "supabase/migrations/20261019000000_s4_1_runs.sql": "dc9f26bcc693472ed9113e5f6ab808ac0968bb6e157a1907a472acd4defcd05a",
+      "supabase/migrations/20261019000100_s4_2_hypothesis.sql": "c500ae312fbfa6d5f3841c439f1b7d70729097f87278e8d401685867397231da",
+      "supabase/migrations/20261019000200_review_fixes.sql": "a4f1d7d130f7d2d8e13968f5361fff68541602447b8700e7be45bb8ac5830351",
+      "supabase/migrations/20261019000300_s4_trusted_path.sql": "98b7fff68fbc6885aebab099add9a0ec93484b8aef4a4161abd252d1eabc9580",
+      "supabase/migrations/20261019000400_s4_commissioning_material.sql": "600fb85b92c064325f63f4335800d70d484213be9d52860ca0dce3a1fa5ecf06",
+      "supabase/migrations/20261019000500_s5_signal_cycle.sql": "b2333eeeb0017c3c1a6d8bc36b68da79b2acaa0f29ee9c369831aa4f66a489bb",
+      "svelte.config.js": "3c328d509de22605aa7d1bcfd4a34941b99c2ecaea7026dde935785d8b6661e4",
+      "tests/cloud/supabase.spec.ts": "4671f24aafb663cc78cd1fa97b20a6d92c16198f083cde7dab3d6f80111ed4f1",
+      "tests/e2e/ai-review.spec.ts": "7530519110643073ec0b2e3ff4de741f134aa800ad7ae859314ee4de098ab97a",
+      "tests/e2e/csv-import.spec.ts": "d2f62868ef8445e4f1f5e496902fa457dad7be7abede4eb47bf94ecd54f5f243",
+      "tests/e2e/evidence-failures.spec.ts": "2d2f3716a7ce50cc7e9378f06a857c0f39bec92f43a887522b00de57b7b2658b",
+      "tests/e2e/legal-invariants.spec.ts": "b0cccf4f512f5dc53a22917b3b7b9df659d93055f6ff2b88051f1a2b5a6021cb",
+      "tests/e2e/review-regressions.spec.ts": "a060f11369e5ec55acc3d3f0e76440f674ceb54188e8a2279e8c7f939a8a5506",
+      "tests/e2e/signal-export.spec.ts": "cf89c869121699908b0147b758b6c4210b44ac1f0abf1611e482cfe6092d8eac",
+      "tests/e2e/signal-revision.spec.ts": "eb19a0561f4a0c609fd2222dda0ad0f219a3abd4cfb267ad8e71444aa677b9cf",
+      "tests/e2e/source-roundtrip.spec.ts": "1d9ebf61a4c6d249d4c1bd0a451e3b1503115eea61bde3688dfd3ee4d9271fed",
+      "tests/e2e/workflows.spec.ts": "43ccea626287432aa827fe8265ce3c518369e639536b0de20c7b38669414bf38",
+      "tests/fixtures/contracts/ai-eval.json": "13653e4d015f0027cc1648fb985d445dd5e32577371a5fcf3b46a0f5b30074fe",
+      "tests/fixtures/contracts/ai-transport.json": "4faab7b12c41b41a29e466043cf6e99e543a48b302f781f123cb0d742cdbe5c8",
+      "tests/fixtures/contracts/decision-cases.json": "e327f9ff4354194e3ccefdfc80f2105ebfc2ba4e984599008a8bf520d3f761de",
+      "tests/fixtures/contracts/extraction.json": "5d2724f0b1d78a6a8253ab965782daa22b5a7e12498419a7a7c1902a3a6d5b38",
+      "tests/fixtures/contracts/migrations/202610180001_workspace.sql": "42117947b1bdf44351b4d82a5e61e39885fd2cfe457cb7be2b156bff80f091d1",
+      "tests/fixtures/contracts/migrations/202610180002_seed.sql": "6ab4cf12eaf42dcb71f33f17a023feddd501a0760bcf082bb05ad7044682837d",
+      "tests/fixtures/contracts/migrations/202610180003_contract_marker.sql": "6af74a7cca9a8687befb5d6efa0368725f617309fb41bf8cf094ad907a97b2a0",
+      "tests/fixtures/contracts/scoring.json": "d593c56fea5f9ba69c5f2a994e1b66032ad6e2472617b44e62f17d7db2be157e",
+      "tests/fixtures/legacy-parser.cjs": "0011f407a11508d1049453dc9e7923bc9da2878693715f9b88af74f7a2385952",
+      "tests/fixtures/legacy-scoring.cjs": "fa51a79a22efb700b5a6c48b69f25d0905e5a1f07d1c3abe865cb8b196bfdb0f",
+      "tests/fixtures/legacy-sources.cjs": "e26c84054b1b98a301ce2796466165b700aad226d190cc8084ef2be8192f4238",
+      "tests/helpers/database.ts": "5aac63c15a014379b5d8f59881103d3668c243a2d958093f1b4938424ab3ced5",
+      "tests/live/backup-isolation.spec.ts": "454557c8365a1a5a59f417510dde376ca1e8797a801e6b091186824f0882a204",
+      "tests/live/investigation.spec.ts": "789b80555f22a88e6975631112062fab2351a5069de76d0d69764ab5d0c68bf1",
+      "tests/live/supabase.spec.ts": "72fd62147ad4512cd52c8d47f84c0f7bc3841dce2be5601b954a545b645f013b",
+      "tests/unit/ai-provenance-sql.test.ts": "155081d1fd3cf3afd1b5b5c4463980f9df2d16402c3ad3e413abdec7954bb742",
+      "tests/unit/analysis-run.test.ts": "90aaddf7915d88b2c4d0536b2c1d357af3e90295a6384eeaad31ab989aa8cb48",
+      "tests/unit/analyze-handler.test.ts": "778e4623232a31f42ec5d9d870bba7c2015f5a0873ae451a513a87899a491fd1",
+      "tests/unit/backup.test.ts": "804a047830c76eaf36925c48e60f7122e8f0862ff6bf5218f76d28b9b776635c",
+      "tests/unit/connected-regressions.test.ts": "1fbe88f548e8455203acbbe62485617231a51072dae292908181fad2f785e409",
+      "tests/unit/database.test.ts": "d2c7bbcec998313c68ef61fd4bcd7a08ffc05515630c5f1d1da0b0539bcb9a3c",
+      "tests/unit/decision-contract-sql.test.ts": "1ab52b0cf91437302416b44974ba58cb7c54e8db7646fd2c15680c8f9a03b79a",
+      "tests/unit/decision-contract.test.ts": "5921bddb7ef8858cdbf7f58d0e1d69da9b306ac7e553e9ff15a8a172d5ea9db6",
+      "tests/unit/domain.test.ts": "5239fd21649aaec093bbf0d2f982f796bafcf0471c30e4397e2a7affb3a460ca",
+      "tests/unit/edge-proxy.test.ts": "e15e2bd6c965edcf1a30ecd89e386bcce1ef4a707f8a672e8e77ecb761a328bd",
+      "tests/unit/export-gate.test.ts": "9ca2744ef1d20cf0825942f19b8161dbff41447aeddcd76f98fb2a589c0cd4d4",
+      "tests/unit/extraction.test.ts": "ffba7f0d259efc0ee711c5991c753b830b57d8d5ba7cd7ddd068e5e770eb7316",
+      "tests/unit/idempotency.test.ts": "38fd92bf6b42b0af597566ece84828af9792435cd99ef81f8cdcc89c9b900068",
+      "tests/unit/legacy-regression.test.ts": "9be187d9bc95a73deee6fea3d3165fecfecb277f3517f81f65af54711d3d442b",
+      "tests/unit/probe-tmp.test.ts": "c9650039575a6cd043d04505700267551d4b88c30a31cbe3172d5bef08fc6c7e",
+      "tests/unit/review-regressions.test.ts": "6845a4bcdc1d89edbe49dc0dd88baca3024447c1aeff12bb865d45b71fcd4cec",
+      "tests/unit/scoring-attack.test.ts": "620be23d950908db9953670b12ca20c692596837e12c9c47796aaeb7a1ebcd5d",
+      "tests/unit/seed-integrity.test.ts": "3a455ffdcd4b95bf1cc55bf0fdd17a071fb3d1d271682fb0c8db93bb6841bdef",
+      "tests/unit/signal-history.test.ts": "2161382ed566d9c7537a25f93392afcd6b9e71be0dcc8ebdba5f9712fe9dcfe3",
+      "tests/unit/signal-revision.test.ts": "c7e0979ce2db9f47b5baaf51a3f301ea2aa1b16aa2b45b7345f75bb56e3b6fe6",
+      "tests/unit/signal-s5.test.ts": "c2f0d733ad47aab02fe8e9b54ce7183db9dd0ac98abf4a1bbc231b56e9066a60",
+      "tests/unit/source-contract.test.ts": "ae2bee99e3c5fea5c5b6ae92f3484cb06448c0712fb6bc4c965d6e0a9d440faa",
+      "tests/unit/sprint-gate.test.ts": "b5746d7e0256e80ffa8501f222bf0c9f8bfbf486311c182d7c24c2f744ed78bc",
+      "tests/unit/state-migration.test.ts": "58d59ecf52ac81b3a9c48b1077007b4af5a7eed649d0d534eb1ccf8114fbdf19",
+      "tests/unit/validation.test.ts": "ab330a609a4b0ecdf10290ba657faadad8f1ff54a6db01f440551adf59f702f1",
+      "tools/acceptance.cloud.config.ts": "0cf9fa1d40121260c88eaf4bf328406005153ad7dd6b6dca2fee007105babe40",
+      "tools/check-sprint-gate.mjs": "c5aec8f86f7aa52df686a04b36d9cd68f78ff6d97ac39ff559715806bba1a5d0",
+      "tools/deepseek-smoke.mjs": "9aa3344382a39556b181c4b0a6b494a0dc03966114914c6e14851d8538dcf36f",
+      "tools/diagnose-acceptance.mjs": "5ec11f512ecd23f4936fd8a8b8ca99376364a8fdbe7bcf6f6e09641f40f1fdfa",
+      "tools/generate-seed.mjs": "662f505417a92341823e44ed442f4e2c3aefef79e03a4855722adda44f1e6349",
+      "tools/local-smoke.mjs": "c5993c2d11269c8cd706c2f34ca9ba96e9ed59f49f696687537164f242f7b8ec",
+      "tools/record-s4-acceptance.mjs": "261dc976ad27f716cc2b230fcf5c8b0c769d95813c0099e9074a4bdfaae88302",
+      "tools/record-s5-acceptance.mjs": "0799e05179c0ae0b3df8310999aac48c9119eb2880e46e625e92cde01aa5242f",
+      "tools/s5-entry-isolation.mjs": "38e16f760f499c190d668f90083b4f43a0e206156fef66e76c3ef4ff6fac23cd",
+      "tools/s5-investigation.mjs": "a8e26e9bf3f328ae829145db525bcf41598f683f4a9a79967241337b765197d0",
+      "tools/source-manifest.mjs": "32684697d9f2c38a49d61363fa0e70b96709cfb13176d660406d854165f26b81",
+      "tools/verify-no-server-secrets.mjs": "d4ce5cd08d56bd7eedce9a86f2ab2102555da20a5e176f68217f5c90008c5915",
+      "tools/verify-s5-pdfs.py": "5eecbd1157d2b5f4eaf33ac98c3b5db9cf280ed905f97318b78323004f2108d5",
+      "tools/verify_ashyq.py": "671d68d0c0da6ff7381e554b6d29285a8c434af4f92d9c1c54433ba878d53a51",
+      "tsconfig.json": "eb24611a60c1e49f5cd17c82fb3f3d27db276164d773087983f6fe491e47c36f",
+      "vite.config.ts": "1a3ba236a32a68eff1cada16052ee1102e0f0ed4c6d72c08f975b96bb86a42e0"
+    }
+  },
+  "environment": {
+    "date": "2026-10-18T17:48:33.568Z",
+    "node": "v24.18.0",
+    "mode": "DEMO + local Supabase Docker + real provider",
+    "migrations": [
+      "202610180001_workspace.sql",
+      "202610180002_seed.sql",
+      "20261018104408_c1_command_schema.sql",
+      "20261018105750_s1_2_decision_contract.sql",
+      "20261018111105_s1_3_invalidation.sql",
+      "20261018112607_s1_4_seed_integrity.sql",
+      "20261018121836_s2_1_schema_version.sql",
+      "20261018130000_s2_2_receipts.sql",
+      "20261018175456_s2_5_restore.sql",
+      "20261018180000_s2_4_signals.sql",
+      "20261019000000_s4_1_runs.sql",
+      "20261019000100_s4_2_hypothesis.sql",
+      "20261019000200_review_fixes.sql",
+      "20261019000300_s4_trusted_path.sql",
+      "20261019000400_s4_commissioning_material.sql",
+      "20261019000500_s5_signal_cycle.sql"
+    ]
+  },
+  "packages": [
+    {
+      "id": "S5.1",
+      "status": "PASS",
+      "checks": [
+        {
+          "profile": "T",
+          "command": "npm run check",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/check.log"
+          ]
+        },
+        {
+          "profile": "U",
+          "command": "npm test",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/unit.log"
+          ]
+        },
+        {
+          "profile": "B",
+          "command": "npm run build",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/build.log"
+          ]
+        },
+        {
+          "profile": "E",
+          "command": "npm run test:e2e -- --output=test-results/s5-e2e",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/e2e.log"
+          ]
+        },
+        {
+          "profile": "C",
+          "command": "npm run test:cloud",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/cloud.log"
+          ]
+        },
+        {
+          "profile": "A",
+          "command": "backend/.venv/Scripts/python.exe -m pytest backend/tests -q",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/api.log"
+          ]
+        },
+        {
+          "profile": "F",
+          "command": "npm run test:edge",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/edge.log"
+          ]
+        },
+        {
+          "profile": "L",
+          "command": "npm run test:local",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/local.log"
+          ]
+        },
+        {
+          "profile": "AI",
+          "command": "node tools/s5-investigation.mjs",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/connected.log"
+          ]
+        },
+        {
+          "profile": "S5-review-T",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/check.log"
+          ]
+        },
+        {
+          "profile": "S5-review-U",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/unit.log"
+          ]
+        },
+        {
+          "profile": "S5-review-B",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/build-independent.log"
+          ]
+        },
+        {
+          "profile": "S5-review-E",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/e2e-independent.log"
+          ]
+        },
+        {
+          "profile": "S5-review-target-unit",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/target-unit.log"
+          ]
+        },
+        {
+          "profile": "S5-review-target-browser",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/target-e2e.log"
+          ]
+        },
+        {
+          "profile": "S5-review-parent",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/parent-reproducer.log"
+          ]
+        }
+      ],
+      "artifacts": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5/pdf/confirmed.pdf",
+        "docs/acceptance/s5/pdf/confirmed-1.png",
+        "docs/acceptance/s5/pdf/confirmed-2.png",
+        "docs/acceptance/s5/pdf/connected.pdf",
+        "docs/acceptance/s5/pdf/connected-1.png",
+        "docs/acceptance/s5/pdf/connected-2.png",
+        "docs/acceptance/s5/pdf/long.pdf",
+        "docs/acceptance/s5/pdf/long-1.png",
+        "docs/acceptance/s5/pdf/long-2.png",
+        "docs/acceptance/s5/pdf/long-3.png",
+        "docs/acceptance/s5/pdf/long-4.png",
+        "docs/acceptance/s5/pdf/long-5.png",
+        "docs/acceptance/s5/pdf/long-6.png",
+        "docs/acceptance/s5/pdf/long-7.png",
+        "docs/acceptance/s5/pdf/long-8.png",
+        "docs/acceptance/s5/pdf/long-9.png",
+        "docs/acceptance/s5/pdf/returned.pdf",
+        "docs/acceptance/s5/pdf/returned-1.png",
+        "docs/acceptance/s5/pdf/returned-2.png",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "S5.2",
+      "status": "PASS",
+      "checks": [
+        {
+          "profile": "T",
+          "command": "npm run check",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/check.log"
+          ]
+        },
+        {
+          "profile": "U",
+          "command": "npm test",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/unit.log"
+          ]
+        },
+        {
+          "profile": "B",
+          "command": "npm run build",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/build.log"
+          ]
+        },
+        {
+          "profile": "E",
+          "command": "npm run test:e2e -- --output=test-results/s5-e2e",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/e2e.log"
+          ]
+        },
+        {
+          "profile": "C",
+          "command": "npm run test:cloud",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/cloud.log"
+          ]
+        },
+        {
+          "profile": "A",
+          "command": "backend/.venv/Scripts/python.exe -m pytest backend/tests -q",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/api.log"
+          ]
+        },
+        {
+          "profile": "F",
+          "command": "npm run test:edge",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/edge.log"
+          ]
+        },
+        {
+          "profile": "L",
+          "command": "npm run test:local",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/local.log"
+          ]
+        },
+        {
+          "profile": "AI",
+          "command": "node tools/s5-investigation.mjs",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/connected.log"
+          ]
+        },
+        {
+          "profile": "S5-review-T",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/check.log"
+          ]
+        },
+        {
+          "profile": "S5-review-U",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/unit.log"
+          ]
+        },
+        {
+          "profile": "S5-review-B",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/build-independent.log"
+          ]
+        },
+        {
+          "profile": "S5-review-E",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/e2e-independent.log"
+          ]
+        },
+        {
+          "profile": "S5-review-target-unit",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/target-unit.log"
+          ]
+        },
+        {
+          "profile": "S5-review-target-browser",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/target-e2e.log"
+          ]
+        },
+        {
+          "profile": "S5-review-parent",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/parent-reproducer.log"
+          ]
+        }
+      ],
+      "artifacts": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5/pdf/confirmed.pdf",
+        "docs/acceptance/s5/pdf/confirmed-1.png",
+        "docs/acceptance/s5/pdf/confirmed-2.png",
+        "docs/acceptance/s5/pdf/connected.pdf",
+        "docs/acceptance/s5/pdf/connected-1.png",
+        "docs/acceptance/s5/pdf/connected-2.png",
+        "docs/acceptance/s5/pdf/long.pdf",
+        "docs/acceptance/s5/pdf/long-1.png",
+        "docs/acceptance/s5/pdf/long-2.png",
+        "docs/acceptance/s5/pdf/long-3.png",
+        "docs/acceptance/s5/pdf/long-4.png",
+        "docs/acceptance/s5/pdf/long-5.png",
+        "docs/acceptance/s5/pdf/long-6.png",
+        "docs/acceptance/s5/pdf/long-7.png",
+        "docs/acceptance/s5/pdf/long-8.png",
+        "docs/acceptance/s5/pdf/long-9.png",
+        "docs/acceptance/s5/pdf/returned.pdf",
+        "docs/acceptance/s5/pdf/returned-1.png",
+        "docs/acceptance/s5/pdf/returned-2.png",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "S5.3",
+      "status": "PASS",
+      "checks": [
+        {
+          "profile": "T",
+          "command": "npm run check",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/check.log"
+          ]
+        },
+        {
+          "profile": "U",
+          "command": "npm test",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/unit.log"
+          ]
+        },
+        {
+          "profile": "B",
+          "command": "npm run build",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/build.log"
+          ]
+        },
+        {
+          "profile": "E",
+          "command": "npm run test:e2e -- --output=test-results/s5-e2e",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/e2e.log"
+          ]
+        },
+        {
+          "profile": "C",
+          "command": "npm run test:cloud",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/cloud.log"
+          ]
+        },
+        {
+          "profile": "A",
+          "command": "backend/.venv/Scripts/python.exe -m pytest backend/tests -q",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/api.log"
+          ]
+        },
+        {
+          "profile": "F",
+          "command": "npm run test:edge",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/edge.log"
+          ]
+        },
+        {
+          "profile": "L",
+          "command": "npm run test:local",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/local.log"
+          ]
+        },
+        {
+          "profile": "AI",
+          "command": "node tools/s5-investigation.mjs",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/connected.log"
+          ]
+        },
+        {
+          "profile": "S5-review-T",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/check.log"
+          ]
+        },
+        {
+          "profile": "S5-review-U",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/unit.log"
+          ]
+        },
+        {
+          "profile": "S5-review-B",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/build-independent.log"
+          ]
+        },
+        {
+          "profile": "S5-review-E",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/e2e-independent.log"
+          ]
+        },
+        {
+          "profile": "S5-review-target-unit",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/target-unit.log"
+          ]
+        },
+        {
+          "profile": "S5-review-target-browser",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/target-e2e.log"
+          ]
+        },
+        {
+          "profile": "S5-review-parent",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/parent-reproducer.log"
+          ]
+        }
+      ],
+      "artifacts": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5/pdf/confirmed.pdf",
+        "docs/acceptance/s5/pdf/confirmed-1.png",
+        "docs/acceptance/s5/pdf/confirmed-2.png",
+        "docs/acceptance/s5/pdf/connected.pdf",
+        "docs/acceptance/s5/pdf/connected-1.png",
+        "docs/acceptance/s5/pdf/connected-2.png",
+        "docs/acceptance/s5/pdf/long.pdf",
+        "docs/acceptance/s5/pdf/long-1.png",
+        "docs/acceptance/s5/pdf/long-2.png",
+        "docs/acceptance/s5/pdf/long-3.png",
+        "docs/acceptance/s5/pdf/long-4.png",
+        "docs/acceptance/s5/pdf/long-5.png",
+        "docs/acceptance/s5/pdf/long-6.png",
+        "docs/acceptance/s5/pdf/long-7.png",
+        "docs/acceptance/s5/pdf/long-8.png",
+        "docs/acceptance/s5/pdf/long-9.png",
+        "docs/acceptance/s5/pdf/returned.pdf",
+        "docs/acceptance/s5/pdf/returned-1.png",
+        "docs/acceptance/s5/pdf/returned-2.png",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "S5.4",
+      "status": "PASS",
+      "checks": [
+        {
+          "profile": "T",
+          "command": "npm run check",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/check.log"
+          ]
+        },
+        {
+          "profile": "U",
+          "command": "npm test",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/unit.log"
+          ]
+        },
+        {
+          "profile": "B",
+          "command": "npm run build",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/build.log"
+          ]
+        },
+        {
+          "profile": "E",
+          "command": "npm run test:e2e -- --output=test-results/s5-e2e",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/e2e.log"
+          ]
+        },
+        {
+          "profile": "C",
+          "command": "npm run test:cloud",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/cloud.log"
+          ]
+        },
+        {
+          "profile": "A",
+          "command": "backend/.venv/Scripts/python.exe -m pytest backend/tests -q",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/api.log"
+          ]
+        },
+        {
+          "profile": "F",
+          "command": "npm run test:edge",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/edge.log"
+          ]
+        },
+        {
+          "profile": "L",
+          "command": "npm run test:local",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/local.log"
+          ]
+        },
+        {
+          "profile": "AI",
+          "command": "node tools/s5-investigation.mjs",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5/connected.log"
+          ]
+        },
+        {
+          "profile": "S5-review-T",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/check.log"
+          ]
+        },
+        {
+          "profile": "S5-review-U",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/unit.log"
+          ]
+        },
+        {
+          "profile": "S5-review-B",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/build-independent.log"
+          ]
+        },
+        {
+          "profile": "S5-review-E",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/e2e-independent.log"
+          ]
+        },
+        {
+          "profile": "S5-review-target-unit",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/target-unit.log"
+          ]
+        },
+        {
+          "profile": "S5-review-target-browser",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/target-e2e.log"
+          ]
+        },
+        {
+          "profile": "S5-review-parent",
+          "result": "PASS",
+          "evidence": [
+            "docs/acceptance/s5-review-fix/parent-reproducer.log"
+          ]
+        }
+      ],
+      "artifacts": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5/pdf/confirmed.pdf",
+        "docs/acceptance/s5/pdf/confirmed-1.png",
+        "docs/acceptance/s5/pdf/confirmed-2.png",
+        "docs/acceptance/s5/pdf/connected.pdf",
+        "docs/acceptance/s5/pdf/connected-1.png",
+        "docs/acceptance/s5/pdf/connected-2.png",
+        "docs/acceptance/s5/pdf/long.pdf",
+        "docs/acceptance/s5/pdf/long-1.png",
+        "docs/acceptance/s5/pdf/long-2.png",
+        "docs/acceptance/s5/pdf/long-3.png",
+        "docs/acceptance/s5/pdf/long-4.png",
+        "docs/acceptance/s5/pdf/long-5.png",
+        "docs/acceptance/s5/pdf/long-6.png",
+        "docs/acceptance/s5/pdf/long-7.png",
+        "docs/acceptance/s5/pdf/long-8.png",
+        "docs/acceptance/s5/pdf/long-9.png",
+        "docs/acceptance/s5/pdf/returned.pdf",
+        "docs/acceptance/s5/pdf/returned-1.png",
+        "docs/acceptance/s5/pdf/returned-2.png",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    }
+  ],
+  "criteria": [
+    {
+      "id": "D5.1",
+      "status": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5/pdf/confirmed.pdf",
+        "docs/acceptance/s5/pdf/confirmed-1.png",
+        "docs/acceptance/s5/pdf/confirmed-2.png",
+        "docs/acceptance/s5/pdf/connected.pdf",
+        "docs/acceptance/s5/pdf/connected-1.png",
+        "docs/acceptance/s5/pdf/connected-2.png",
+        "docs/acceptance/s5/pdf/long.pdf",
+        "docs/acceptance/s5/pdf/long-1.png",
+        "docs/acceptance/s5/pdf/long-2.png",
+        "docs/acceptance/s5/pdf/long-3.png",
+        "docs/acceptance/s5/pdf/long-4.png",
+        "docs/acceptance/s5/pdf/long-5.png",
+        "docs/acceptance/s5/pdf/long-6.png",
+        "docs/acceptance/s5/pdf/long-7.png",
+        "docs/acceptance/s5/pdf/long-8.png",
+        "docs/acceptance/s5/pdf/long-9.png",
+        "docs/acceptance/s5/pdf/returned.pdf",
+        "docs/acceptance/s5/pdf/returned-1.png",
+        "docs/acceptance/s5/pdf/returned-2.png",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D5.2",
+      "status": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5/pdf/confirmed.pdf",
+        "docs/acceptance/s5/pdf/confirmed-1.png",
+        "docs/acceptance/s5/pdf/confirmed-2.png",
+        "docs/acceptance/s5/pdf/connected.pdf",
+        "docs/acceptance/s5/pdf/connected-1.png",
+        "docs/acceptance/s5/pdf/connected-2.png",
+        "docs/acceptance/s5/pdf/long.pdf",
+        "docs/acceptance/s5/pdf/long-1.png",
+        "docs/acceptance/s5/pdf/long-2.png",
+        "docs/acceptance/s5/pdf/long-3.png",
+        "docs/acceptance/s5/pdf/long-4.png",
+        "docs/acceptance/s5/pdf/long-5.png",
+        "docs/acceptance/s5/pdf/long-6.png",
+        "docs/acceptance/s5/pdf/long-7.png",
+        "docs/acceptance/s5/pdf/long-8.png",
+        "docs/acceptance/s5/pdf/long-9.png",
+        "docs/acceptance/s5/pdf/returned.pdf",
+        "docs/acceptance/s5/pdf/returned-1.png",
+        "docs/acceptance/s5/pdf/returned-2.png",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D5.3",
+      "status": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5/pdf/confirmed.pdf",
+        "docs/acceptance/s5/pdf/confirmed-1.png",
+        "docs/acceptance/s5/pdf/confirmed-2.png",
+        "docs/acceptance/s5/pdf/connected.pdf",
+        "docs/acceptance/s5/pdf/connected-1.png",
+        "docs/acceptance/s5/pdf/connected-2.png",
+        "docs/acceptance/s5/pdf/long.pdf",
+        "docs/acceptance/s5/pdf/long-1.png",
+        "docs/acceptance/s5/pdf/long-2.png",
+        "docs/acceptance/s5/pdf/long-3.png",
+        "docs/acceptance/s5/pdf/long-4.png",
+        "docs/acceptance/s5/pdf/long-5.png",
+        "docs/acceptance/s5/pdf/long-6.png",
+        "docs/acceptance/s5/pdf/long-7.png",
+        "docs/acceptance/s5/pdf/long-8.png",
+        "docs/acceptance/s5/pdf/long-9.png",
+        "docs/acceptance/s5/pdf/returned.pdf",
+        "docs/acceptance/s5/pdf/returned-1.png",
+        "docs/acceptance/s5/pdf/returned-2.png",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D5.4",
+      "status": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5/pdf/confirmed.pdf",
+        "docs/acceptance/s5/pdf/confirmed-1.png",
+        "docs/acceptance/s5/pdf/confirmed-2.png",
+        "docs/acceptance/s5/pdf/connected.pdf",
+        "docs/acceptance/s5/pdf/connected-1.png",
+        "docs/acceptance/s5/pdf/connected-2.png",
+        "docs/acceptance/s5/pdf/long.pdf",
+        "docs/acceptance/s5/pdf/long-1.png",
+        "docs/acceptance/s5/pdf/long-2.png",
+        "docs/acceptance/s5/pdf/long-3.png",
+        "docs/acceptance/s5/pdf/long-4.png",
+        "docs/acceptance/s5/pdf/long-5.png",
+        "docs/acceptance/s5/pdf/long-6.png",
+        "docs/acceptance/s5/pdf/long-7.png",
+        "docs/acceptance/s5/pdf/long-8.png",
+        "docs/acceptance/s5/pdf/long-9.png",
+        "docs/acceptance/s5/pdf/returned.pdf",
+        "docs/acceptance/s5/pdf/returned-1.png",
+        "docs/acceptance/s5/pdf/returned-2.png",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D5.5",
+      "status": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5/pdf/confirmed.pdf",
+        "docs/acceptance/s5/pdf/confirmed-1.png",
+        "docs/acceptance/s5/pdf/confirmed-2.png",
+        "docs/acceptance/s5/pdf/connected.pdf",
+        "docs/acceptance/s5/pdf/connected-1.png",
+        "docs/acceptance/s5/pdf/connected-2.png",
+        "docs/acceptance/s5/pdf/long.pdf",
+        "docs/acceptance/s5/pdf/long-1.png",
+        "docs/acceptance/s5/pdf/long-2.png",
+        "docs/acceptance/s5/pdf/long-3.png",
+        "docs/acceptance/s5/pdf/long-4.png",
+        "docs/acceptance/s5/pdf/long-5.png",
+        "docs/acceptance/s5/pdf/long-6.png",
+        "docs/acceptance/s5/pdf/long-7.png",
+        "docs/acceptance/s5/pdf/long-8.png",
+        "docs/acceptance/s5/pdf/long-9.png",
+        "docs/acceptance/s5/pdf/returned.pdf",
+        "docs/acceptance/s5/pdf/returned-1.png",
+        "docs/acceptance/s5/pdf/returned-2.png",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    }
+  ],
+  "regression": [
+    {
+      "id": "D0.1",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D0.2",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D0.3",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D0.4",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D0.5",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D1.1",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D1.2",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D1.3",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D1.4",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D1.5",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D2.1",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D2.2",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D2.3",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D2.4",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D2.5",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D2.6",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D3.1",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D3.2",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D3.3",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D3.4",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D3.5",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D4.1",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D4.2",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D4.3",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D4.4",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    },
+    {
+      "id": "D4.5",
+      "result": "PASS",
+      "evidence": [
+        "docs/acceptance/s5/check.log",
+        "docs/acceptance/s5/unit.log",
+        "docs/acceptance/s5/build.log",
+        "docs/acceptance/s5/e2e.log",
+        "docs/acceptance/s5/cloud.log",
+        "docs/acceptance/s5/api.log",
+        "docs/acceptance/s5/edge.log",
+        "docs/acceptance/s5/local.log",
+        "docs/acceptance/s5/connected.log",
+        "docs/acceptance/s5/final-export.log",
+        "docs/acceptance/s5/final-export-browser.log",
+        "docs/acceptance/s5/final-target.log",
+        "docs/acceptance/s5/README.md",
+        "docs/acceptance/s5/connected.json",
+        "docs/acceptance/s5/branch.log",
+        "docs/acceptance/s5/pdf/checklist.md",
+        "docs/acceptance/s5/pdf/text-checks.json",
+        "docs/acceptance/s5-review-fix/README.md",
+        "docs/acceptance/s5-review-fix/check.log",
+        "docs/acceptance/s5-review-fix/unit.log",
+        "docs/acceptance/s5-review-fix/build-independent.log",
+        "docs/acceptance/s5-review-fix/e2e-independent.log",
+        "docs/acceptance/s5-review-fix/target-unit.log",
+        "docs/acceptance/s5-review-fix/target-e2e.log",
+        "docs/acceptance/s5-review-fix/parent-reproducer.log"
+      ]
+    }
+  ],
+  "blockers": [],
+  "next": "S6 — not started; parent independently reviews S5 first",
+  "reviewFix": {
+    "date": "2026-10-18T17:55:01.857Z",
+    "historicalAcceptance": "docs/acceptance/history/s5-before-review-fix/sprint-5.json",
+    "evidence": [
+      "docs/acceptance/s5-review-fix/README.md",
+      "docs/acceptance/s5-review-fix/check.log",
+      "docs/acceptance/s5-review-fix/unit.log",
+      "docs/acceptance/s5-review-fix/build-independent.log",
+      "docs/acceptance/s5-review-fix/e2e-independent.log",
+      "docs/acceptance/s5-review-fix/target-unit.log",
+      "docs/acceptance/s5-review-fix/target-e2e.log",
+      "docs/acceptance/s5-review-fix/parent-reproducer.log"
+    ],
+    "note": "Affected frontend regression rerun: check, 305 unit, build, 82 desktop/mobile E2E. Historical backend/cloud/edge/real AI evidence retained; AI code/prompt/schema unchanged, no paid inference. See fix report."
+  }
+}

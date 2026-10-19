@@ -15,6 +15,7 @@
  *  F8 очередь повтора очистки переживает reload.
  */
 import { expect, test, type Page } from '@playwright/test';
+import {writeFileSync} from 'node:fs';
 
 const PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==',
@@ -34,6 +35,7 @@ test('F1: чужой MIME не даёт решения и не сохраняе�
   const text = uniq('F1');
   await analyzeWith(page, 'SQ-001', text);
   await page.getByLabel('Скриншот / документ').setInputFiles({ name: 'note.txt', mimeType: 'text/plain', buffer: Buffer.from('hello') });
+  await page.getByRole('button', { name: 'Проанализировать', exact: true }).click();
   await page.getByRole('button', { name: 'Сохранить без подтверждения' }).click();
   await expect(page.getByRole('alert')).toContainText('Допустимы');
   await expect(page.getByText('Публикация и решение сохранены.')).toHaveCount(0);
@@ -41,12 +43,12 @@ test('F1: чужой MIME не даёт решения и не сохраняе�
   await expect(page.getByText(text)).toHaveCount(0);
 });
 
-test('F2: файл больше 20 МБ отклоняется до commit', async ({ page }) => {
+test('F2: файл больше 20 МБ отклоняется до commit', async ({ page },info) => {
   const text = uniq('F2');
   await analyzeWith(page, 'SQ-001', text);
-  await page.getByLabel('Скриншот / документ').setInputFiles({
-    name: 'big.png', mimeType: 'image/png', buffer: Buffer.alloc(20 * 1024 * 1024 + 1),
-  });
+  const path=info.outputPath('big.png');writeFileSync(path,Buffer.alloc(20 * 1024 * 1024 + 1));
+  await page.getByLabel('Скриншот / документ').setInputFiles(path);
+  await page.getByRole('button', { name: 'Проанализировать', exact: true }).click();
   await page.getByRole('button', { name: 'Сохранить без подтверждения' }).click();
   await expect(page.getByRole('alert')).toContainText('Допустимы');
   await page.goto('/#/ads');
@@ -57,12 +59,14 @@ test('F3+F4: дубль отклонён, staged-файл намерения у�
   const text = uniq('F34');
   await analyzeWith(page, 'SQ-001', text);
   await page.getByLabel('Скриншот / документ').setInputFiles({ name: 'shot.png', mimeType: 'image/png', buffer: PNG });
+  await page.getByRole('button', { name: 'Проанализировать', exact: true }).click();
   await page.getByRole('button', { name: 'Сохранить без подтверждения' }).click();
   await expect(page.getByText('Публикация и решение сохранены.')).toBeVisible();
 
   // Тот же текст + новый файл: RPC отклонит DUPLICATE_AD уже после upload.
   await analyzeWith(page, 'SQ-001', text);
   await page.getByLabel('Скриншот / документ').setInputFiles({ name: 'shot2.png', mimeType: 'image/png', buffer: PNG });
+  await page.getByRole('button', { name: 'Проанализировать', exact: true }).click();
   await page.getByRole('button', { name: 'Сохранить без подтверждения' }).click();
   await expect(page.getByRole('alert')).toContainText(/уже сохранена|DUPLICATE_AD/);
 
@@ -80,6 +84,7 @@ test('F5+F6: saved только после ACK; ID и квитанция ста�
   const text = uniq('F56');
   await analyzeWith(page, 'SQ-002', text);
   await page.getByLabel('Скриншот / документ').setInputFiles({ name: 'shot.png', mimeType: 'image/png', buffer: PNG });
+  await page.getByRole('button', { name: 'Проанализировать', exact: true }).click();
   await page.getByRole('button', { name: 'Сохранить без подтверждения' }).click();
   await expect(page.getByText('Публикация и решение сохранены.')).toBeVisible();
   const before = await page.evaluate(() => JSON.parse(localStorage.getItem('sq_svelte_demo_v2') ?? '{}'));

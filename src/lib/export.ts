@@ -17,7 +17,7 @@
  *  - signed URL не хранится никогда: материалы — только ad id и
  *    mediaId/path/hash/bytes (зеркало C6-манифеста signal-snapshot).
  */
-import type { Ad, AppState, Code, Zone } from './types';
+import type { Ad, AppState, Code, Zone, SignalVersion } from './types';
 import { computeScore } from './scoring';
 import {
   SIGNAL_WEIGHTS_VERSION,
@@ -53,6 +53,8 @@ export type ExportMaterial =
   | { kind: 'media'; id: string; path: string; sha256: string | null; bytes: number | null };
 
 export interface BuiltExport {
+  /** Entire selected immutable version, including full texts and decision metadata. */
+  version?: SignalVersion;
   template: string;
   kind: ExportKind;
   zkId: string;
@@ -116,7 +118,7 @@ function httpUrl(url: string | undefined): string | undefined {
  * Строит экспортную карточку объекта. Чистая функция (вход не мутирует).
  * needs-verification факторы в баллы не входят и перечисляются отдельно.
  */
-export function buildExport(state: AppState, zkId: string): BuiltExport {
+function buildCurrentExport(state: AppState, zkId: string): BuiltExport {
   const z = state.complexes.find((c) => c.id === zkId);
   if (!z) throw new Error(`Экспорт: объект ${zkId} не найден`);
   const signalStatus = state.signals[zkId]?.status ?? 'draft';
@@ -241,4 +243,24 @@ export function buildExport(state: AppState, zkId: string): BuiltExport {
     materials,
     markers: full ? [] : ['draft', signalStatus === 'draft' ? 'signal-not-confirmed' : 'version-not-confirmed'],
   };
+}
+
+/** Historical exports resolve exclusively against the selected frozen materials. */
+export function buildExport(state: AppState, zkId: string, revision?: number): BuiltExport {
+  const versions=state.signalVersions?.[zkId] ?? [];
+  const selected=revision === undefined
+    ? (state.signals[zkId]?.status === 'draft' ? undefined : latestSignalVersion(state,zkId))
+    : versions.find(v=>v.revision===revision);
+  if(revision !== undefined && !selected) throw new Error('Версия не найдена');
+  if(!selected) return buildCurrentExport(state,zkId);
+  if(selected.legacyIncomplete || !selected.snapshot || !selected.ads) return {
+    template:EXPORT_TEMPLATE_VERSION,kind:'blocked',zkId,complexName:selected.snapshot?.name ?? zkId,
+    signalStatus:selected.status,score:selected.score ?? 0,zone:selected.zone ?? 'green',weightsVersion:selected.weightsVersion ?? 1,
+    evidence:[],excluded:[],needsReverification:[],materials:[],markers:['legacy-incomplete','needs-reverification'],
+    blockedReason:'Исторический снимок неполон. Требуется новая проверка.',exportedAt:new Date().toISOString()
+  };
+  const frozen:AppState={...state,complexes:[selected.snapshot],ads:selected.ads,
+    audit:selected.decisionAudit ?? [],media:(selected.mediaManifest ?? []).filter(m=>m.kind==='media').map(m=>({id:m.id,zkId,path:m.path ?? '',sha256:m.sha256,bytes:m.bytes,name:m.id,kind:'snapshot',date:'2000-01-01',note:'',ready:null})),
+    signals:{[zkId]:{status:selected.status,at:selected.at,reviewer:selected.reviewer,comment:selected.comment}},signalVersions:{[zkId]:[selected]}};
+  return {...buildCurrentExport(frozen,zkId),version:selected};
 }

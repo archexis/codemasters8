@@ -1,0 +1,97 @@
+
+> saq-qurylys@2.0.0 test:local
+> node tools/local-smoke.mjs
+
+PASS actual Auth and seed migrations
+PASS actual PostgreSQL RLS and direct-write denial
+PASS actual transactional commands and stale-version guard
+PASS actual Storage upload, signed URL and cross-user denial
+PASS actual FastAPI → Supabase JWT validation → RLS data
+PASS actual Edge runtime rejects unauthenticated requests; external LLM tests run separately
+
+> saq-qurylys@2.0.0 test:live
+> playwright test --config playwright.live.config.ts --grep-invert real external LLM
+
+[WebServer] (node:3048) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+
+<--- Last few GCs --->
+
+[25324:000001FF4AC75000]      286 ms: Scavenge 9.6 (12.6) -> 8.2 (13.1) MB, pooled: 0 MB, 0.40 / 0.00 ms  (average mu = 1.000, current mu = 1.000) allocation failure; 
+[25324:000001FF4AC75000]     8260 ms: Mark-Compact (reduce) 8.3 (13.1) -> 7.4 (9.6) MB, pooled: 0 MB, 2.49 / 0.01 ms  (+ 1.6 ms in 43 steps since start of marking, biggest step 0.1 ms, walltime since start of marking 5 ms) (average mu = 1.000, current mu 
+FATAL ERROR: Committing semi space failed. Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+  x  1 tests\live\backup-isolation.spec.ts:73:3 › S2.6 backup/restore изоляция (connected) › B не читает workspace/media A; anonymous denied (0ms)
+  -  2 tests\live\backup-isolation.spec.ts:83:3 › S2.6 backup/restore изоляция (connected) › expiry: короткий TTL истекает, новая own URL работает; чужая подпись — отказ
+  -  3 tests\live\backup-isolation.spec.ts:101:3 › S2.6 backup/restore изоляция (connected) › backup A → restore в чистое C → сверка SHA256; поддельный confirmed даёт 0
+  x  4 tests\live\security.spec.ts:6:1 › S6 actual Auth/RPC/Storage/API/Edge negative matrix (0ms)
+  -  5 tests\live\security.spec.ts:94:1 › S6 browser offline/expired save preserves form; no server secrets in storage/network
+ 1: 00007FF6E9183D9F node::OnFatalError+1343
+ 2: 00007FF6E7DCDCB7 v8::Function::NewInstance+423
+ 3: 00007FF6E7BCE4F7 uv_udp_get_send_queue_count+54423
+ 4: 00007FF6E7B66AEB EC_GROUP_get0_field+76331
+ 5: 00007FF6E7B8F06A v8::base::AddressSpaceReservation::AddressSpaceReservation+63898
+ 6: 00007FF6E7BD08D6 uv_udp_get_send_queue_count+63606
+ 7: 00007FF6E7BCFF26 uv_udp_get_send_queue_count+61126
+ 8: 00007FF6E7BE0E82 v8::internal::StrongRootAllocatorBase::deallocate_impl+15858
+ 9: 00007FF6E7BE09AB v8::internal::StrongRootAllocatorBase::deallocate_impl+14619
+10: 00007FF6E94B24AD node::AsyncResource::CallbackScope::CallbackScope+2184429
+11: 00007FF6E7BCBFC0 uv_udp_get_send_queue_count+44896
+12: 00007FF6E7BC5124 uv_udp_get_send_queue_count+16580
+13: 00007FF6E90CBA65 node::GetNodeReport+102917
+14: 00007FF6E90C9DD0 node::GetNodeReport+95600
+15: 00007FF6E7E33EEB uv_run+1851
+16: 00007FF6E7E33A5F uv_run+687
+17: 00007FF6E929A04F node::DecodeWrite+351
+18: 00007FF6E91138F6 node::MultiIsolatePlatform::DisposeIsolate+291894
+19: 00007FF6E91E5E87 node::Start+3895
+20: 00007FF6E929D222 node::AsyncResource::CallbackScope::CallbackScope+610
+21: 00007FF6E94BBBB4 node::AsyncResource::CallbackScope::CallbackScope+2223092
+22: 00007FFA5CF1DDA7 BaseThreadInitThunk+23
+23: 00007FFA5EF3EE4C RtlUserThreadStart+44
+(node:12788) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  6 tests\live\supabase.spec.ts:2:1 › real local Supabase Auth, RPC decisions, Storage upload and reload (5.6s)
+
+
+  1) tests\live\backup-isolation.spec.ts:73:3 › S2.6 backup/restore изоляция (connected) › B не читает workspace/media A; anonymous denied 
+
+    Error: worker process exited unexpectedly (code=3221226505, signal=null)
+
+  2) tests\live\security.spec.ts:6:1 › S6 actual Auth/RPC/Storage/API/Edge negative matrix ─────────
+
+    Error: worker process exited unexpectedly (code=3221226505, signal=null)
+
+  3) tests\live\supabase.spec.ts:2:1 › real local Supabase Auth, RPC decisions, Storage upload and reload 
+
+    Error: browserContext.newPage: Target crashed 
+
+    Error Context: test-results\live\supabase-real-local-Supaba-58398-s-Storage-upload-and-reload\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\live\supabase-real-local-Supaba-58398-s-Storage-upload-and-reload\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\live\supabase-real-local-Supaba-58398-s-Storage-upload-and-reload\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    tests\live\backup-isolation.spec.ts:73:3 › S2.6 backup/restore изоляция (connected) › B не читает workspace/media A; anonymous denied 
+    tests\live\security.spec.ts:6:1 › S6 actual Auth/RPC/Storage/API/Edge negative matrix ──────────
+    tests\live\supabase.spec.ts:2:1 › real local Supabase Auth, RPC decisions, Storage upload and reload 
+  3 did not run
+file:///C:/Users/BIGra/codemasters8/tools/local-smoke.mjs:24
+    child.on('error',reject); child.on('exit',code => code===0 ? resolve() : reject(new Error(`npm exited ${code}`)));
+                                                                                    ^
+
+Error: npm exited 1
+    at ChildProcess.<anonymous> (file:///C:/Users/BIGra/codemasters8/tools/local-smoke.mjs:24:85)
+    at ChildProcess.emit (node:events:509:28)
+    at ChildProcess._handle.onexit (node:internal/child_process:295:12)
+
+Node.js v24.18.0

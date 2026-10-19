@@ -1,0 +1,16 @@
+
+> saq-qurylys@2.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 C:/Users/BIGra/codemasters8
+
+
+ Test Files  21 passed (21)
+      Tests  283 passed (283)
+   Start at  21:44:08
+   Duration  109.47s (tests 85%, import 13%, transform 2%)
+
+    Isolate  21 workers spawned · ~353ms startup each (spawn + environment, per file)
+             at least ~7.06s faster with isolate: false — reuses workers across files instead of one per file
+

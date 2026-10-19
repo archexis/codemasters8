@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
     "target": "ES2022", "module": "ESNext", "moduleResolution": "bundler",
     "strict": true, "allowJs": true, "checkJs": false, "resolveJsonModule": true,
     "isolatedModules": true, "verbatimModuleSyntax": true, "esModuleInterop": true,

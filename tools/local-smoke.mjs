@@ -43,10 +43,10 @@ try {
   const denied=await clientA.from('workspaces').update({version:99}).eq('owner_id',users[0].id);
   assert(denied.error);
   checked('actual PostgreSQL RLS and direct-write denial');
-  const saved=await clientA.rpc('apply_command',{command:{type:'signal',zkId:'SQ-002',status:'confirmed',comment:'Local smoke'},expected_version:1});
+  const saved=await clientA.rpc('apply_command',{command:{type:'signal',zkId:'SQ-002',status:'confirmed',comment:'Local smoke'},expected_version:1,command_id:randomUUID()});
   if(saved.error) throw saved.error;
   assert.equal(saved.data.version,2);
-  const stale=await clientA.rpc('apply_command',{command:{type:'signal',zkId:'SQ-002',status:'returned',comment:'stale'},expected_version:1});
+  const stale=await clientA.rpc('apply_command',{command:{type:'signal',zkId:'SQ-002',status:'returned',comment:'stale'},expected_version:1,command_id:randomUUID()});
   assert(stale.error?.message.includes('STALE_VERSION'));
   checked('actual transactional commands and stale-version guard');
   const path=`${users[0].id}/SQ-002/smoke.png`;
@@ -71,7 +71,7 @@ try {
   const edgeUnauth = await fetch(`${url}/functions/v1/analyze`,{method:'POST',headers:{apikey:anon,'Content-Type':'application/json'},body:'{}'});
   assert.equal(edgeUnauth.status,401);
   checked('actual Edge runtime rejects unauthenticated requests; external LLM tests run separately');
-  await runNpm(['run','test:live'],{SAQ_LIVE_SUPABASE_URL:url,SAQ_LIVE_SUPABASE_KEY:anon,SAQ_LIVE_EMAIL:users[0].email,SAQ_LIVE_PASSWORD:password});
+  await runNpm(['run','test:live','--','--grep-invert','real external LLM'],{SAQ_LIVE_SUPABASE_URL:url,SAQ_LIVE_SUPABASE_KEY:anon,SAQ_LIVE_EMAIL:users[0].email,SAQ_LIVE_PASSWORD:password,SAQ_LIVE_SERVICE_KEY:adminKey});
   checked('actual browser login, Storage, RPC and reload');
   await writeFile('supabase/.temp/live-test-report.json',JSON.stringify({passed:checks,date:new Date().toISOString()},null,2));
 } finally {

@@ -1,0 +1,322 @@
+{
+  "sprint": 4,
+  "status": "PASS",
+  "source": {
+    "manifest": {
+      ".env.example": "4b62beae74f8982f3a138e5c05ae43397386bc47dc395af079c9024c92109219",
+      ".github/workflows/ci.yml": "4a9764122c74ca16941cbd63b16003c037f697598d0c999db1dc2eb03ead4b87",
+      ".gitignore": "d0aa6c6c6881fee9f0f7eaf0ec70d0fe3b92d45b1cbaa4830556d0fbcb6643a5",
+      ".impeccable/critique/index-html/2026-10-15-2050.md": "f11fdee55fd5bcb25e71e832a8ece5d9df79136981fc10878743df7a4142247d",
+      ".pytest_cache/.gitignore": "3ed731b65d06150c138e2dadb0be0697550888a6b47eb8c45ecc9adba8b8e9bd",
+      ".pytest_cache/CACHEDIR.TAG": "37dc88ef9a0abeddbe81053a6dd8fdfb13afb613045ea1eb4a5c815a74a3bde4",
+      ".pytest_cache/README.md": "73fd6fccdd802c419a6b2d983d6c3173b7da97558ac4b589edec2dfe443db9ad",
+      ".pytest_cache/v/cache/lastfailed": "5e04e362f815ceb3ffac0276e3d44a059e4074bddbe1066e632169eba99f8d2f",
+      ".pytest_cache/v/cache/nodeids": "63063e2151ef43505e7c0b0f2a6e4ca05262606477cbb868d84ec65b9437da6e",
+      ".vitest/json/output.json": "4754a38d1d168d0b5f1f1e9385b8cc808b7e08b4fd49fdd0651b35c7ff571cd1",
+      "README.md": "1f352dd7b91fc8de0364b54ff8dccc08db228ec2a7225d5748cdb6394c12a37b",
+      "backend/.pytest_cache/.gitignore": "3ed731b65d06150c138e2dadb0be0697550888a6b47eb8c45ecc9adba8b8e9bd",
+      "backend/.pytest_cache/CACHEDIR.TAG": "37dc88ef9a0abeddbe81053a6dd8fdfb13afb613045ea1eb4a5c815a74a3bde4",
+      "backend/.pytest_cache/README.md": "73fd6fccdd802c419a6b2d983d6c3173b7da97558ac4b589edec2dfe443db9ad",
+      "backend/.pytest_cache/v/cache/lastfailed": "13937441e511e8a35a33ea22543d33e47871501a1171160894742b8f27b72f4a",
+      "backend/.pytest_cache/v/cache/nodeids": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "backend/Dockerfile": "eddc86fe9af3131cdf50b7cfe99a28527b8a5d786c2ab3f237d9d3007bca7a76",
+      "backend/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "backend/app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "backend/app/main.py": "b01f585f6643645fba61a7d5dbb197dee01292654668147083874b652596e69f",
+      "backend/requirements.lock.txt": "8d2bff877411ffdb24de13fe7da0c34fd5d67e800eca5b03aaa97fa100a2a97c",
+      "backend/requirements.txt": "fee9dec4282f4e5352f1776d5ce3ef131dcfee97b869994b797276a995e59e65",
+      "backend/tests/test_api.py": "fed672be1e59b4a094997f8969dc42f90d0519ac1474c64457d09c32cb87304e",
+      "docs/CODEBASE_AUDIT.md": "13df9c88c73934f0236a86ffc3b0a65744ca138fbf530094f97985ea4016f494",
+      "docs/DEEPSEEK_TEST_REPORT.json": "d15a000fd0fed88b8150e1f424aee7499b92207dca977408eb5bd958bf067655",
+      "docs/FEATURE_INVENTORY.md": "f02c3c5a133f6b1d5502f338f93233574db3af9c7e8c6687f977b13881ddaf60",
+      "docs/IMPLEMENTATION_HANDOFF.md": "784121d8f372e4e7b7d8982aa2de2ae3f9dbaa9fe8b7ff9a595f36d78453df96",
+      "docs/REQUIREMENTS_MATRIX.md": "621fdf2ac225c9117536e5ba9c102063c8f57a6653ed657d6c074f80e69a7328",
+      "docs/SPRINT_PLAN.md": "59e311464f76a351ba1cffc7b253e971f5a8c02026b56d63c5fef8426d9193ac",
+      "docs/SPRINT_PLAN_V1_ARCHIVE.md": "4d87710a33f13077d7b0dcd210edd16d0b27f54119a93a15a8e018d057c0e477",
+      "docs/STACK_MIGRATION.md": "17837ef7d4df581147f920e0856c6901c5256c7942a273b69103e41a880b27cd",
+      "docs/sprints/BASELINE.md": "6dfdbcb501b3cc2e66470524973a6a6f2b172c78b97c128b0c0a628d66521fdc",
+      "docs/sprints/CONTRACTS.md": "900e4a611e0817ba16d5adb225b224c5d20e2374dd9032d6893648a46b55cd17",
+      "docs/sprints/EXECUTION.md": "9cc8929730f08ce3fbe866a4cbeb5f5a1fbc8c345c3396a427148206d7bb5c19",
+      "docs/sprints/PLAN_INDEX.json": "e5bcde89e31b92f13917f8952ffe5894a5dc86a54b6d3f54cf7281449d556111",
+      "docs/sprints/S0.md": "d8bf976fa196569f19732a4dbf0b3db38de4031d51a44f33e5491f55054a679e",
+      "docs/sprints/S1.md": "d5c3c015e5daeec7c76c1b8884edb3958f2955277eeb0a4dab3140ac810f1898",
+      "docs/sprints/S2.md": "79909149ad19adeba94f9776c6ca83f83719580792066b04afa832a528514965",
+      "docs/sprints/S3.md": "c632a18e510110db7d9c4eac5a89f980f2941df280c19d9cc9fd2e9f8716b4fc",
+      "docs/sprints/S4.md": "81ae215f8a86b7eb9c7038da0cb755e86ab46289229443af053cacaabb1162d7",
+      "docs/sprints/S5.md": "2163b0c346c8ee5774e37a5476f80e2f430add0243152eccaadb9b6a6d0ad8e6",
+      "docs/sprints/S6.md": "5c4d2317e75f60dceec8ab22ec29ffb6474358f71395e42a392922acb67873b9",
+      "docs/sprints/START_HERE.md": "892f3479c99e95a20296e6aae23ed1a04be9ae92448e111a3705fec4919d7da9",
+      "graphify-out/.graphify_ast.json": "b769c04192e85cf78ecd9e0acccaaae910eca4d314440d71596f328d199b0367",
+      "graphify-out/.graphify_detect.json": "701f01b2e76a47b40570cfbdc9a81caad7c8b43315dd8876bec412bed650fd6a",
+      "graphify-out/.graphify_python": "ea227102c7a7ee06c45899b5201bcc1b1b5cbe21a2062df1248f6ea8f2e63e5b",
+      "graphify-out/.graphify_root": "44eaa378a81d9b2ed71fd126243e557c6d9ca5054e445636e3d23273ce24d18d",
+      "graphify-out/.graphify_uncached.txt": "3c5fb65e460bad1c0996c62d44057a73ec75179952b241c073e4b2c00fce26df",
+      "graphify-out/cache/ast/v0.9.14/febbe7d3235b80205b376cda65d295c1b218cbe7b2e403f8ca9cddbab6ec003f.json": "c81ca9a2584cf64fb1ecd84c00a83f966a53943a6d330f56e69e75ec3e793849",
+      "graphify-out/cache/stat-index.json": "f948e6d7d9033f2cf1b254b1eeed30403756d91261c641e03158cf6516c99666",
+      "graphify-out/reflections/LESSONS.md": "be34d36a0a616a8aede42f5a3ff0d3b98acd9f15f4aa1515d0361038a2afb75a",
+      "index.html": "dced32f7cf82b28f5815c3e94da3e384b2383aa7b25d784c41d677e3e780f4ee",
+      "package.json": "8411e9b47b54b5ecd47deefe6279548774bc272843261a1e36fcdded16193117",
+      "playwright.cloud.config.ts": "158a8b4ab96167ed21a642b8bce08b4cc4e1040052f0178fbb438fb77c2f50f2",
+      "playwright.config.ts": "67ac539877448d402a8c894a3397d5ddd75b2e66f2165b2b7feecf49c24e81c3",
+      "playwright.live.config.ts": "79bad403551fa1934ad9eabe1b5bc5cd3ab1cfb0a7024a1be9062e6f75959837",
+      "scrollcraft/FINGERPRINTS.md": "6d7fbe97408806c5c2186b5261709b2a6836cf54cfbdcae6a92930c543cc9645",
+      "skills-lock.json": "a39357c106ce9e177c349dd95a69fb48eef3ee368cdb19fbf621bcf1c5d0b381",
+      "src/App.svelte": "ef2eee74dfd40483dd4f4e63f3350be2c46818e4904fdc72c3442006c1edbdbf",
+      "src/app.css": "b3e5ff53dd5d3e9d9a47f681f3bff4ce68e5901370e514fd119d09d30d4f01af",
+      "src/components/Analyze.svelte": "b4d82e77d4181825365d10daf00280324960cee4729a747375aee3f8ccf0c64b",
+      "src/components/BackupPanel.svelte": "57a8415d35d65fc607ec404327f40a4eba1450d3512e3ac03ddd23f5839eebc5",
+      "src/components/ComplexForm.svelte": "45fbb5449dda3448aebff7398c540896c1f816ef8b6f2105fe6caac9355bbd3c",
+      "src/components/Detail.svelte": "d38afb887656771531ff71ca2ed3de1de78cf946972315890f84ea1eecd6f16b",
+      "src/components/MediaCard.svelte": "3265146629dd71ead39d37e120a0a072df880a7e2d78ca1fe5c2b4ccd10f2416",
+      "src/components/RiskMap.svelte": "61e3b771747db57dbb515c4f8cd4ae3e45a7346a402178984b6fdd2a5dc94a2a",
+      "src/lib/analysis.ts": "6b9fc0bae897466b64650683a0f9e4f0a5e9bc6211330a932baac2330cbff4f2",
+      "src/lib/backup.ts": "c704b42416a74a606ddaf7d1b22a3d020197168a70b9c8f595b52543b87f05a5",
+      "src/lib/domain.ts": "4e4ffad4cb8bc28599fe5ebdb2ec1e8381340aad37c79f3391e8eb77fdd85f8d",
+      "src/lib/export.ts": "ed14c2606cf74b52ac4e11b34ad93a51ae545bd2525043013ac75e6c5589e160",
+      "src/lib/parser.ts": "f366213d916b1d892e626857efd4a2a25b2a17ced0d573ab29603e1ff55ea394",
+      "src/lib/repository.ts": "7e22062b72cdb277273abe6c2623e69b3a1b202d150d9abe2b95bf8d6198ca12",
+      "src/lib/scoring.ts": "2e8ea03447b8749cd9f6a538452bc27925b34e21b85e8a9e4aa4caece300bb56",
+      "src/lib/seed.json": "bed0034f67289c2b9db6c9486d6919f67681c37391faca664f6d7d6d865e1119",
+      "src/lib/signal-snapshot.ts": "f47e2e75fe003b77cd23983fcc1009d0db8a8f292272d713e4de2a8de30c62f3",
+      "src/lib/state-migrations.ts": "02dda62d2973caa390a2c74719fe8fd4b8a4a1e899ac5f197deab7760359c5f4",
+      "src/lib/supabase.ts": "e2c7088ad5a2dfb6be6517d183ca12d5ef7e71270a4576711eadb20c9529d87b",
+      "src/lib/types.ts": "a34dca85199ab573c8b4d71b75e1f1bf4c27f1ec30451408a3342ea42d7e58bb",
+      "src/lib/validation.ts": "4708b2f3171947bcf0c6cdcdbd33bb72e8cb6231c5b4500d85db3326f3259090",
+      "src/main.ts": "0db1e46fcae6c698584e76503fd02983500046009b6f8942fb138c537ed36b92",
+      "supabase/.branches/_current_branch": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "supabase/config.toml": "2f86fb63d52a4c5d8dc72a4240d06be515901b4b49c31c1340ad3c063467abea",
+      "supabase/functions/analyze-proxy/index.ts": "4a6d0661ab2bce38de7fad2990191e110aa95115ee8fd68be19550fcc784977e",
+      "supabase/functions/analyze/index.test.ts": "37430224006c13df36f3800b6001d043d453de2041b43d05e25f086894240124",
+      "supabase/functions/analyze/index.ts": "04948cfa65c3d06bcc027291237868638e57a27f4f1e008eec9152256e46f842",
+      "supabase/migrations/202610180001_workspace.sql": "48bd001dc7e21e40199bfaa85c17360b49cf861d9910c447a1d4220284fe5ab7",
+      "supabase/migrations/202610180002_seed.sql": "ce5466f459b42269685ec63c54170cbee6a55b85262d59d09eb4aba1fa188d27",
+      "supabase/migrations/20261018104408_c1_command_schema.sql": "f4e78c9559af8f947609b77b8ffd3888f0c18600bca0c0348e81acec3d6d9074",
+      "supabase/migrations/20261018105750_s1_2_decision_contract.sql": "87289ee74a2ae54eb54dcfef1928d4deca50251c4eb61fb8a519a0df61041320",
+      "supabase/migrations/20261018111105_s1_3_invalidation.sql": "3bd42f75ec6a8a3d562163d3cd8a0f58fd9d2c67c94f1bccc53f04e282062f76",
+      "supabase/migrations/20261018112607_s1_4_seed_integrity.sql": "6f75a002a0b6348ac76252da99410d0c42156898ad16be67538ba9621b4f54df",
+      "supabase/migrations/20261018121836_s2_1_schema_version.sql": "6fa84e8484e331a92c2cc8161f541c2022950a44ee555fc329b94583a179f807",
+      "supabase/migrations/20261018130000_s2_2_receipts.sql": "3e1985a232826eafa0287247de45dcec04b562bee5c772d08cb4e1f26e903701",
+      "supabase/migrations/20261018175456_s2_5_restore.sql": "ab81963960a6ae553b827dcef15fd90a1cacdbf4b552f7483586a158821d80df",
+      "supabase/migrations/20261018180000_s2_4_signals.sql": "62e72f056408ed6f73c1a6ad5cb7e043b64cde140fb12e1c7f4ebc9d25e7023b",
+      "supabase/migrations/20261019000000_s4_1_runs.sql": "58a3be140be39edb42122de475120e35708500f842a2b43e5c00feacd0065654",
+      "supabase/migrations/20261019000100_s4_2_hypothesis.sql": "91cd20614b688db2fcc8f717845473151bc01381fbafec224240d51d55c258bc",
+      "svelte.config.js": "3c328d509de22605aa7d1bcfd4a34941b99c2ecaea7026dde935785d8b6661e4",
+      "tests/cloud/supabase.spec.ts": "585d77c4f786e09a3e2c438f5b0be834f5410ffdc92c0017840412de3b5bc9f3",
+      "tests/e2e/csv-import.spec.ts": "3dcdea8a7afb781858a4d0630322123b95b71fc0d5593d9875448f2581b7b41e",
+      "tests/e2e/evidence-failures.spec.ts": "ea64746b2eae58d392b99995841fc39f07259e12a92e96a28d50b7c264f454b4",
+      "tests/e2e/legal-invariants.spec.ts": "b9389b978dd01da65963cdd4ac42dd4d9c92e19862a0b1740960e4e742c11a45",
+      "tests/e2e/source-roundtrip.spec.ts": "ff25cbd4b52b6647f91952b17e06004f2db3be6752fce4a6e7f9b52b8981b1de",
+      "tests/e2e/workflows.spec.ts": "48ca4849aefa34c227ad509fc401703a99f50f7d9c25c4ad177eaaa78c5ff8b1",
+      "tests/fixtures/contracts/decision-cases.json": "944e8364de34bae1f2a2d7bd4ee24fc1d930d30668542d83f38e73612fa54c6e",
+      "tests/fixtures/contracts/extraction.json": "cfd82a5f89924415210284189d82265c488b69c6a427406c081c95453114d43a",
+      "tests/fixtures/contracts/migrations/202610180001_workspace.sql": "48bd001dc7e21e40199bfaa85c17360b49cf861d9910c447a1d4220284fe5ab7",
+      "tests/fixtures/contracts/migrations/202610180002_seed.sql": "ce5466f459b42269685ec63c54170cbee6a55b85262d59d09eb4aba1fa188d27",
+      "tests/fixtures/contracts/migrations/202610180003_contract_marker.sql": "1afd274038968381f0a5171c29cc82b10a476d5d48dd2595e1dac50694164586",
+      "tests/fixtures/contracts/scoring.json": "f7df4349e8751a9f7ca11aa9aa633123b49ef219944a5f2a08e99f4e4d3995c1",
+      "tests/fixtures/legacy-parser.cjs": "4ecf43c62b97da5c8856af761c88a745972ea11ea4e1a22d2650281f769a8cee",
+      "tests/fixtures/legacy-scoring.cjs": "f31487ecc49f3d421618368b3e13e06f8d3a06dc47bf93c143af1ecab15a7622",
+      "tests/fixtures/legacy-sources.cjs": "13fb0f004769bcbba5c216e2b4e96e51f1a7446c09f652db38d079ee53f53adc",
+      "tests/helpers/database.ts": "3f4870186d4fc8e1df858f212ed2e935b84703960c14a47989280743cfbb0b39",
+      "tests/live/backup-isolation.spec.ts": "4e8a65387a697461a85952cbeb0b305ae5ed69ce8ea810dedf7eb8606e4c4e93",
+      "tests/live/supabase.spec.ts": "e85b8cd1ea880ac6d4d59a9de726b6bcb8fd00951f1045cab13a2fe307481a3c",
+      "tests/unit/analysis-run.test.ts": "1089cbe3c6463408643a647a0051d586b66febdc5d67cc6b8325c67a9b262d6e",
+      "tests/unit/backup.test.ts": "8f6f2298ab567ef8f3b4ae7761e63b073a23aa74be8c0934f596f3e0aaca8f1a",
+      "tests/unit/database.test.ts": "191fb9d7e7e93d1588a8c6d17ab088848ec242acbfdd86b3d8593bd718fe88e0",
+      "tests/unit/decision-contract-sql.test.ts": "dad4ce6c194ded39c8b97bb6d78b8410e247c067b364a5b7d9578d6204d27a7c",
+      "tests/unit/decision-contract.test.ts": "6ff5d94c25b762a21a5dc3c7c91d93afda97b2910e099e66c54e8e94a79e8946",
+      "tests/unit/domain.test.ts": "5239fd21649aaec093bbf0d2f982f796bafcf0471c30e4397e2a7affb3a460ca",
+      "tests/unit/edge-proxy.test.ts": "7237f212e49fe8560682fd0b2d14a3a4e139038719202de43accce38e6144546",
+      "tests/unit/export-gate.test.ts": "eda55e80b507e6c5be42e9009c76187461a924982413eb62db56a142a56e6be8",
+      "tests/unit/extraction.test.ts": "37192955e34220d58c29a2ee5c95280e890e5dedbd4e38c034da3c46f41114cd",
+      "tests/unit/idempotency.test.ts": "7d4fe987cd742416292d49cdf6c94d751d45b00e474050b9f99086afeda9e1f8",
+      "tests/unit/legacy-regression.test.ts": "9be187d9bc95a73deee6fea3d3165fecfecb277f3517f81f65af54711d3d442b",
+      "tests/unit/probe-tmp.test.ts": "0a89e56a3f2d0374d2d5357a0b3e6ce7a56f075790b8871f3a1749d4c0caa2b1",
+      "tests/unit/scoring-attack.test.ts": "36611888713667fefa390f6d3df3f4cc71d048be042451b3b437660eb5850fed",
+      "tests/unit/seed-integrity.test.ts": "f45379fe0c8e6463aed54704352d6574729a1826a63d7e8056258c9465fe0ac4",
+      "tests/unit/signal-history.test.ts": "da53daed2640bf4b643825dfc6052d090e736f1f2005a04e471b8565499ce9a1",
+      "tests/unit/source-contract.test.ts": "4cde03d62e64dd8fd669aaf9565e56a8834234588f77c068bda2da592f63a82d",
+      "tests/unit/sprint-gate.test.ts": "6bbbf0f0ff47267ae037432ff1f8e9ac11942deeaad9bb10654e7a00a238ec70",
+      "tests/unit/state-migration.test.ts": "b131b5a2a9ea0a4a015770344a5c5e9dc7824a3e2e5b765d7681d819bb1a3fa7",
+      "tests/unit/validation.test.ts": "f27b9a822a151f1ea90962fb9419550dcfa093598d66f524ee5e494cf6a23b32",
+      "tools/check-sprint-gate.mjs": "04e51e1a65ed9ea13a9d8907fc1b51dc1887d305c3e4b07cd34ce855d13da87d",
+      "tools/deepseek-smoke.mjs": "b70e76baf3019b9dfec2c1b2eeadd4b513f6104b44b67580feca7d21dc513c1f",
+      "tools/generate-seed.mjs": "26d7b3747072f6652ccc7dbdd22515757a24d89e9317e2c7093745d209985ab5",
+      "tools/local-smoke.mjs": "623588b5e711d91154dadf334f7156dd1869e38596a0c5ebe69fd88362ddf4ed",
+      "tools/verify_ashyq.py": "9cb9305c3ad8f3b7c9976dbf2e3379eae4b8e6751fad0ad2e8894c26708897cc",
+      "tsconfig.json": "973074e0265f05f6d241cb3c66a4d8696ef9877b3df323d98447216b85471a4a",
+      "vite.config.ts": "316c50ddc96eae5703e8e37b5f9b08584a92c1144c495b4c5cdaf1cb0f59f029"
+    },
+    "generatedAt": "2026-10-18T20:23:18.363477"
+  },
+  "environment": {
+    "node": "v22.23.1",
+    "npm": "12.0.2",
+    "python": "3.14.8",
+    "demo": "DEMO + local Supabase docker",
+    "migrations": [
+      "202610180001_workspace.sql",
+      "202610180002_seed.sql",
+      "20261018104408_c1_command_schema.sql",
+      "20261018105750_s1_2_decision_contract.sql",
+      "20261018111105_s1_3_invalidation.sql",
+      "20261018112607_s1_4_seed_integrity.sql",
+      "20261018121836_s2_1_schema_version.sql",
+      "20261018130000_s2_2_receipts.sql",
+      "20261018175456_s2_5_restore.sql",
+      "20261018180000_s2_4_signals.sql"
+    ]
+  },
+  "packages": [
+    {
+      "id": "S4.1",
+      "status": "PASS",
+      "artifacts": [
+        "src/lib/analysis.ts",
+        "supabase/migrations/20261019000000_s4_1_runs.sql",
+        "tests/unit/analysis-run.test.ts"
+      ],
+      "checks": [
+        {
+          "name": "analysis-run 29/29 (lifecycle/inputHash/ссылки/сирота/imported/DEMO)",
+          "result": "PASS",
+          "skipped": false
+        },
+        {
+          "name": "analysis_runs IF NOT EXISTS",
+          "result": "PASS",
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "id": "S4.2",
+      "status": "PASS",
+      "artifacts": [
+        "src/lib/validation.ts",
+        "src/lib/domain.ts",
+        "supabase/migrations/20261019000100_s4_2_hypothesis.sql",
+        "tests/unit/decision-contract.test.ts"
+      ],
+      "checks": [
+        {
+          "name": "hypothesis-gate TS+SQL (ORPHAN/DANGLING/RUN_*/QUOTE)",
+          "result": "PASS",
+          "skipped": false
+        },
+        {
+          "name": "I01-I18 целы",
+          "result": "PASS",
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "id": "S4.3",
+      "status": "PASS",
+      "artifacts": [
+        "src/lib/scoring.ts",
+        "tests/unit/scoring-attack.test.ts"
+      ],
+      "checks": [
+        {
+          "name": "scoring-attack 24/24 (freeze/gaming/cap/disclosure)",
+          "result": "PASS",
+          "skipped": false
+        },
+        {
+          "name": "WEIGHTS frozen, SIGNAL_WEIGHTS_VERSION=1",
+          "result": "PASS",
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "id": "S4.4",
+      "status": "PASS",
+      "artifacts": [
+        "src/lib/export.ts",
+        "src/App.svelte",
+        "backend/app/main.py",
+        "tests/unit/export-gate.test.ts"
+      ],
+      "checks": [
+        {
+          "name": "export-gate (confirmed+grounded, needsSignalReverification-блок, без signed URL)",
+          "result": "PASS",
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "id": "S4.5",
+      "status": "PASS",
+      "artifacts": [
+        "supabase/functions/analyze-proxy/index.ts",
+        "tests/unit/edge-proxy.test.ts"
+      ],
+      "checks": [
+        {
+          "name": "edge-proxy (origin/100KB/20k/deadline/no-key, stub upstream, без сети)",
+          "result": "PASS",
+          "skipped": false
+        }
+      ]
+    }
+  ],
+  "criteria": [
+    {
+      "id": "D4.1",
+      "status": "PASS",
+      "evidence": [
+        "tests/unit/analysis-run.test.ts",
+        "src/lib/analysis.ts"
+      ]
+    },
+    {
+      "id": "D4.2",
+      "status": "PASS",
+      "evidence": [
+        "tests/unit/decision-contract.test.ts",
+        "supabase/migrations/20261019000100_s4_2_hypothesis.sql"
+      ]
+    },
+    {
+      "id": "D4.3",
+      "status": "PASS",
+      "evidence": [
+        "tests/unit/scoring-attack.test.ts",
+        "src/lib/scoring.ts"
+      ]
+    },
+    {
+      "id": "D4.4",
+      "status": "PASS",
+      "evidence": [
+        "tests/unit/export-gate.test.ts",
+        "src/lib/export.ts",
+        "backend/app/main.py"
+      ]
+    },
+    {
+      "id": "D4.5",
+      "status": "PASS",
+      "evidence": [
+        "tests/unit/edge-proxy.test.ts",
+        "supabase/functions/analyze-proxy/index.ts"
+      ]
+    }
+  ],
+  "regression": [
+    {
+      "id": "D0.1-D3.5",
+      "result": "PASS",
+      "note": "full U + check + gates 0/1/2/3 re-verified at S4 close",
+      "evidence": [
+        "docs/acceptance/sprint-2.json",
+        "docs/acceptance/sprint-3.json"
+      ]
+    }
+  ],
+  "blockers": [],
+  "next": "S5.1"
+}

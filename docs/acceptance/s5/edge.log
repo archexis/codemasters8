@@ -1,0 +1,12 @@
+
+> saq-qurylys@2.0.0 test:edge
+> npx --yes deno test --allow-env supabase/functions/analyze/index.test.ts
+
+Check supabase/functions/analyze/index.test.ts
+running 3 tests from ./supabase/functions/analyze/index.test.ts
+production method/auth boundaries ... ok (20ms)
+production chunked byte bound precedes JSON parsing/provider ... ok (3ms)
+production writes pending then succeeded and replays without paid request ... ok (5ms)
+
+ok | 3 passed | 0 failed (36ms)
+

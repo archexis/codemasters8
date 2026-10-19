@@ -1,0 +1,10 @@
+[WebServer] (node:57572) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:59240) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\cloud\supabase.spec.ts:4:1 › Supabase SDK login, server analysis, optimistic RPC save and logout (9.3s)
+
+  1 passed (14.8s)

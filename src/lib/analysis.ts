@@ -3,17 +3,22 @@ import { parseAdText } from './parser';
 import type { Analysis, Code } from './types';
 import { z } from 'zod';
 import { ID_RE } from './validation';
-const schema = z.object({ engine: z.string(), realAI: z.boolean(), hypotheses: z.array(z.object({ code: z.enum(['R1', 'R2', 'R3', 'R4', 'R5', 'R6']), quote: z.string().min(1), reason: z.string() })).max(6) });
-export async function analyze(text: string, complexName: string): Promise<Analysis> {
-  if (text.length > 20000) throw new Error('Максимум 20 000 символов');
-  if (!supabase) {
-    const parsed = parseAdText(text);
-    return { engine: 'Локальный парсер RU/KZ (демо)', realAI: false, hypotheses: parsed.payment.flagged ? [{ code: 'R2', quote: parsed.payment.quotes[0], reason: 'Обнаружено платёжное предложение. Требуется решение аналитика.' }] : [] };
+const schema = z.object({ engine: z.string(), realAI: z.boolean(), runId:z.string().optional(), inputHash:z.string().optional(), input:z.unknown().optional(), status:z.literal('succeeded').optional(), hypotheses: z.array(z.object({ id:z.string().optional(), code: z.enum(['R2', 'R3']), quote: z.string().refine(q=>!!q.trim()), reason: z.string().min(1) })).max(6) });
+export async function analyze(input: AiRunInput, opts: {runId:string; signal:AbortSignal}): Promise<Analysis> {
+  if (input.text.length > 20000) throw new Error('Максимум 20 000 символов');
+  const session = supabase ? (await supabase.auth.getSession()).data.session : null;
+  if (opts.signal.aborted) throw new DOMException('Aborted','AbortError');
+  if (!supabase || !session) {
+    const run=demoRunFor(input);
+    return {engine:run.engine,realAI:false,hypotheses:run.hypotheses};
   }
-  const { data, error } = await supabase.functions.invoke('analyze', { body: { text, complexName }, signal: AbortSignal.timeout(45000) });
-  if (error) throw new Error(`AI-анализ недоступен: ${error.message}`);
+  const { data, error } = await supabase.functions.invoke('analyze', { body: { runId:opts.runId, input }, signal: AbortSignal.any([opts.signal,AbortSignal.timeout(45000)]) });
+  if (error) {
+    const detail = error.context instanceof Response ? await error.context.json().catch(()=>null) : null;
+    throw new Error(`AI-анализ недоступен: ${detail?.error_code ?? error.message}. Для pending/failed после таймаута начните новый запуск.`);
+  }
   const result = schema.parse(data);
-  if (result.hypotheses.some(h => !text.includes(h.quote))) throw new Error('Модель вернула цитату вне исходного текста');
+  if (!result.runId || result.status!=='succeeded' || result.hypotheses.some(h => !h.id || !input.text.includes(h.quote))) throw new Error('Некорректный доверенный результат модели');
   return result;
 }
 
@@ -44,7 +49,7 @@ export async function analyze(text: string, complexName: string): Promise<Analys
 /* ------------------------------------------------------------------ */
 
 /** Явная константная версия prompt/schema AI-потока (C5: фиксированы). */
-export const AI_PROMPT_VERSION = 's4-r2r3-v1';
+export const AI_PROMPT_VERSION = 's4-r2r3-v3';
 export const AI_SCHEMA_VERSION = 1;
 /** AI извлекает только R2/R3 (C5: R1/R4/R5/R6 требуют других материалов). */
 export const AI_RUN_CODES: ReadonlyArray<Code> = ['R2', 'R3'];
@@ -58,6 +63,7 @@ export type AiRunStatus = 'started' | 'succeeded' | 'failed';
 export interface AiRunInput {
   text: string; zkId: string; url: string; account: string;
   date: string | null; platform: string;
+  attachments?: {name:string;size:number;type:string;lastModified:number}[];
 }
 
 export interface AiRunHypothesis {
@@ -119,7 +125,7 @@ function cyrb53(str: string, seed = 0): number {
  */
 export function canonicalRunInput(input: AiRunInput): string {
   const q = (v: unknown): string => JSON.stringify(v ?? null);
-  return `{"text":${q(input.text)},"zkId":${q(input.zkId)},"url":${q(input.url)},"account":${q(input.account)},"date":${q(input.date)},"platform":${q(input.platform)}}`;
+  return JSON.stringify({text:input.text,zkId:input.zkId,url:input.url,account:input.account,date:input.date,platform:input.platform,...(input.attachments ? {attachments:input.attachments.map(a=>({name:a.name,size:a.size,type:a.type,lastModified:a.lastModified}))} : {})});
 }
 
 /** Хеш входного snapshot (hex). Тот же input → тот же хеш всегда. */

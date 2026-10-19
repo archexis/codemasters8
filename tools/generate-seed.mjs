@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * S1.4. Генератор SQL seed-миграции из src/lib/seed.json.
  *

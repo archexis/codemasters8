@@ -1,0 +1,1540 @@
+{
+  "status": "PASS",
+  "zkId": "S5-f1827716",
+  "run": {
+    "id": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+    "model": "deepseek-flash",
+    "prompt_version": "s4-r2r3-v3",
+    "status": "succeeded",
+    "input_hash": "fe58420f817ae41a941d534cd045fd89a4b6f62de0a327cda38ab3d94cfa76f7",
+    "input_snapshot": {
+      "url": "https://example.test/s5/S5-f1827716",
+      "date": "2026-10-18",
+      "text": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году. Депозит 654 000 тенге обязателен для бронирования квартиры.",
+      "zkId": "S5-f1827716",
+      "account": "",
+      "platform": "Источник не указан"
+    }
+  },
+  "v1": {
+    "at": "2026-10-18T17:41:47.032Z",
+    "id": "82b7072e-a625-4fda-b39a-d2e3a471235a",
+    "ads": [
+      {
+        "id": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+        "url": "https://example.test/s5/S5-f1827716",
+        "date": "2026-10-18",
+        "text": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году. Депозит 654 000 тенге обязателен для бронирования квартиры.",
+        "zkId": "S5-f1827716",
+        "account": "",
+        "analysis": {
+          "input": {
+            "url": "https://example.test/s5/S5-f1827716",
+            "date": "2026-10-18",
+            "text": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году. Депозит 654 000 тенге обязателен для бронирования квартиры.",
+            "zkId": "S5-f1827716",
+            "account": "",
+            "platform": "Источник не указан"
+          },
+          "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+          "engine": "deepseek-flash",
+          "realAI": true,
+          "status": "succeeded",
+          "inputHash": "fe58420f817ae41a941d534cd045fd89a4b6f62de0a327cda38ab3d94cfa76f7",
+          "hypotheses": [
+            {
+              "id": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1",
+              "code": "R2",
+              "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+              "reason": "Текст прямо предлагает внести денежную сумму (депозит) для бронирования квартиры."
+            },
+            {
+              "id": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+              "code": "R3",
+              "quote": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.",
+              "reason": "Содержится реклама продажи жилья с явным указанием, что дом строится, не введён в эксплуатацию и срок сдачи в будущем (2028 год)."
+            }
+          ]
+        },
+        "decision": "confirmed",
+        "platform": "Источник не указан",
+        "captureAt": "2026-10-18T17:41:17.574Z"
+      }
+    ],
+    "zkId": "S5-f1827716",
+    "zone": "red",
+    "score": 70,
+    "status": "confirmed",
+    "comment": "Полный synthetic кейс проверен, v1",
+    "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+    "revision": 1,
+    "snapshot": {
+      "id": "S5-f1827716",
+      "bin": null,
+      "lat": null,
+      "lng": null,
+      "city": "Өскемен",
+      "name": "ЖК Синтетический S5 S5-f1827716",
+      "note": "Connected synthetic acceptance, no seed factors",
+      "stage": "Строительство",
+      "events": [],
+      "origin": "manual",
+      "address": "Тестовый адрес, 5",
+      "factors": [
+        {
+          "code": "R2",
+          "status": "confirmed",
+          "evidence": {
+            "id": "959f7756-f598-4d28-b765-fa1a14ca0f12",
+            "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+            "date": "2026-10-18T17:41:17.574Z",
+            "kind": "publication",
+            "zkId": "S5-f1827716",
+            "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+            "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+            "source": "Источник не указан",
+            "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+          },
+          "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+          "updatedAt": "2026-10-18T17:41:16.903Z"
+        },
+        {
+          "code": "R3",
+          "status": "confirmed",
+          "evidence": {
+            "id": "cf91c5e5-e252-4f01-a1d6-29664196f033",
+            "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+            "date": "2026-10-18",
+            "kind": "publication",
+            "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+            "zkId": "S5-f1827716",
+            "quote": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.",
+            "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+            "source": "Источник не указан",
+            "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+            "beforeCommissioning": {
+              "date": "2026-10-18",
+              "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+              "source": "S5 synthetic акт неввода"
+            }
+          },
+          "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+          "updatedAt": "2026-10-18T17:41:17.100Z"
+        },
+        {
+          "code": "R1",
+          "status": "confirmed",
+          "evidence": {
+            "id": "af708570-bf1e-45c0-804d-5c408d67a931",
+            "date": "2026-10-18",
+            "kind": "legal-review",
+            "text": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения.",
+            "zkId": "S5-f1827716",
+            "source": "S5 synthetic акт сверки КЖК и МИО"
+          },
+          "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+          "updatedAt": "2026-10-18T17:41:17.340Z"
+        }
+      ],
+      "sources": [],
+      "developer": "Синтетический застройщик",
+      "legalBasis": {
+        "type": "absent",
+        "source": "S5 synthetic акт сверки КЖК и МИО",
+        "status": "absent-verified",
+        "checkedAt": "2026-10-18",
+        "reviewText": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения."
+      },
+      "readinessClaimed": null,
+      "readinessSources": [],
+      "readinessConfirmed": null,
+      "readinessClaimedSource": null
+    },
+    "commandId": "82b7072e-a625-4fda-b39a-d2e3a471235a",
+    "aiProvenance": [
+      {
+        "code": "R2",
+        "model": "deepseek-flash",
+        "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+        "origin": "server",
+        "reason": "Текст прямо предлагает внести денежную сумму (депозит) для бронирования квартиры.",
+        "provider": "api.deepseek.com",
+        "inputHash": "fe58420f817ae41a941d534cd045fd89a4b6f62de0a327cda38ab3d94cfa76f7",
+        "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1",
+        "promptVersion": "s4-r2r3-v3"
+      },
+      {
+        "code": "R3",
+        "model": "deepseek-flash",
+        "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+        "origin": "server",
+        "reason": "Содержится реклама продажи жилья с явным указанием, что дом строится, не введён в эксплуатацию и срок сдачи в будущем (2028 год).",
+        "provider": "api.deepseek.com",
+        "inputHash": "fe58420f817ae41a941d534cd045fd89a4b6f62de0a327cda38ab3d94cfa76f7",
+        "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+        "promptVersion": "s4-r2r3-v3"
+      }
+    ],
+    "decisionAudit": [
+      {
+        "at": "2026-10-18T17:41:17.340Z",
+        "id": "efb91550-49b1-48e2-9eac-fc28db888a05",
+        "zkId": "S5-f1827716",
+        "after": {
+          "id": "S5-f1827716",
+          "bin": null,
+          "lat": null,
+          "lng": null,
+          "city": "Өскемен",
+          "name": "ЖК Синтетический S5 S5-f1827716",
+          "note": "Connected synthetic acceptance, no seed factors",
+          "stage": "Строительство",
+          "events": [],
+          "origin": "manual",
+          "address": "Тестовый адрес, 5",
+          "factors": [
+            {
+              "code": "R2",
+              "status": "confirmed",
+              "evidence": {
+                "id": "959f7756-f598-4d28-b765-fa1a14ca0f12",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18T17:41:17.574Z",
+                "kind": "publication",
+                "zkId": "S5-f1827716",
+                "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:16.903Z"
+            },
+            {
+              "code": "R3",
+              "status": "confirmed",
+              "evidence": {
+                "id": "cf91c5e5-e252-4f01-a1d6-29664196f033",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18",
+                "kind": "publication",
+                "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+                "zkId": "S5-f1827716",
+                "quote": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+                "beforeCommissioning": {
+                  "date": "2026-10-18",
+                  "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+                  "source": "S5 synthetic акт неввода"
+                }
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:17.100Z"
+            },
+            {
+              "code": "R1",
+              "status": "confirmed",
+              "evidence": {
+                "id": "af708570-bf1e-45c0-804d-5c408d67a931",
+                "date": "2026-10-18",
+                "kind": "legal-review",
+                "text": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения.",
+                "zkId": "S5-f1827716",
+                "source": "S5 synthetic акт сверки КЖК и МИО"
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:17.340Z"
+            }
+          ],
+          "sources": [],
+          "developer": "Синтетический застройщик",
+          "legalBasis": {
+            "type": "absent",
+            "source": "S5 synthetic акт сверки КЖК и МИО",
+            "status": "absent-verified",
+            "checkedAt": "2026-10-18",
+            "reviewText": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения."
+          },
+          "readinessClaimed": null,
+          "readinessSources": [],
+          "readinessConfirmed": null,
+          "readinessClaimedSource": null
+        },
+        "action": "factor",
+        "before": {
+          "id": "S5-f1827716",
+          "bin": null,
+          "lat": null,
+          "lng": null,
+          "city": "Өскемен",
+          "name": "ЖК Синтетический S5 S5-f1827716",
+          "note": "Connected synthetic acceptance, no seed factors",
+          "stage": "Строительство",
+          "events": [],
+          "origin": "manual",
+          "address": "Тестовый адрес, 5",
+          "factors": [
+            {
+              "code": "R2",
+              "status": "confirmed",
+              "evidence": {
+                "id": "959f7756-f598-4d28-b765-fa1a14ca0f12",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18T17:41:17.574Z",
+                "kind": "publication",
+                "zkId": "S5-f1827716",
+                "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:16.903Z"
+            },
+            {
+              "code": "R3",
+              "status": "confirmed",
+              "evidence": {
+                "id": "cf91c5e5-e252-4f01-a1d6-29664196f033",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18",
+                "kind": "publication",
+                "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+                "zkId": "S5-f1827716",
+                "quote": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+                "beforeCommissioning": {
+                  "date": "2026-10-18",
+                  "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+                  "source": "S5 synthetic акт неввода"
+                }
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:17.100Z"
+            }
+          ],
+          "sources": [],
+          "developer": "Синтетический застройщик",
+          "legalBasis": {
+            "type": "absent",
+            "source": "S5 synthetic акт сверки КЖК и МИО",
+            "status": "absent-verified",
+            "checkedAt": "2026-10-18",
+            "reviewText": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения."
+          },
+          "readinessClaimed": null,
+          "readinessSources": [],
+          "readinessConfirmed": null,
+          "readinessClaimedSource": null
+        },
+        "actorId": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+        "comment": "Проверены оба варианта основания",
+        "details": {
+          "code": "R1",
+          "type": "factor",
+          "zkId": "S5-f1827716",
+          "status": "confirmed",
+          "comment": "Проверены оба варианта основания",
+          "evidence": {
+            "date": "2026-10-18",
+            "kind": "legal-review",
+            "text": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения.",
+            "source": "S5 synthetic акт сверки КЖК и МИО"
+          }
+        },
+        "evidence": {
+          "id": "af708570-bf1e-45c0-804d-5c408d67a931",
+          "date": "2026-10-18",
+          "kind": "legal-review",
+          "text": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения.",
+          "zkId": "S5-f1827716",
+          "source": "S5 synthetic акт сверки КЖК и МИО"
+        },
+        "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+        "commandId": "7c16dbe6-6972-4877-b092-f163e955a2ac"
+      },
+      {
+        "at": "2026-10-18T17:41:17.100Z",
+        "id": "514bf3da-78cb-41e0-bf49-231da67affe9",
+        "zkId": "S5-f1827716",
+        "after": {
+          "id": "S5-f1827716",
+          "bin": null,
+          "lat": null,
+          "lng": null,
+          "city": "Өскемен",
+          "name": "ЖК Синтетический S5 S5-f1827716",
+          "note": "Connected synthetic acceptance, no seed factors",
+          "stage": "Строительство",
+          "events": [],
+          "origin": "manual",
+          "address": "Тестовый адрес, 5",
+          "factors": [
+            {
+              "code": "R2",
+              "status": "confirmed",
+              "evidence": {
+                "id": "959f7756-f598-4d28-b765-fa1a14ca0f12",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18T17:41:17.574Z",
+                "kind": "publication",
+                "zkId": "S5-f1827716",
+                "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:16.903Z"
+            },
+            {
+              "code": "R3",
+              "status": "confirmed",
+              "evidence": {
+                "id": "cf91c5e5-e252-4f01-a1d6-29664196f033",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18",
+                "kind": "publication",
+                "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+                "zkId": "S5-f1827716",
+                "quote": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+                "beforeCommissioning": {
+                  "date": "2026-10-18",
+                  "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+                  "source": "S5 synthetic акт неввода"
+                }
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:17.100Z"
+            }
+          ],
+          "sources": [],
+          "developer": "Синтетический застройщик",
+          "legalBasis": {
+            "type": "absent",
+            "source": "S5 synthetic акт сверки КЖК и МИО",
+            "status": "absent-verified",
+            "checkedAt": "2026-10-18",
+            "reviewText": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения."
+          },
+          "readinessClaimed": null,
+          "readinessSources": [],
+          "readinessConfirmed": null,
+          "readinessClaimedSource": null
+        },
+        "action": "factor",
+        "before": {
+          "id": "S5-f1827716",
+          "bin": null,
+          "lat": null,
+          "lng": null,
+          "city": "Өскемен",
+          "name": "ЖК Синтетический S5 S5-f1827716",
+          "note": "Connected synthetic acceptance, no seed factors",
+          "stage": "Строительство",
+          "events": [],
+          "origin": "manual",
+          "address": "Тестовый адрес, 5",
+          "factors": [
+            {
+              "code": "R2",
+              "status": "confirmed",
+              "evidence": {
+                "id": "959f7756-f598-4d28-b765-fa1a14ca0f12",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18T17:41:17.574Z",
+                "kind": "publication",
+                "zkId": "S5-f1827716",
+                "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:16.903Z"
+            }
+          ],
+          "sources": [],
+          "developer": "Синтетический застройщик",
+          "legalBasis": {
+            "type": "absent",
+            "source": "S5 synthetic акт сверки КЖК и МИО",
+            "status": "absent-verified",
+            "checkedAt": "2026-10-18",
+            "reviewText": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения."
+          },
+          "readinessClaimed": null,
+          "readinessSources": [],
+          "readinessConfirmed": null,
+          "readinessClaimedSource": null
+        },
+        "actorId": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+        "comment": "Реклама до ввода проверена по материалу",
+        "details": {
+          "code": "R3",
+          "type": "factor",
+          "zkId": "S5-f1827716",
+          "status": "confirmed",
+          "comment": "Реклама до ввода проверена по материалу",
+          "evidence": {
+            "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+            "date": "2026-10-18",
+            "kind": "publication",
+            "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+            "quote": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.",
+            "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+            "source": "Источник не указан",
+            "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+            "beforeCommissioning": {
+              "date": "2026-10-18",
+              "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+              "source": "S5 synthetic акт неввода"
+            }
+          }
+        },
+        "evidence": {
+          "id": "cf91c5e5-e252-4f01-a1d6-29664196f033",
+          "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+          "date": "2026-10-18",
+          "kind": "publication",
+          "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+          "zkId": "S5-f1827716",
+          "quote": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.",
+          "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+          "source": "Источник не указан",
+          "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+          "beforeCommissioning": {
+            "date": "2026-10-18",
+            "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+            "source": "S5 synthetic акт неввода"
+          }
+        },
+        "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+        "commandId": "fafb06c5-f127-4281-84cb-957323562054"
+      },
+      {
+        "at": "2026-10-18T17:41:16.903Z",
+        "id": "4e9b99eb-ee86-4252-b9f1-d807d86f5aec",
+        "zkId": "S5-f1827716",
+        "after": {
+          "id": "S5-f1827716",
+          "bin": null,
+          "lat": null,
+          "lng": null,
+          "city": "Өскемен",
+          "name": "ЖК Синтетический S5 S5-f1827716",
+          "note": "Connected synthetic acceptance, no seed factors",
+          "stage": "Строительство",
+          "events": [],
+          "origin": "manual",
+          "address": "Тестовый адрес, 5",
+          "factors": [
+            {
+              "code": "R2",
+              "status": "confirmed",
+              "evidence": {
+                "id": "959f7756-f598-4d28-b765-fa1a14ca0f12",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18T17:41:17.574Z",
+                "kind": "publication",
+                "zkId": "S5-f1827716",
+                "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:16.903Z"
+            }
+          ],
+          "sources": [],
+          "developer": "Синтетический застройщик",
+          "legalBasis": {
+            "type": "absent",
+            "source": "S5 synthetic акт сверки КЖК и МИО",
+            "status": "absent-verified",
+            "checkedAt": "2026-10-18",
+            "reviewText": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения."
+          },
+          "readinessClaimed": null,
+          "readinessSources": [],
+          "readinessConfirmed": null,
+          "readinessClaimedSource": null
+        },
+        "action": "ad",
+        "before": {
+          "id": "S5-f1827716",
+          "bin": null,
+          "lat": null,
+          "lng": null,
+          "city": "Өскемен",
+          "name": "ЖК Синтетический S5 S5-f1827716",
+          "note": "Connected synthetic acceptance, no seed factors",
+          "stage": "Строительство",
+          "events": [],
+          "origin": "manual",
+          "address": "Тестовый адрес, 5",
+          "factors": [],
+          "sources": [],
+          "developer": "Синтетический застройщик",
+          "legalBasis": {
+            "type": "absent",
+            "source": "S5 synthetic акт сверки КЖК и МИО",
+            "status": "absent-verified",
+            "checkedAt": "2026-10-18",
+            "reviewText": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения."
+          },
+          "readinessClaimed": null,
+          "readinessSources": [],
+          "readinessConfirmed": null,
+          "readinessClaimedSource": null
+        },
+        "actorId": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+        "comment": "Синтетическое предложение оплаты проверено человеком",
+        "details": {
+          "ad": {
+            "id": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+            "url": "https://example.test/s5/S5-f1827716",
+            "date": "2026-10-18",
+            "text": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году. Депозит 654 000 тенге обязателен для бронирования квартиры.",
+            "zkId": "S5-f1827716",
+            "account": "",
+            "analysis": {
+              "input": {
+                "url": "https://example.test/s5/S5-f1827716",
+                "date": "2026-10-18",
+                "text": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году. Депозит 654 000 тенге обязателен для бронирования квартиры.",
+                "zkId": "S5-f1827716",
+                "account": "",
+                "platform": "Источник не указан"
+              },
+              "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+              "engine": "deepseek-flash",
+              "realAI": true,
+              "status": "succeeded",
+              "inputHash": "fe58420f817ae41a941d534cd045fd89a4b6f62de0a327cda38ab3d94cfa76f7",
+              "hypotheses": [
+                {
+                  "id": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1",
+                  "code": "R2",
+                  "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+                  "reason": "Текст прямо предлагает внести денежную сумму (депозит) для бронирования квартиры."
+                },
+                {
+                  "id": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+                  "code": "R3",
+                  "quote": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.",
+                  "reason": "Содержится реклама продажи жилья с явным указанием, что дом строится, не введён в эксплуатацию и срок сдачи в будущем (2028 год)."
+                }
+              ]
+            },
+            "platform": "Источник не указан",
+            "captureAt": "2026-10-18T17:41:17.574Z"
+          },
+          "type": "ad",
+          "comment": "Синтетическое предложение оплаты проверено человеком",
+          "decision": "confirmed",
+          "hypothesis": {
+            "code": "R2",
+            "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+            "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+            "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+          },
+          "modelReason": "Текст прямо предлагает внести денежную сумму (депозит) для бронирования квартиры."
+        },
+        "evidence": {
+          "id": "959f7756-f598-4d28-b765-fa1a14ca0f12",
+          "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+          "date": "2026-10-18T17:41:17.574Z",
+          "kind": "publication",
+          "zkId": "S5-f1827716",
+          "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+          "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+          "source": "Источник не указан",
+          "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+        },
+        "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+        "commandId": "17d41009-c7ab-4cca-b48a-0c4aa1c26f9a"
+      }
+    ],
+    "mediaManifest": [
+      {
+        "id": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+        "kind": "ad"
+      }
+    ],
+    "sourceVersion": 5,
+    "weightsVersion": 1,
+    "basedOnRevision": null
+  },
+  "returned": {
+    "at": "2026-10-18T17:41:48.342Z",
+    "id": "66fb6367-42a8-458a-8c32-a28636eef960",
+    "ads": [
+      {
+        "id": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+        "url": "https://example.test/s5/S5-f1827716",
+        "date": "2026-10-18",
+        "text": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году. Депозит 654 000 тенге обязателен для бронирования квартиры.",
+        "zkId": "S5-f1827716",
+        "account": "",
+        "analysis": {
+          "input": {
+            "url": "https://example.test/s5/S5-f1827716",
+            "date": "2026-10-18",
+            "text": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году. Депозит 654 000 тенге обязателен для бронирования квартиры.",
+            "zkId": "S5-f1827716",
+            "account": "",
+            "platform": "Источник не указан"
+          },
+          "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+          "engine": "deepseek-flash",
+          "realAI": true,
+          "status": "succeeded",
+          "inputHash": "fe58420f817ae41a941d534cd045fd89a4b6f62de0a327cda38ab3d94cfa76f7",
+          "hypotheses": [
+            {
+              "id": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1",
+              "code": "R2",
+              "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+              "reason": "Текст прямо предлагает внести денежную сумму (депозит) для бронирования квартиры."
+            },
+            {
+              "id": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+              "code": "R3",
+              "quote": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.",
+              "reason": "Содержится реклама продажи жилья с явным указанием, что дом строится, не введён в эксплуатацию и срок сдачи в будущем (2028 год)."
+            }
+          ]
+        },
+        "decision": "confirmed",
+        "platform": "Источник не указан",
+        "captureAt": "2026-10-18T17:41:17.574Z"
+      }
+    ],
+    "zkId": "S5-f1827716",
+    "zone": "yellow",
+    "score": 45,
+    "status": "returned",
+    "comment": "Возврат: требуется дополнительная проверка оплаты",
+    "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+    "revision": 2,
+    "snapshot": {
+      "id": "S5-f1827716",
+      "bin": null,
+      "lat": null,
+      "lng": null,
+      "city": "Өскемен",
+      "name": "ЖК Синтетический S5 S5-f1827716",
+      "note": "Connected synthetic acceptance, no seed factors",
+      "stage": "Строительство",
+      "events": [],
+      "origin": "manual",
+      "address": "Тестовый адрес, 5",
+      "factors": [
+        {
+          "code": "R3",
+          "status": "confirmed",
+          "evidence": {
+            "id": "cf91c5e5-e252-4f01-a1d6-29664196f033",
+            "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+            "date": "2026-10-18",
+            "kind": "publication",
+            "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+            "zkId": "S5-f1827716",
+            "quote": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.",
+            "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+            "source": "Источник не указан",
+            "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+            "beforeCommissioning": {
+              "date": "2026-10-18",
+              "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+              "source": "S5 synthetic акт неввода"
+            }
+          },
+          "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+          "updatedAt": "2026-10-18T17:41:17.100Z"
+        },
+        {
+          "code": "R1",
+          "status": "confirmed",
+          "evidence": {
+            "id": "af708570-bf1e-45c0-804d-5c408d67a931",
+            "date": "2026-10-18",
+            "kind": "legal-review",
+            "text": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения.",
+            "zkId": "S5-f1827716",
+            "source": "S5 synthetic акт сверки КЖК и МИО"
+          },
+          "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+          "updatedAt": "2026-10-18T17:41:17.340Z"
+        },
+        {
+          "code": "R2",
+          "status": "rejected",
+          "evidence": {
+            "id": "959f7756-f598-4d28-b765-fa1a14ca0f12",
+            "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+            "date": "2026-10-18T17:41:17.574Z",
+            "kind": "publication",
+            "zkId": "S5-f1827716",
+            "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+            "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+            "source": "Источник не указан",
+            "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+          },
+          "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+          "updatedAt": "2026-10-18T17:41:47.747Z"
+        }
+      ],
+      "sources": [],
+      "developer": "Синтетический застройщик",
+      "legalBasis": {
+        "type": "absent",
+        "source": "S5 synthetic акт сверки КЖК и МИО",
+        "status": "absent-verified",
+        "checkedAt": "2026-10-18",
+        "reviewText": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения."
+      },
+      "readinessClaimed": null,
+      "readinessSources": [],
+      "readinessConfirmed": null,
+      "readinessClaimedSource": null
+    },
+    "commandId": "66fb6367-42a8-458a-8c32-a28636eef960",
+    "aiProvenance": [
+      {
+        "code": "R3",
+        "model": "deepseek-flash",
+        "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+        "origin": "server",
+        "reason": "Содержится реклама продажи жилья с явным указанием, что дом строится, не введён в эксплуатацию и срок сдачи в будущем (2028 год).",
+        "provider": "api.deepseek.com",
+        "inputHash": "fe58420f817ae41a941d534cd045fd89a4b6f62de0a327cda38ab3d94cfa76f7",
+        "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+        "promptVersion": "s4-r2r3-v3"
+      }
+    ],
+    "decisionAudit": [
+      {
+        "at": "2026-10-18T17:41:47.747Z",
+        "id": "3a39e151-8fa5-44fa-b119-4c865bc2c817",
+        "zkId": "S5-f1827716",
+        "after": {
+          "id": "S5-f1827716",
+          "bin": null,
+          "lat": null,
+          "lng": null,
+          "city": "Өскемен",
+          "name": "ЖК Синтетический S5 S5-f1827716",
+          "note": "Connected synthetic acceptance, no seed factors",
+          "stage": "Строительство",
+          "events": [],
+          "origin": "manual",
+          "address": "Тестовый адрес, 5",
+          "factors": [
+            {
+              "code": "R3",
+              "status": "confirmed",
+              "evidence": {
+                "id": "cf91c5e5-e252-4f01-a1d6-29664196f033",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18",
+                "kind": "publication",
+                "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+                "zkId": "S5-f1827716",
+                "quote": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+                "beforeCommissioning": {
+                  "date": "2026-10-18",
+                  "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+                  "source": "S5 synthetic акт неввода"
+                }
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:17.100Z"
+            },
+            {
+              "code": "R1",
+              "status": "confirmed",
+              "evidence": {
+                "id": "af708570-bf1e-45c0-804d-5c408d67a931",
+                "date": "2026-10-18",
+                "kind": "legal-review",
+                "text": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения.",
+                "zkId": "S5-f1827716",
+                "source": "S5 synthetic акт сверки КЖК и МИО"
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:17.340Z"
+            },
+            {
+              "code": "R2",
+              "status": "rejected",
+              "evidence": {
+                "id": "959f7756-f598-4d28-b765-fa1a14ca0f12",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18T17:41:17.574Z",
+                "kind": "publication",
+                "zkId": "S5-f1827716",
+                "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:47.747Z"
+            }
+          ],
+          "sources": [],
+          "developer": "Синтетический застройщик",
+          "legalBasis": {
+            "type": "absent",
+            "source": "S5 synthetic акт сверки КЖК и МИО",
+            "status": "absent-verified",
+            "checkedAt": "2026-10-18",
+            "reviewText": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения."
+          },
+          "readinessClaimed": null,
+          "readinessSources": [],
+          "readinessConfirmed": null,
+          "readinessClaimedSource": null
+        },
+        "action": "factor",
+        "before": {
+          "id": "S5-f1827716",
+          "bin": null,
+          "lat": null,
+          "lng": null,
+          "city": "Өскемен",
+          "name": "ЖК Синтетический S5 S5-f1827716",
+          "note": "Connected synthetic acceptance, no seed factors",
+          "stage": "Строительство",
+          "events": [],
+          "origin": "manual",
+          "address": "Тестовый адрес, 5",
+          "factors": [
+            {
+              "code": "R2",
+              "status": "confirmed",
+              "evidence": {
+                "id": "959f7756-f598-4d28-b765-fa1a14ca0f12",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18T17:41:17.574Z",
+                "kind": "publication",
+                "zkId": "S5-f1827716",
+                "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:16.903Z"
+            },
+            {
+              "code": "R3",
+              "status": "confirmed",
+              "evidence": {
+                "id": "cf91c5e5-e252-4f01-a1d6-29664196f033",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18",
+                "kind": "publication",
+                "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+                "zkId": "S5-f1827716",
+                "quote": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+                "beforeCommissioning": {
+                  "date": "2026-10-18",
+                  "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+                  "source": "S5 synthetic акт неввода"
+                }
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:17.100Z"
+            },
+            {
+              "code": "R1",
+              "status": "confirmed",
+              "evidence": {
+                "id": "af708570-bf1e-45c0-804d-5c408d67a931",
+                "date": "2026-10-18",
+                "kind": "legal-review",
+                "text": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения.",
+                "zkId": "S5-f1827716",
+                "source": "S5 synthetic акт сверки КЖК и МИО"
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:17.340Z"
+            }
+          ],
+          "sources": [],
+          "developer": "Синтетический застройщик",
+          "legalBasis": {
+            "type": "absent",
+            "source": "S5 synthetic акт сверки КЖК и МИО",
+            "status": "absent-verified",
+            "checkedAt": "2026-10-18",
+            "reviewText": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения."
+          },
+          "readinessClaimed": null,
+          "readinessSources": [],
+          "readinessConfirmed": null,
+          "readinessClaimedSource": null
+        },
+        "actorId": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+        "comment": "Повторная сверка: предложение оплаты снято",
+        "details": {
+          "code": "R2",
+          "type": "factor",
+          "zkId": "S5-f1827716",
+          "status": "rejected",
+          "comment": "Повторная сверка: предложение оплаты снято",
+          "evidence": {
+            "id": "959f7756-f598-4d28-b765-fa1a14ca0f12",
+            "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+            "date": "2026-10-18T17:41:17.574Z",
+            "kind": "publication",
+            "zkId": "S5-f1827716",
+            "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+            "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+            "source": "Источник не указан",
+            "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+          }
+        },
+        "evidence": {
+          "id": "959f7756-f598-4d28-b765-fa1a14ca0f12",
+          "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+          "date": "2026-10-18T17:41:17.574Z",
+          "kind": "publication",
+          "zkId": "S5-f1827716",
+          "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+          "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+          "source": "Источник не указан",
+          "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+        },
+        "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+        "commandId": "3472b6bd-647e-4345-8b87-d526f62e1b0d"
+      },
+      {
+        "at": "2026-10-18T17:41:17.340Z",
+        "id": "efb91550-49b1-48e2-9eac-fc28db888a05",
+        "zkId": "S5-f1827716",
+        "after": {
+          "id": "S5-f1827716",
+          "bin": null,
+          "lat": null,
+          "lng": null,
+          "city": "Өскемен",
+          "name": "ЖК Синтетический S5 S5-f1827716",
+          "note": "Connected synthetic acceptance, no seed factors",
+          "stage": "Строительство",
+          "events": [],
+          "origin": "manual",
+          "address": "Тестовый адрес, 5",
+          "factors": [
+            {
+              "code": "R2",
+              "status": "confirmed",
+              "evidence": {
+                "id": "959f7756-f598-4d28-b765-fa1a14ca0f12",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18T17:41:17.574Z",
+                "kind": "publication",
+                "zkId": "S5-f1827716",
+                "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:16.903Z"
+            },
+            {
+              "code": "R3",
+              "status": "confirmed",
+              "evidence": {
+                "id": "cf91c5e5-e252-4f01-a1d6-29664196f033",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18",
+                "kind": "publication",
+                "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+                "zkId": "S5-f1827716",
+                "quote": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+                "beforeCommissioning": {
+                  "date": "2026-10-18",
+                  "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+                  "source": "S5 synthetic акт неввода"
+                }
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:17.100Z"
+            },
+            {
+              "code": "R1",
+              "status": "confirmed",
+              "evidence": {
+                "id": "af708570-bf1e-45c0-804d-5c408d67a931",
+                "date": "2026-10-18",
+                "kind": "legal-review",
+                "text": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения.",
+                "zkId": "S5-f1827716",
+                "source": "S5 synthetic акт сверки КЖК и МИО"
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:17.340Z"
+            }
+          ],
+          "sources": [],
+          "developer": "Синтетический застройщик",
+          "legalBasis": {
+            "type": "absent",
+            "source": "S5 synthetic акт сверки КЖК и МИО",
+            "status": "absent-verified",
+            "checkedAt": "2026-10-18",
+            "reviewText": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения."
+          },
+          "readinessClaimed": null,
+          "readinessSources": [],
+          "readinessConfirmed": null,
+          "readinessClaimedSource": null
+        },
+        "action": "factor",
+        "before": {
+          "id": "S5-f1827716",
+          "bin": null,
+          "lat": null,
+          "lng": null,
+          "city": "Өскемен",
+          "name": "ЖК Синтетический S5 S5-f1827716",
+          "note": "Connected synthetic acceptance, no seed factors",
+          "stage": "Строительство",
+          "events": [],
+          "origin": "manual",
+          "address": "Тестовый адрес, 5",
+          "factors": [
+            {
+              "code": "R2",
+              "status": "confirmed",
+              "evidence": {
+                "id": "959f7756-f598-4d28-b765-fa1a14ca0f12",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18T17:41:17.574Z",
+                "kind": "publication",
+                "zkId": "S5-f1827716",
+                "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:16.903Z"
+            },
+            {
+              "code": "R3",
+              "status": "confirmed",
+              "evidence": {
+                "id": "cf91c5e5-e252-4f01-a1d6-29664196f033",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18",
+                "kind": "publication",
+                "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+                "zkId": "S5-f1827716",
+                "quote": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+                "beforeCommissioning": {
+                  "date": "2026-10-18",
+                  "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+                  "source": "S5 synthetic акт неввода"
+                }
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:17.100Z"
+            }
+          ],
+          "sources": [],
+          "developer": "Синтетический застройщик",
+          "legalBasis": {
+            "type": "absent",
+            "source": "S5 synthetic акт сверки КЖК и МИО",
+            "status": "absent-verified",
+            "checkedAt": "2026-10-18",
+            "reviewText": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения."
+          },
+          "readinessClaimed": null,
+          "readinessSources": [],
+          "readinessConfirmed": null,
+          "readinessClaimedSource": null
+        },
+        "actorId": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+        "comment": "Проверены оба варианта основания",
+        "details": {
+          "code": "R1",
+          "type": "factor",
+          "zkId": "S5-f1827716",
+          "status": "confirmed",
+          "comment": "Проверены оба варианта основания",
+          "evidence": {
+            "date": "2026-10-18",
+            "kind": "legal-review",
+            "text": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения.",
+            "source": "S5 synthetic акт сверки КЖК и МИО"
+          }
+        },
+        "evidence": {
+          "id": "af708570-bf1e-45c0-804d-5c408d67a931",
+          "date": "2026-10-18",
+          "kind": "legal-review",
+          "text": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения.",
+          "zkId": "S5-f1827716",
+          "source": "S5 synthetic акт сверки КЖК и МИО"
+        },
+        "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+        "commandId": "7c16dbe6-6972-4877-b092-f163e955a2ac"
+      },
+      {
+        "at": "2026-10-18T17:41:17.100Z",
+        "id": "514bf3da-78cb-41e0-bf49-231da67affe9",
+        "zkId": "S5-f1827716",
+        "after": {
+          "id": "S5-f1827716",
+          "bin": null,
+          "lat": null,
+          "lng": null,
+          "city": "Өскемен",
+          "name": "ЖК Синтетический S5 S5-f1827716",
+          "note": "Connected synthetic acceptance, no seed factors",
+          "stage": "Строительство",
+          "events": [],
+          "origin": "manual",
+          "address": "Тестовый адрес, 5",
+          "factors": [
+            {
+              "code": "R2",
+              "status": "confirmed",
+              "evidence": {
+                "id": "959f7756-f598-4d28-b765-fa1a14ca0f12",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18T17:41:17.574Z",
+                "kind": "publication",
+                "zkId": "S5-f1827716",
+                "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:16.903Z"
+            },
+            {
+              "code": "R3",
+              "status": "confirmed",
+              "evidence": {
+                "id": "cf91c5e5-e252-4f01-a1d6-29664196f033",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18",
+                "kind": "publication",
+                "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+                "zkId": "S5-f1827716",
+                "quote": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+                "beforeCommissioning": {
+                  "date": "2026-10-18",
+                  "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+                  "source": "S5 synthetic акт неввода"
+                }
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:17.100Z"
+            }
+          ],
+          "sources": [],
+          "developer": "Синтетический застройщик",
+          "legalBasis": {
+            "type": "absent",
+            "source": "S5 synthetic акт сверки КЖК и МИО",
+            "status": "absent-verified",
+            "checkedAt": "2026-10-18",
+            "reviewText": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения."
+          },
+          "readinessClaimed": null,
+          "readinessSources": [],
+          "readinessConfirmed": null,
+          "readinessClaimedSource": null
+        },
+        "action": "factor",
+        "before": {
+          "id": "S5-f1827716",
+          "bin": null,
+          "lat": null,
+          "lng": null,
+          "city": "Өскемен",
+          "name": "ЖК Синтетический S5 S5-f1827716",
+          "note": "Connected synthetic acceptance, no seed factors",
+          "stage": "Строительство",
+          "events": [],
+          "origin": "manual",
+          "address": "Тестовый адрес, 5",
+          "factors": [
+            {
+              "code": "R2",
+              "status": "confirmed",
+              "evidence": {
+                "id": "959f7756-f598-4d28-b765-fa1a14ca0f12",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18T17:41:17.574Z",
+                "kind": "publication",
+                "zkId": "S5-f1827716",
+                "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:16.903Z"
+            }
+          ],
+          "sources": [],
+          "developer": "Синтетический застройщик",
+          "legalBasis": {
+            "type": "absent",
+            "source": "S5 synthetic акт сверки КЖК и МИО",
+            "status": "absent-verified",
+            "checkedAt": "2026-10-18",
+            "reviewText": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения."
+          },
+          "readinessClaimed": null,
+          "readinessSources": [],
+          "readinessConfirmed": null,
+          "readinessClaimedSource": null
+        },
+        "actorId": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+        "comment": "Реклама до ввода проверена по материалу",
+        "details": {
+          "code": "R3",
+          "type": "factor",
+          "zkId": "S5-f1827716",
+          "status": "confirmed",
+          "comment": "Реклама до ввода проверена по материалу",
+          "evidence": {
+            "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+            "date": "2026-10-18",
+            "kind": "publication",
+            "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+            "quote": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.",
+            "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+            "source": "Источник не указан",
+            "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+            "beforeCommissioning": {
+              "date": "2026-10-18",
+              "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+              "source": "S5 synthetic акт неввода"
+            }
+          }
+        },
+        "evidence": {
+          "id": "cf91c5e5-e252-4f01-a1d6-29664196f033",
+          "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+          "date": "2026-10-18",
+          "kind": "publication",
+          "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+          "zkId": "S5-f1827716",
+          "quote": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.",
+          "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+          "source": "Источник не указан",
+          "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+          "beforeCommissioning": {
+            "date": "2026-10-18",
+            "text": "Синтетический датированный акт от 2026-10-18: дом не введён на дату публикации.",
+            "source": "S5 synthetic акт неввода"
+          }
+        },
+        "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+        "commandId": "fafb06c5-f127-4281-84cb-957323562054"
+      },
+      {
+        "at": "2026-10-18T17:41:16.903Z",
+        "id": "4e9b99eb-ee86-4252-b9f1-d807d86f5aec",
+        "zkId": "S5-f1827716",
+        "after": {
+          "id": "S5-f1827716",
+          "bin": null,
+          "lat": null,
+          "lng": null,
+          "city": "Өскемен",
+          "name": "ЖК Синтетический S5 S5-f1827716",
+          "note": "Connected synthetic acceptance, no seed factors",
+          "stage": "Строительство",
+          "events": [],
+          "origin": "manual",
+          "address": "Тестовый адрес, 5",
+          "factors": [
+            {
+              "code": "R2",
+              "status": "confirmed",
+              "evidence": {
+                "id": "959f7756-f598-4d28-b765-fa1a14ca0f12",
+                "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+                "date": "2026-10-18T17:41:17.574Z",
+                "kind": "publication",
+                "zkId": "S5-f1827716",
+                "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+                "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+                "source": "Источник не указан",
+                "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+              },
+              "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+              "updatedAt": "2026-10-18T17:41:16.903Z"
+            }
+          ],
+          "sources": [],
+          "developer": "Синтетический застройщик",
+          "legalBasis": {
+            "type": "absent",
+            "source": "S5 synthetic акт сверки КЖК и МИО",
+            "status": "absent-verified",
+            "checkedAt": "2026-10-18",
+            "reviewText": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения."
+          },
+          "readinessClaimed": null,
+          "readinessSources": [],
+          "readinessConfirmed": null,
+          "readinessClaimedSource": null
+        },
+        "action": "ad",
+        "before": {
+          "id": "S5-f1827716",
+          "bin": null,
+          "lat": null,
+          "lng": null,
+          "city": "Өскемен",
+          "name": "ЖК Синтетический S5 S5-f1827716",
+          "note": "Connected synthetic acceptance, no seed factors",
+          "stage": "Строительство",
+          "events": [],
+          "origin": "manual",
+          "address": "Тестовый адрес, 5",
+          "factors": [],
+          "sources": [],
+          "developer": "Синтетический застройщик",
+          "legalBasis": {
+            "type": "absent",
+            "source": "S5 synthetic акт сверки КЖК и МИО",
+            "status": "absent-verified",
+            "checkedAt": "2026-10-18",
+            "reviewText": "Синтетический акт: проверены гарантия Единого оператора и разрешение МИО; оба отсутствуют. Не реальные юридические сведения."
+          },
+          "readinessClaimed": null,
+          "readinessSources": [],
+          "readinessConfirmed": null,
+          "readinessClaimedSource": null
+        },
+        "actorId": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+        "comment": "Синтетическое предложение оплаты проверено человеком",
+        "details": {
+          "ad": {
+            "id": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+            "url": "https://example.test/s5/S5-f1827716",
+            "date": "2026-10-18",
+            "text": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году. Депозит 654 000 тенге обязателен для бронирования квартиры.",
+            "zkId": "S5-f1827716",
+            "account": "",
+            "analysis": {
+              "input": {
+                "url": "https://example.test/s5/S5-f1827716",
+                "date": "2026-10-18",
+                "text": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году. Депозит 654 000 тенге обязателен для бронирования квартиры.",
+                "zkId": "S5-f1827716",
+                "account": "",
+                "platform": "Источник не указан"
+              },
+              "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+              "engine": "deepseek-flash",
+              "realAI": true,
+              "status": "succeeded",
+              "inputHash": "fe58420f817ae41a941d534cd045fd89a4b6f62de0a327cda38ab3d94cfa76f7",
+              "hypotheses": [
+                {
+                  "id": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1",
+                  "code": "R2",
+                  "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+                  "reason": "Текст прямо предлагает внести денежную сумму (депозит) для бронирования квартиры."
+                },
+                {
+                  "id": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h2",
+                  "code": "R3",
+                  "quote": "Продаём квартиры в строящемся ЖК Синтетический S5. Дом ещё не введён в эксплуатацию, сдача в 2028 году.",
+                  "reason": "Содержится реклама продажи жилья с явным указанием, что дом строится, не введён в эксплуатацию и срок сдачи в будущем (2028 год)."
+                }
+              ]
+            },
+            "platform": "Источник не указан",
+            "captureAt": "2026-10-18T17:41:17.574Z"
+          },
+          "type": "ad",
+          "comment": "Синтетическое предложение оплаты проверено человеком",
+          "decision": "confirmed",
+          "hypothesis": {
+            "code": "R2",
+            "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+            "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+            "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+          },
+          "modelReason": "Текст прямо предлагает внести денежную сумму (депозит) для бронирования квартиры."
+        },
+        "evidence": {
+          "id": "959f7756-f598-4d28-b765-fa1a14ca0f12",
+          "adId": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+          "date": "2026-10-18T17:41:17.574Z",
+          "kind": "publication",
+          "zkId": "S5-f1827716",
+          "quote": "Депозит 654 000 тенге обязателен для бронирования квартиры.",
+          "runId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb",
+          "source": "Источник не указан",
+          "hypothesisId": "b3ccf30d-ee07-444b-8bff-2d4f9d32b4bb-h1"
+        },
+        "reviewer": "s5-3210d133-e203-4f28-bfbf-e35c31571efb@example.test",
+        "commandId": "17d41009-c7ab-4cca-b48a-0c4aa1c26f9a"
+      }
+    ],
+    "mediaManifest": [
+      {
+        "id": "AD-cd8b3cc0-f8b8-48bb-95d4-5af15b1246d1",
+        "kind": "ad"
+      }
+    ],
+    "sourceVersion": 7,
+    "weightsVersion": 1,
+    "basedOnRevision": 1
+  },
+  "checks": [
+    "new object/legal review",
+    "new ad",
+    "real AI",
+    "human R2/R3 + beforeCommissioning",
+    "manual R1",
+    "70/red",
+    "confirm v1/PDF/reload",
+    "R2 withdrawn ->45/yellow",
+    "v1 unchanged",
+    "returned/reload",
+    "direct link/mobile"
+  ]
+}

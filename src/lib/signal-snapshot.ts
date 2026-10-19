@@ -22,6 +22,7 @@
  *    legacyIncomplete без snapshot и требует новой проверки перед экспортом.
  */
 import type {
+  Ad,
   AppState,
   Code,
   Complex,
@@ -50,6 +51,8 @@ export interface SignalDecisionOpts {
 
 export interface BuiltSignalSnapshot {
   snapshot: Complex;
+  ads: Ad[];
+  decisionAudit: AppState['audit'];
   score: number;
   zone: Zone;
   weightsVersion: number;
@@ -71,25 +74,29 @@ export function buildSignalSnapshot(state: AppState, zkId: string): BuiltSignalS
   const mediaById = new Map(state.media.map((m) => [m.id, m]));
   const mediaManifest: SignalMaterialManifest[] = [];
   const aiProvenance: SignalAiProvenance[] = [];
+  const ads: Ad[] = [];
   const seen = new Set<string>();
   for (const f of snapshot.factors) {
     if (f.status !== 'confirmed' || !f.evidence) continue;
     const ev = f.evidence;
     if (ev.adId !== undefined) {
       const ad = adsById.get(ev.adId);
+      if(!ad || ad.zkId!==zkId) throw new Error('Dangling publication '+ev.adId);
       // Только относящиеся и только своего ЖК; dangling adId в confirmed
       // сюда попасть не должен (checkStateRefs отбрасывает раньше).
       if (ad && ad.zkId === zkId && !seen.has(`ad:${ad.id}`)) {
         seen.add(`ad:${ad.id}`);
         mediaManifest.push({ kind: 'ad', id: ad.id });
+        ads.push(structuredClone(ad));
       }
     }
     for (const mid of ev.mediaIds ?? []) {
       const m = mediaById.get(mid);
+      if(!m || m.zkId!==zkId) throw new Error('Dangling media '+mid);
       if (m && m.zkId === zkId && !seen.has(`media:${m.id}`)) {
         seen.add(`media:${m.id}`);
         mediaManifest.push({
-          kind: 'media', id: m.id, path: m.path,
+          kind: 'media', id: m.id, path: m.path, name:m.name,mediaKind:m.kind,note:m.note,...(m.capturedAt ? {capturedAt:m.capturedAt} : {}),
           sha256: m.sha256 ?? null, bytes: m.bytes ?? null,
         });
       }
@@ -102,7 +109,7 @@ export function buildSignalSnapshot(state: AppState, zkId: string): BuiltSignalS
       });
     }
   }
-  return { snapshot, score, zone, weightsVersion: SIGNAL_WEIGHTS_VERSION, mediaManifest, aiProvenance };
+  return { snapshot, ads, decisionAudit: structuredClone(snapshot.factors.filter(f=>f.status==='confirmed').flatMap(f=>{const event=state.audit.find(e=>{const d=e.details as {code?:string;hypothesis?:{code:string}} | undefined;return e.zkId===zkId && (d?.code===f.code || d?.hypothesis?.code===f.code);});return event ? [event] : [];})), score, zone, weightsVersion: SIGNAL_WEIGHTS_VERSION, mediaManifest, aiProvenance };
 }
 
 /** Последняя версия сигнала ЖК (null — версий ещё не было). */

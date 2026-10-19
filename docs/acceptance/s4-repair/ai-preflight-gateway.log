@@ -1,0 +1,25 @@
+
+> saq-qurylys@2.0.0 test:deepseek
+> node tools/deepseek-smoke.mjs --reuse-eval docs/acceptance/s4-repair/ai-1792343450532.json
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ '*'
+- 'http://127.0.0.1:5175'
+
+    at file:///C:/Users/BIGra/codemasters8/tools/deepseek-smoke.mjs:35:10
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: '*',
+  expected: 'http://127.0.0.1:5175',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

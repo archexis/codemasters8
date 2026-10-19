@@ -53,6 +53,10 @@ it('migrations: loads every .sql migration sorted by name and records the applie
     '20261018180000_s2_4_signals.sql',
     '20261019000000_s4_1_runs.sql',
     '20261019000100_s4_2_hypothesis.sql',
+    '20261019000200_review_fixes.sql',
+    '20261019000300_s4_trusted_path.sql',
+    '20261019000400_s4_commissioning_material.sql',
+    '20261019000500_s5_signal_cycle.sql',
   ]);
   // First migration created the schema; second migration seeded app_seed.
   expect((await db.query<{ to_regclass: string }>("select to_regclass('public.workspaces')")).rows[0].to_regclass).not.toBeNull();
@@ -122,8 +126,8 @@ it('grounding: rejects ungrounded quotes, duplicates, R5 without gap; readiness 
   await login(db, userA);
   await db.query('select initialize_workspace()');
   const ad = { ...initialState().ads[0], id: 'test-new', text: 'Новый депозит 12345 тенге.' };
-  await expect(command(db, { type: 'ad', ad, decision: 'confirmed', hypothesis: { code: 'R2', quote: 'придумано' } }, 1)).rejects.toThrow('UNGROUNDED_QUOTE');
-  const result = await command(db, { type: 'ad', ad, decision: 'confirmed', hypothesis: { code: 'R2', quote: 'депозит 12345 тенге.' } }, 1);
+  await expect(command(db, { type: 'ad', ad, decision: 'confirmed', comment:'Проверенное предложение оплаты', hypothesis: { code: 'R2', quote: 'придумано' } }, 1)).rejects.toThrow('UNGROUNDED_QUOTE');
+  const result = await command(db, { type: 'ad', ad, decision: 'confirmed', comment:'Проверенное предложение оплаты', hypothesis: { code: 'R2', quote: 'депозит 12345 тенге.' } }, 1);
   expect(result.data.ads[0].decision).toBe('confirmed');
   await expect(command(db, { type: 'ad', ad, decision: 'saved' }, 2)).rejects.toThrow('DUPLICATE_AD');
   await expect(command(db, { type: 'factor', zkId: 'SQ-001', code: 'R5', status: 'confirmed', evidence: { source: 'test' } }, 2)).rejects.toThrow('R5_REQUIRES_GAP');

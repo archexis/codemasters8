@@ -57,6 +57,7 @@ export function validateFactor(workspace: AppState, z: Complex, code: Code, stat
       if (!ad) throw new Error('Публикация не найдена');
       if (ad.zkId !== z.id) throw new Error('Публикация относится к другому ЖК');
       if (!ad.text.includes(evidence.quote)) throw new Error('Цитата отсутствует в исходном тексте');
+      if(code==='R3' && evidence.runId && (!evidence.beforeCommissioning?.source.trim() || !evidence.beforeCommissioning?.text.trim() || !evidence.beforeCommissioning?.date)) throw new Error('Для R3 нужен beforeCommissioning: источник, дата и содержание материала о вводе');
       if (code === 'R3' && !evidence.text?.trim()) throw new Error('Для R3 нужен датированный материал, что объект не введён (source/date/text)');
       // S2.1 (C4): дата публикации неизвестна — confirmation блокируется,
       // пока материал не несёт явной календарной даты до ввода объекта.
@@ -194,19 +195,19 @@ export function applyCommand(state: AppState, command: unknown, reviewer: string
           ...(cmd.ad.url ? { url: cmd.ad.url } : {}),
           captureAt: cmd.ad.captureAt,
         }];
-        if (cmd.hypothesis && cmd.decision === 'confirmed') {
+        if (cmd.hypothesis && cmd.decision !== 'saved') {
           if (!cmd.hypothesis.quote.trim() || !dupe.text.includes(cmd.hypothesis.quote)) throw new Error('Цитата отсутствует в исходном тексте');
-          setFactor(next, z!, cmd.hypothesis.code, 'confirmed', { id: crypto.randomUUID(), zkId, kind: 'publication', source: cmd.ad.platform || 'Ручной ввод', quote: cmd.hypothesis.quote, adId: dupe.id, date: cmd.ad.captureAt });
+          setFactor(next, z!, cmd.hypothesis.code, cmd.decision === 'confirmed' ? 'confirmed' : 'rejected', { id: crypto.randomUUID(), zkId, kind: 'publication', source: cmd.ad.platform || 'Ручной ввод', quote: cmd.hypothesis.quote, adId: dupe.id, date: cmd.ad.captureAt, ...(cmd.hypothesis.beforeCommissioning ? {beforeCommissioning:cmd.hypothesis.beforeCommissioning} : {}), ...(cmd.hypothesis.runId ? {runId:cmd.hypothesis.runId,hypothesisId:cmd.hypothesis.hypothesisId} : {}), ...(cmd.hypothesis.evidenceText !== undefined ? { text: cmd.hypothesis.evidenceText } : {}) });
         }
         break;
       }
       if (cmd.ad.url && !safeUrl(cmd.ad.url)) throw new Error('Ссылка должна начинаться с https:// или http://');
       next.ads.unshift({ ...cmd.ad, decision: cmd.decision });
-      if (cmd.hypothesis && cmd.decision === 'confirmed') {
+      if (cmd.hypothesis && cmd.decision !== 'saved') {
         if (!cmd.hypothesis.quote.trim() || !cmd.ad.text.includes(cmd.hypothesis.quote)) throw new Error('Цитата отсутствует в исходном тексте');
         // Comment аналитика лежит в cmd.comment ad-команды и пишется в audit;
         // обязательность comment действует на factor-решения (setFactor ниже).
-        setFactor(next, z!, cmd.hypothesis.code, 'confirmed', { id: crypto.randomUUID(), zkId, kind: 'publication', source: cmd.ad.platform || 'Ручной ввод', quote: cmd.hypothesis.quote, adId: cmd.ad.id, date: cmd.ad.captureAt });
+        setFactor(next, z!, cmd.hypothesis.code, cmd.decision === 'confirmed' ? 'confirmed' : 'rejected', { id: crypto.randomUUID(), zkId, kind: 'publication', source: cmd.ad.platform || 'Ручной ввод', quote: cmd.hypothesis.quote, adId: cmd.ad.id, date: cmd.ad.captureAt, ...(cmd.hypothesis.beforeCommissioning ? {beforeCommissioning:cmd.hypothesis.beforeCommissioning} : {}), ...(cmd.hypothesis.runId ? {runId:cmd.hypothesis.runId,hypothesisId:cmd.hypothesis.hypothesisId} : {}), ...(cmd.hypothesis.evidenceText !== undefined ? { text: cmd.hypothesis.evidenceText } : {}) });
       }
       break;
     }
@@ -228,7 +229,11 @@ export function applyCommand(state: AppState, command: unknown, reviewer: string
     }
     case 'signal': {
       if (!cmd.comment.trim()) throw new Error('Укажите обоснование решения');
+      const prior = next.signalVersions?.[zkId] ?? [];
+      if (opts?.commandId && prior.some(v => v.commandId === opts.commandId || v.id === opts.commandId)) return next;
+      if (cmd.status !== 'draft' && next.signals[zkId]?.status && next.signals[zkId].status !== 'draft') throw new Error('Откройте пересмотр с причиной перед новым решением');
       if (cmd.status === 'confirmed' && !z!.factors.some(f => f.status === 'confirmed')) throw new Error('Нет подтверждённых факторов');
+      if (cmd.status === 'confirmed') for (const f of z!.factors.filter(f=>f.status==='confirmed')) validateFactor(next,z!,f.code,'confirmed',f.evidence!);
       // S2.4 (C6). Append-only версии: подтверждение/возврат добавляют запись
       // с revision = max+1 и basedOnRevision = предыдущий max (null у первой).
       // Draft-команда версий не добавляет — только двигает указатель.
@@ -243,7 +248,7 @@ export function applyCommand(state: AppState, command: unknown, reviewer: string
           ...(cmdId ? { commandId: cmdId } : {}),
           zkId, revision: nextRevisionFor(next, zkId), status: cmd.status, at, reviewer, comment: cmd.comment,
           sourceVersion: opts?.sourceVersion ?? z!.version ?? 0,
-          snapshot: built.snapshot,
+          snapshot: built.snapshot, ads: built.ads, decisionAudit: built.decisionAudit,
           score: built.score, zone: built.zone, weightsVersion: built.weightsVersion,
           mediaManifest: built.mediaManifest, aiProvenance: built.aiProvenance,
           basedOnRevision: prevVersions.length > 0
@@ -253,11 +258,11 @@ export function applyCommand(state: AppState, command: unknown, reviewer: string
         next.signalVersions ??= {};
         next.signalVersions[zkId] = [...prevVersions, version];
       }
-      next.signals[zkId] = { status: cmd.status, snapshot: structuredClone(z!), at, reviewer, comment: cmd.comment };
+      next.signals[zkId] = { status: cmd.status, snapshot: structuredClone(z!), at, reviewer, comment: cmd.comment, basedOnRevision: prior.reduce((max,v)=>Math.max(max,v.revision),0) || null, ...(cmd.status === 'draft' ? {reason: cmd.comment} : {}) };
       break;
     }
   }
-  if (cmd.type !== 'signal' && next.signals[zkId]) next.signals[zkId].status = 'draft';
+  if (cmd.type !== 'signal' && next.signals[zkId]) next.signals[zkId] = {...next.signals[zkId], status:'draft', at, reviewer, comment:'Новые факты: ' + cmd.type, reason:'Новые факты: ' + cmd.type, basedOnRevision: nextRevisionFor(next, zkId) - 1 || null};
   // S1.3. Audit хранит изменение (details=команда) и автоматически затронутые
   // факторы (комментарий). Повторное подтверждение явно требуется: баллы
   // начисляются только после нового confirm.

@@ -1,0 +1,273 @@
+
+> saq-qurylys@2.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 C:/Users/BIGra/codemasters8
+
+ ❯ tests/unit/review-regressions.test.ts (11 tests | 2 failed) 5956ms
+   ❯ review: SQL writes remain loadable by the application (5)
+     × factor UI payload, confirmed publication, readiness and signal snapshots survive reload 1568ms
+     × server-side publication attachments enter evidence and the confirmed signal manifest 1098ms
+ ❯ tests/unit/signal-history.test.ts (7 tests | 3 failed) 2633ms
+   ❯ S2.4 signal history (TS) (5)
+     × confirm → returned → reconfirm: три audit-события, revision 1/2/3 16ms
+     × legacyIncomplete: гейт до перепроверки, после reconfirm — нет 2ms
+   ❯ S2.4 signal versions (PGlite, real migrations) (2)
+     × confirm → rev1; replay того же commandId — та же version без мутации 1502ms
+ ❯ tests/unit/domain.test.ts (23 tests | 1 failed) 54ms
+   ❯ decision invariants (5)
+     × preserves audit and invalidates signals after new facts 9ms
+ ❯ tests/unit/export-gate.test.ts (9 tests | 1 failed) 43ms
+   ❯ S4.4 export gate: блокировки и пометки (4)
+     × legacyIncomplete блокирует полный экспорт (нужна новая проверка) 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/domain.test.ts > decision invariants > preserves audit and invalidates signals after new facts
+AssertionError: expected undefined to deeply equal { id: 'SQ-002', …(20) }
+
+- Expected:
+{
+  "address": "пр. Вымышленный, 45 (DEMO)",
+  "bin": "990100000002",
+  "city": "Өскемен / Усть-Каменогорск",
+  "demo": true,
+  "developer": "ТОО «Демо Құрылыс-2» (DEMO)",
+  "events": [
+    {
+      "date": "2026-09-25",
+      "text": "Зафиксирована реклама продаж на этапе котлована.",
+    },
+    {
+      "date": "2026-10-08",
+      "text": "Осмотр площадки: готовность ~12%.",
+    },
+    {
+      "date": "2026-10-09",
+      "text": "Сформирован сигнал, ожидает решения аналитика.",
+    },
+  ],
+  "factors": [
+    {
+      "code": "R1",
+      "evidence": {
+        "date": "2026-10-09",
+        "id": "seed-SQ-002-R1",
+        "kind": "document",
+        "source": "Акт сверки с реестрами (DEMO)",
+        "text": "Демо-акт сверки от 2026-10-09: сверены реестры КЖК и МИО, гарантия Единого оператора и разрешение МИО по объекту отсутствуют (DEMO)",
+        "zkId": "SQ-002",
+      },
+      "reviewer": "demo.analyst",
+      "status": "confirmed",
+      "updatedAt": "2026-10-09T15:00:00+05:00",
+    },
+    {
+      "code": "R2",
+      "evidence": {
+        "adId": "AD-003",
+        "date": "2026-09-25",
+        "id": "seed-SQ-002-R2",
+        "kind": "publication",
+        "quote": "Депозит 1 000 000 тенге для фиксации цены, остаток в рассрочку от застройщика",
+        "source": "Скриншот объявления (DEMO)",
+        "zkId": "SQ-002",
+      },
+      "reviewer": "demo.analyst",
+      "status": "confirmed",
+      "updatedAt": "2026-10-09T15:10:00+05:00",
+    },
+    {
+      "code": "R3",
+      "evidence": {
+        "adId": "AD-003",
+        "date": "2026-09-25",
+        "id": "seed-SQ-002-R3",
+        "kind": "publication",
+        "quote": "Продажа квартир на этапе котлована, сдача через 18 месяцев",
+        "source": "Текст объявления (DEMO)",
+        "text": "На 2026-09-25 объект не введён в эксплуатацию: котлован и фундамент, сдача через 18 месяцев (DEMO; beforeCommissioning-материал)",
+        "zkId": "SQ-002",
+      },
+      "reviewer": "demo.analyst",
+      "status": "confirmed",
+      "updatedAt": "2026-10-09T15:10:00+05:00",
+    },
+    {
+      "code": "R5",
+      "evidence": {
+        "date": "2026-10-09",
+        "id": "seed-SQ-002-R5",
+        "kind": "document",
+        "quote": "Готовность 55% в рекламе против 12% по осмотру",
+        "source": "Нужно подтверждение второго источника",
+        "zkId": "SQ-002",
+      },
+      "status": "hypothesis",
+    },
+  ],
+  "id": "SQ-002",
+  "lat": 49.9782,
+  "legalBasis": {
+    "checkedAt": "2026-10-09",
+    "reviewText": "Сверены демо-выписки КЖК и МИО: гарантия Единого оператора и разрешение МИО по объекту отсутствуют; результат зафиксирован в демо-акте сверки от 2026-10-09 (DEMO)",
+    "source": "Проверено аналитиком: гарантия и разрешение МИО отсутствуют (демо-акт сверки)",
+    "status": "absent-verified",
+    "type": "absent",
+  },
+  "lng": 82.6215,
+  "name": "Сарыарқа Парк",
+  "note": "Сценарий B: установлено отсутствие законного основания + депозит. Ожидает подтверждения человеком.",
+  "origin": "scenario",
+  "readinessClaimed": 55,
+  "readinessClaimedSource": {
+    "date": "2026-09-25",
+    "source": "Рекламный пост (DEMO-снимок)",
+    "value": 55,
+  },
+  "readinessConfirmed": 12,
+  "readinessSources": [
+    {
+      "date": "2026-09-25",
+      "source": "Рекламный пост (DEMO-снимок)",
+      "value": 55,
+    },
+    {
+      "date": "2026-10-08",
+      "source": "Выездной осмотр, фотофиксация (DEMO)",
+      "value": 12,
+    },
+  ],
+  "scenario": "B",
+  "sources": [
+    {
+      "date": "2026-09-25",
+      "title": "Снимок объявления AD-003",
+    },
+    {
+      "date": "2026-10-08",
+      "title": "Фотофиксация осмотра (демо)",
+    },
+    {
+      "date": "2026-10-09",
+      "title": "Акт сверки правового основания (демо)",
+    },
+  ],
+  "stage": "Котлован и фундамент",
+}
+
++ Received:
+undefined
+
+ ❯ tests/unit/domain.test.ts:30:46
+     28|     state = applyCommand(state, {type:'factor',zkId:'SQ-002',code:'R2'…
+     29|     expect(state.signals['SQ-002'].status).toBe('draft');
+     30|     expect(state.signals['SQ-002'].snapshot).toEqual(snapshot);
+       |                                              ^
+     31|     expect(state.audit).toHaveLength(2);
+     32|     expect(state.audit[0].details).toHaveProperty('status','rejected');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  tests/unit/export-gate.test.ts > S4.4 export gate: блокировки и пометки > legacyIncomplete блокирует полный экспорт (нужна новая проверка)
+AssertionError: expected [ 'legacy-incomplete' ] to include 'needs-reverification'
+ ❯ tests/unit/export-gate.test.ts:67:25
+     65|     expect(exp.kind).toBe('blocked');
+     66|     expect(exp.markers).toContain('legacy-incomplete');
+     67|     expect(exp.markers).toContain('needs-reverification');
+       |                         ^
+     68|     expect(exp.blockedReason).toMatch(/новая проверка/);
+     69|     expect(exp.evidence).toEqual([]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  tests/unit/review-regressions.test.ts > review: SQL writes remain loadable by the application > factor UI payload, confirmed publication, readiness and signal snapshots survive reload
+AssertionError: expected [Function] to not throw an error but 'Error: state.signals.SQ-001.reason: I…' was thrown
+
+- Expected:
+undefined
+
++ Received:
+"Error: state.signals.SQ-001.reason: Invalid input: expected string, received null"
+
+ ❯ tests/unit/review-regressions.test.ts:55:73
+     53|     for (const payload of commands) {
+     54|       current = await command(db!, payload, current.version);
+     55|       expect(() => loadStateFromText(JSON.stringify(current.data))).no…
+       |                                                                         ^
+     56|     }
+     57|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  tests/unit/review-regressions.test.ts > review: SQL writes remain loadable by the application > server-side publication attachments enter evidence and the confirmed signal manifest
+AssertionError: expected [Function] to not throw an error but 'Error: state.signals.SQ-001.reason: I…' was thrown
+
+- Expected:
+undefined
+
++ Received:
+"Error: state.signals.SQ-001.reason: Invalid input: expected string, received null"
+
+ ❯ tests/unit/review-regressions.test.ts:100:71
+     98|     current = await command(db!, { type: 'signal', zkId, status: 'conf…
+     99|     expect(current.data.signalVersions?.[zkId].at(-1)?.mediaManifest).…
+    100|     expect(() => loadStateFromText(JSON.stringify(current.data))).not.…
+       |                                                                       ^
+    101|   });
+    102|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  tests/unit/signal-history.test.ts > S2.4 signal history (TS) > confirm → returned → reconfirm: три audit-события, revision 1/2/3
+Error: Откройте пересмотр с причиной перед новым решением
+ ❯ applyCommand src/lib/domain.ts:234:112
+    232|       const prior = next.signalVersions?.[zkId] ?? [];
+    233|       if (opts?.commandId && prior.some(v => v.commandId === opts.comm…
+    234|       if (cmd.status !== 'draft' && next.signals[zkId]?.status && next…
+       |                                                                                                                ^
+    235|       if (cmd.status === 'confirmed' && !z!.factors.some(f => f.status…
+    236|       // S2.4 (C6). Append-only версии: подтверждение/возврат добавляю…
+ ❯ tests/unit/signal-history.test.ts:24:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  tests/unit/signal-history.test.ts > S2.4 signal history (TS) > legacyIncomplete: гейт до перепроверки, после reconfirm — нет
+Error: Откройте пересмотр с причиной перед новым решением
+ ❯ applyCommand src/lib/domain.ts:234:112
+    232|       const prior = next.signalVersions?.[zkId] ?? [];
+    233|       if (opts?.commandId && prior.some(v => v.commandId === opts.comm…
+    234|       if (cmd.status !== 'draft' && next.signals[zkId]?.status && next…
+       |                                                                                                                ^
+    235|       if (cmd.status === 'confirmed' && !z!.factors.some(f => f.status…
+    236|       // S2.4 (C6). Append-only версии: подтверждение/возврат добавляю…
+ ❯ tests/unit/signal-history.test.ts:93:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  tests/unit/signal-history.test.ts > S2.4 signal versions (PGlite, real migrations) > confirm → rev1; replay того же commandId — та же version без мутации
+AssertionError: expected [Function] to not throw an error but 'Error: state.signals.SQ-002.reason: I…' was thrown
+
+- Expected:
+undefined
+
++ Received:
+"Error: state.signals.SQ-002.reason: Invalid input: expected string, received null"
+
+ ❯ tests/unit/signal-history.test.ts:130:66
+    128|       await login(db, userA);
+    129|       // validateLoadedState принимает серверное состояние как есть.
+    130|       expect(() => validateLoadedState(first.data as never)).not.toThr…
+       |                                                                  ^
+    131|     } finally {
+    132|       await db?.close();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  4 failed | 20 passed (24)
+      Tests  7 failed | 295 passed (302)
+   Start at  22:30:05
+   Duration  58.38s (tests 95%, import 4%, transform 1%)
+

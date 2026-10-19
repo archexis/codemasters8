@@ -1,0 +1,18 @@
+[
+  {
+    "mode": "fresh",
+    "status": "PASS",
+    "database": "s6_fresh_1792346656501",
+    "migrations": 16,
+    "result": "SET\nSET\n jsonb_array_length \n--------------------\n                 16\n(1 row)\n\n ?column? \n----------\n 3\n(1 row)\n\n count \n-------\n     1\n(1 row)",
+    "scope": "actual PostgreSQL with isolated test auth/storage schemas; separate database, not production Supabase clone"
+  },
+  {
+    "mode": "upgrade",
+    "status": "PASS",
+    "database": "s6_upgrade_1792346662686",
+    "migrations": 16,
+    "result": "SET\nSET\n jsonb_array_length \n--------------------\n                 16\n(1 row)\n\n ?column? \n----------\n 3\n(1 row)\n\n count \n-------\n     1\n(1 row)",
+    "scope": "actual PostgreSQL with isolated test auth/storage schemas; separate database, not production Supabase clone"
+  }
+]

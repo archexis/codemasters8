@@ -1,0 +1,22 @@
+[
+  {
+    "fixture": "confirmed",
+    "pages": 2,
+    "textChecks": "PASS"
+  },
+  {
+    "fixture": "connected",
+    "pages": 2,
+    "textChecks": "PASS"
+  },
+  {
+    "fixture": "long",
+    "pages": 9,
+    "textChecks": "PASS"
+  },
+  {
+    "fixture": "returned",
+    "pages": 2,
+    "textChecks": "PASS"
+  }
+]
