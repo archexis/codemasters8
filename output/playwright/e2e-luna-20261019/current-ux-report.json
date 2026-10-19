@@ -1,0 +1,881 @@
+{
+  "config": {
+    "argv": [
+      "C:\\nvm4w\\nodejs\\node.exe",
+      "C:\\Users\\BIGra\\codemasters8\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "tests/e2e/ux-target.spec.ts",
+      "tests/e2e/ux-review.spec.ts",
+      "tests/e2e/ux-geometry.spec.ts",
+      "--grep-invert",
+      "target map: one X-Ray theme",
+      "--reporter=json",
+      "--output=output/playwright/e2e-luna-20261019/current-ux-results",
+      "--max-failures=4"
+    ],
+    "configFile": "C:\\Users\\BIGra\\codemasters8\\playwright.config.ts",
+    "rootDir": "C:/Users/BIGra/codemasters8/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 4,
+    "metadata": {
+      "actualWorkers": 2
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/BIGra/codemasters8/output/playwright/e2e-luna-20261019/current-ux-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/BIGra/codemasters8/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/BIGra/codemasters8/output/playwright/e2e-luna-20261019/current-ux-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "C:/Users/BIGra/codemasters8/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-ux-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "name": "chromium",
+        "testDir": "C:\\Users\\BIGra\\codemasters8\\tests\\e2e",
+        "snapshotDir": "C:\\Users\\BIGra\\codemasters8\\tests\\e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5176",
+          "trace": "retain-on-failure",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-ux-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "name": "mobile",
+        "testDir": "C:\\Users\\BIGra\\codemasters8\\tests\\e2e",
+        "snapshotDir": "C:\\Users\\BIGra\\codemasters8\\tests\\e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5176",
+          "trace": "retain-on-failure",
+          "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1",
+          "viewport": {
+            "width": 390,
+            "height": 664
+          },
+          "screen": {
+            "width": 390,
+            "height": 844
+          },
+          "deviceScaleFactor": 3,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "mobile"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 2,
+    "webServer": {
+      "command": "npm run dev -- --port 5176 --strictPort",
+      "url": "http://127.0.0.1:5176",
+      "env": {
+        "VITE_SUPABASE_URL": "",
+        "VITE_SUPABASE_ANON_KEY": ""
+      },
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "ux-geometry.spec.ts",
+      "file": "ux-geometry.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "2.5D replaces seed points with clickable schematic boxes and restores points in 2D",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 60633,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\BIGra\\codemasters8\\tests\\e2e\\ux-geometry.spec.ts",
+                        "column": 14,
+                        "line": 8
+                      },
+                      "message": "Error: page.goto: Test timeout of 60000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5176/#/map\", waiting until \"load\"\u001b[22m\n\n\n   6 |     await route.fulfill({response,body:source.replace('map = new ml.Map(', 'map = window.__uxGeometryMap = new ml.Map(')});\n   7 |   });\n>  8 |   await page.goto('/#/map');\n     |              ^\n   9 |   await expect(page.locator('.map-wrap')).toHaveAttribute('data-map-ready','true',{timeout:15000});\n  10 |   await page.getByRole('button',{name:'2.5D',exact:true}).click();\n  11 |   await expect.poll(()=>page.evaluate(()=>{\n    at C:\\Users\\BIGra\\codemasters8\\tests\\e2e\\ux-geometry.spec.ts:8:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-19T11:07:22.773Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-ux-results\\ux-geometry-2-5D-replaces--72fc1-s-and-restores-points-in-2D-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-ux-results\\ux-geometry-2-5D-replaces--72fc1-s-and-restores-points-in-2D-chromium\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "4d329d9b83999865bf60-ca986b20770b66746aa3",
+          "file": "ux-geometry.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "manual GeoJSON import persists and feeds a real fill-extrusion layer",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "timedOut",
+                  "duration": 60243,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\BIGra\\codemasters8\\tests\\e2e\\ux-geometry.spec.ts",
+                        "column": 73,
+                        "line": 34
+                      },
+                      "message": "Error: apiResponse.text: Response has been disposed\n\n  32 |   // Capture the actual MapLibre instance in this test's served module only. The shipped component has no test globals.\n  33 |   await page.route('**/src/components/RiskMap.svelte*', async route => {\n> 34 |     const response = await route.fetch(); const source = await response.text();\n     |                                                                         ^\n  35 |     await route.fulfill({ response, body: source.replace('map = new ml.Map(', 'map = window.__uxGeometryMap = new ml.Map(') });\n  36 |   });\n  37 |   await page.goto('/#/registries');\n    at C:\\Users\\BIGra\\codemasters8\\tests\\e2e\\ux-geometry.spec.ts:34:73"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\BIGra\\codemasters8\\tests\\e2e\\ux-geometry.spec.ts",
+                        "column": 14,
+                        "line": 37
+                      },
+                      "message": "Error: page.goto: Test timeout of 60000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5176/#/registries\", waiting until \"load\"\u001b[22m\n\n\n  35 |     await route.fulfill({ response, body: source.replace('map = new ml.Map(', 'map = window.__uxGeometryMap = new ml.Map(') });\n  36 |   });\n> 37 |   await page.goto('/#/registries');\n     |              ^\n  38 |   await page.getByRole('button', { name: 'Импорт GeoJSON', exact: true }).click();\n  39 |   const form = page.locator('form').filter({ has: page.getByRole('heading', { name: 'Контур для 2.5D-карты', exact: true }) });\n  40 |   await form.getByLabel(/^ЖК/).selectOption('SQ-001');\n    at C:\\Users\\BIGra\\codemasters8\\tests\\e2e\\ux-geometry.spec.ts:37:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-19T11:07:22.790Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-ux-results\\ux-geometry-manual-GeoJSON-409e1-a-real-fill-extrusion-layer-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-ux-results\\ux-geometry-manual-GeoJSON-409e1-a-real-fill-extrusion-layer-chromium\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "4d329d9b83999865bf60-1d15ca776a4812a32c04",
+          "file": "ux-geometry.spec.ts",
+          "line": 31,
+          "column": 1
+        },
+        {
+          "title": "new phase has unknown legal scope and does not inherit whole-complex factors",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 65558,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\BIGra\\codemasters8\\tests\\e2e\\ux-geometry.spec.ts",
+                        "column": 78,
+                        "line": 63
+                      },
+                      "message": "Error: locator.click: Test timeout of 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('Очереди и применимость документов', { exact: true })\u001b[22m\n\u001b[2m    2 × waiting for \"http://127.0.0.1:5176/\" navigation to finish...\u001b[22m\n\u001b[2m      - navigated to \"http://127.0.0.1:5176/#/complexes/SQ-002\"\u001b[22m\n\u001b[2m      - waiting for navigation to finish...\u001b[22m\n\u001b[2m      - navigated to \"http://127.0.0.1:5176/#/complexes/SQ-002\"\u001b[22m\n\u001b[2m      - waiting for \"http://127.0.0.1:5176/\" navigation to finish...\u001b[22m\n\u001b[2m      - navigated to \"http://127.0.0.1:5176/#/complexes/SQ-002\"\u001b[22m\n\u001b[2m      - waiting for \"http://127.0.0.1:5176/\" navigation to finish...\u001b[22m\n\u001b[2m      - navigated to \"http://127.0.0.1:5176/#/complexes/SQ-002\"\u001b[22m\n\u001b[2m      - waiting for \"http://127.0.0.1:5176/\" navigation to finish...\u001b[22m\n\u001b[2m      - navigated to \"http://127.0.0.1:5176/#/complexes/SQ-002\"\u001b[22m\n\u001b[2m    10 × waiting for \"http://127.0.0.1:5176/\" navigation to finish...\u001b[22m\n\u001b[2m       - navigated to \"http://127.0.0.1:5176/#/complexes/SQ-002\"\u001b[22m\n\u001b[2m    2 × waiting for navigation to finish...\u001b[22m\n\u001b[2m      - navigated to \"http://127.0.0.1:5176/#/complexes/SQ-002\"\u001b[22m\n\u001b[2m    2 × waiting for \"http://127.0.0.1:5176/\" navigation to finish...\u001b[22m\n\u001b[2m      - navigated to \"http://127.0.0.1:5176/#/complexes/SQ-002\"\u001b[22m\n\u001b[2m    - waiting for \"http://127.0.0.1:5176/\" navigation to finish...\u001b[22m\n\n\n  61 | test('new phase has unknown legal scope and does not inherit whole-complex factors', async ({ page }) => {\n  62 |   await page.goto('/#/complexes/SQ-002');\n> 63 |   await page.getByText('Очереди и применимость документов', { exact: true }).click();\n     |                                                                              ^\n  64 |   await page.getByLabel('Название новой очереди', { exact: true }).fill('DEMO отдельная очередь');\n  65 |   await page.getByRole('button', { name: 'Добавить очередь', exact: true }).click();\n  66 |   await expect(page).toHaveURL(/phase=PH-/);\n    at C:\\Users\\BIGra\\codemasters8\\tests\\e2e\\ux-geometry.spec.ts:63:78"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-19T11:08:26.312Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-ux-results\\ux-geometry-new-phase-has--7ddf3-herit-whole-complex-factors-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-ux-results\\ux-geometry-new-phase-has--7ddf3-herit-whole-complex-factors-chromium\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "4d329d9b83999865bf60-1a01fe8c1b43e5a7957e",
+          "file": "ux-geometry.spec.ts",
+          "line": 61,
+          "column": 1
+        },
+        {
+          "title": "2.5D replaces seed points with clickable schematic boxes and restores points in 2D",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "4d329d9b83999865bf60-ddf7ab35afb30227729c",
+          "file": "ux-geometry.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "manual GeoJSON import persists and feeds a real fill-extrusion layer",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "4d329d9b83999865bf60-0a08c7698b55c8133fa8",
+          "file": "ux-geometry.spec.ts",
+          "line": 31,
+          "column": 1
+        },
+        {
+          "title": "new phase has unknown legal scope and does not inherit whole-complex factors",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "4d329d9b83999865bf60-83aace7e77a9141cbad7",
+          "file": "ux-geometry.spec.ts",
+          "line": 61,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "ux-review.spec.ts",
+      "file": "ux-review.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "AI triage accepts a verbatim candidate without adding risk points",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 1,
+                  "status": "timedOut",
+                  "duration": 62054,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\BIGra\\codemasters8\\tests\\e2e\\ux-review.spec.ts",
+                        "column": 57,
+                        "line": 5
+                      },
+                      "message": "Error: locator.fill: Test timeout of 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Текст объявления', { exact: true })\u001b[22m\n\u001b[2m    - waiting for navigation to finish...\u001b[22m\n\u001b[2m    - navigated to \"http://127.0.0.1:5176/#/publications?add=1&complex=SQ-003\"\u001b[22m\n\u001b[2m    - waiting for \"http://127.0.0.1:5176/\" navigation to finish...\u001b[22m\n\u001b[2m    2 × navigated to \"http://127.0.0.1:5176/#/publications?add=1&complex=SQ-003\"\u001b[22m\n\u001b[2m      - waiting for navigation to finish...\u001b[22m\n\u001b[2m    5 × navigated to \"http://127.0.0.1:5176/#/publications?add=1&complex=SQ-003\"\u001b[22m\n\u001b[2m      - waiting for \"http://127.0.0.1:5176/\" navigation to finish...\u001b[22m\n\u001b[2m    - navigated to \"http://127.0.0.1:5176/#/publications?add=1&complex=SQ-003\"\u001b[22m\n\u001b[2m    - waiting for navigation to finish...\u001b[22m\n\u001b[2m    2 × navigated to \"http://127.0.0.1:5176/#/publications?add=1&complex=SQ-003\"\u001b[22m\n\u001b[2m      - waiting for \"http://127.0.0.1:5176/\" navigation to finish...\u001b[22m\n\u001b[2m    - navigated to \"http://127.0.0.1:5176/#/publications?add=1&complex=SQ-003\"\u001b[22m\n\u001b[2m    - locator resolved to <textarea rows=\"8\" required=\"\" maxlength=\"20000\" placeholder=\"Бронь квартиры — 500 000 тенге…\"></textarea>\u001b[22m\n\u001b[2m    - fill(\"Новая платная бронь квартиры 734 000 тенге. Срок сдачи в 2027 году.\")\u001b[22m\n\u001b[2m  - attempting fill action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and editable\u001b[22m\n\u001b[2m  - element was detached from the DOM, retrying\u001b[22m\n\u001b[2m    3 × waiting for \"http://127.0.0.1:5176/\" navigation to finish...\u001b[22m\n\u001b[2m      - navigated to \"http://127.0.0.1:5176/#/publications?add=1&complex=SQ-003\"\u001b[22m\n\u001b[2m    - waiting for navigation to finish...\u001b[22m\n\u001b[2m    7 × navigated to \"http://127.0.0.1:5176/#/publications?add=1&complex=SQ-003\"\u001b[22m\n\u001b[2m      - waiting for \"http://127.0.0.1:5176/\" navigation to finish...\u001b[22m\n\u001b[2m    - navigated to \"http://127.0.0.1:5176/#/publications?add=1&complex=SQ-003\"\u001b[22m\n\n\n  3 | test('AI triage accepts a verbatim candidate without adding risk points',async({page})=>{\n  4 |  await page.goto('/#/publications?add=1&complex=SQ-003');\n> 5 |  await page.getByLabel('Текст объявления',{exact:true}).fill('Новая платная бронь квартиры 734 000 тенге. Срок сдачи в 2027 году.');\n    |                                                         ^\n  6 |  await page.getByLabel('Дата публикации (пусто — не указана)',{exact:true}).fill('2026-10-19');\n  7 |  await page.getByRole('button',{name:'Проанализировать',exact:true}).click();\n  8 |  const hypothesis=page.locator('.hypothesis').filter({has:page.getByRole('button',{name:'Принять гипотезу R2',exact:true})});\n    at C:\\Users\\BIGra\\codemasters8\\tests\\e2e\\ux-review.spec.ts:5:57"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-19T11:08:26.315Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-ux-results\\ux-review-AI-triage-accept-ad498--without-adding-risk-points-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-ux-results\\ux-review-AI-triage-accept-ad498--without-adding-risk-points-chromium\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "3f1d50ab9fae84ce920e-889730ea038d2a1ab7ab",
+          "file": "ux-review.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "publications keep their filters after dossier navigation and reload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 1,
+                  "status": "interrupted",
+                  "duration": 1078,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-19T11:09:31.146Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-ux-results\\ux-review-publications-kee-f7da0-ssier-navigation-and-reload-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-ux-results\\ux-review-publications-kee-f7da0-ssier-navigation-and-reload-chromium\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "3f1d50ab9fae84ce920e-46e18eb967ce7d23d3c4",
+          "file": "ux-review.spec.ts",
+          "line": 22,
+          "column": 1
+        },
+        {
+          "title": "case deep link cannot switch its scope using a forged phase parameter",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "3f1d50ab9fae84ce920e-93cca58ef74ac4a66545",
+          "file": "ux-review.spec.ts",
+          "line": 36,
+          "column": 1
+        },
+        {
+          "title": "documented relation has independent review and does not add risk points",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "3f1d50ab9fae84ce920e-5d628f84cf216cf5e78e",
+          "file": "ux-review.spec.ts",
+          "line": 47,
+          "column": 1
+        },
+        {
+          "title": "a dated case retains its applicability period in a returned signal snapshot",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "3f1d50ab9fae84ce920e-7a204bc5341cd0fb0ec3",
+          "file": "ux-review.spec.ts",
+          "line": 76,
+          "column": 1
+        },
+        {
+          "title": "AI triage accepts a verbatim candidate without adding risk points",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "3f1d50ab9fae84ce920e-4e7e11e95c4b7b79b023",
+          "file": "ux-review.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "publications keep their filters after dossier navigation and reload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "3f1d50ab9fae84ce920e-e470df70c0f410b9b8f0",
+          "file": "ux-review.spec.ts",
+          "line": 22,
+          "column": 1
+        },
+        {
+          "title": "case deep link cannot switch its scope using a forged phase parameter",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "3f1d50ab9fae84ce920e-f12463eb21ab1e9ab9d9",
+          "file": "ux-review.spec.ts",
+          "line": 36,
+          "column": 1
+        },
+        {
+          "title": "documented relation has independent review and does not add risk points",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "3f1d50ab9fae84ce920e-3e993f4874ec2090dddd",
+          "file": "ux-review.spec.ts",
+          "line": 47,
+          "column": 1
+        },
+        {
+          "title": "a dated case retains its applicability period in a returned signal snapshot",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "3f1d50ab9fae84ce920e-72b41c68339734155957",
+          "file": "ux-review.spec.ts",
+          "line": 76,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "ux-target.spec.ts",
+      "file": "ux-target.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "target map: disabled WebGL retains a usable 2D map, markers and zoom",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "c3d496d21dfc21dbd42b-a5fd1b10c4b3eb5db878",
+          "file": "ux-target.spec.ts",
+          "line": 40,
+          "column": 1
+        },
+        {
+          "title": "target navigation: three top-level sections and publications original stays separate from score",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "c3d496d21dfc21dbd42b-7e38dbaf4e8225ab8415",
+          "file": "ux-target.spec.ts",
+          "line": 60,
+          "column": 1
+        },
+        {
+          "title": "target cases: isolated draft cannot confirm inherited facts and returned snapshot survives reload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "c3d496d21dfc21dbd42b-0e44a0a8a358b7b4523f",
+          "file": "ux-target.spec.ts",
+          "line": 75,
+          "column": 1
+        },
+        {
+          "title": "target vertical flow: manual publication becomes evidence and verified R2 in a versioned case",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "c3d496d21dfc21dbd42b-d4de215947cf51be29cd",
+          "file": "ux-target.spec.ts",
+          "line": 96,
+          "column": 1
+        },
+        {
+          "title": "target map: disabled WebGL retains a usable 2D map, markers and zoom",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "c3d496d21dfc21dbd42b-1edf69c57625178d7451",
+          "file": "ux-target.spec.ts",
+          "line": 40,
+          "column": 1
+        },
+        {
+          "title": "target navigation: three top-level sections and publications original stays separate from score",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "c3d496d21dfc21dbd42b-a47b582a9ccf2d37f4bd",
+          "file": "ux-target.spec.ts",
+          "line": 60,
+          "column": 1
+        },
+        {
+          "title": "target cases: isolated draft cannot confirm inherited facts and returned snapshot survives reload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "c3d496d21dfc21dbd42b-a804c8c3f25f1a053892",
+          "file": "ux-target.spec.ts",
+          "line": 75,
+          "column": 1
+        },
+        {
+          "title": "target vertical flow: manual publication becomes evidence and verified R2 in a versioned case",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "c3d496d21dfc21dbd42b-03158dd8ef2c47317b79",
+          "file": "ux-target.spec.ts",
+          "line": 96,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "message": "\u001b[31mTesting stopped early after 4 maximum allowed failures.\u001b[39m"
+    }
+  ],
+  "stats": {
+    "startTime": "2026-10-19T11:07:19.088Z",
+    "duration": 133829.23,
+    "expected": 0,
+    "skipped": 20,
+    "unexpected": 4,
+    "flaky": 0
+  }
+}
