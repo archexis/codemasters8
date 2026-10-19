@@ -57,6 +57,7 @@ it('migrations: loads every .sql migration sorted by name and records the applie
     '20261019000300_s4_trusted_path.sql',
     '20261019000400_s4_commissioning_material.sql',
     '20261019000500_s5_signal_cycle.sql',
+    '20261019033830_ux_case_ledger.sql',
   ]);
   // First migration created the schema; second migration seeded app_seed.
   expect((await db.query<{ to_regclass: string }>("select to_regclass('public.workspaces')")).rows[0].to_regclass).not.toBeNull();

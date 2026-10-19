@@ -37,6 +37,7 @@ export interface EvidenceInput {
 export type LegalBasisType = 'unknown' | 'absent' | 'guarantee' | 'mio-permit';
 export type LegalBasisStatus = 'unknown' | 'absent-verified' | 'verified';
 export interface LegalBasis {
+  period?: ApplicabilityPeriod;
   type: LegalBasisType; status: LegalBasisStatus;
   source: string; checkedAt: string; // YYYY-MM-DD даты сверки
   reviewText: string; // сохранённое описание области сверки и её результата
@@ -209,6 +210,14 @@ export const SCHEMA_VERSION = 3;
 /** S2 (C2). Поддерживаемый максимум: выше — future version, запись запрещена. */
 export const MAX_SUPPORTED_SCHEMA_VERSION = 3;
 export interface AppState {
+  relations?: TypedRelation[];
+  geometries?: MapGeometry[];
+  phases?: ConstructionPhase[];
+  artifacts?: EvidenceArtifact[];
+  claims?: ExtractedClaim[];
+  assertions?: FactAssertion[];
+  cases?: InvestigationCase[];
+  caseSnapshots?: CaseSignalSnapshot[];
   /**
    * S2 (C2). Канон после loadState — 3. Поле опционально, потому что
    * отсутствует в legacy v2: такие workspace мигрируют при загрузке
@@ -227,6 +236,7 @@ export interface Registry { name: string; url: string; note: string }
 
 /** C1/S1.1. Входные команды: evidence частичное, reviewer запрещён (автор — серверный). */
 export type Command =
+  | InvestigationCommand
   | { type: 'factor'; zkId: string; code: Code; status: FactorStatus; evidence: EvidenceInput; comment: string }
   | { type: 'ad'; ad: Ad; hypothesis?: { code: Code; quote: string; evidenceText?: string; beforeCommissioning?: BeforeCommissioning; runId?: string; hypothesisId?: string }; decision: 'confirmed' | 'rejected' | 'saved'; comment: string; modelReason?: string }
   | { type: 'media'; media: Media }
@@ -238,3 +248,74 @@ export type Command =
 export type ParsedCommand =
   | { type: 'factor'; zkId: string; code: Code; status: FactorStatus; evidence: Evidence; comment: string }
   | Exclude<Command, { type: 'factor' }>;
+
+export interface ApplicabilityPeriod { from: string; to?: string }
+export interface ConstructionPhase {
+  id: string; complexId: string; name: string; legalBasis?: LegalBasis; period?: ApplicabilityPeriod;
+  readinessClaimed?: number | null; readinessClaimedSource?: ClaimedSource | null;
+  readinessConfirmed?: number | null; readinessSources?: ClaimedSource[];
+}
+export interface MapGeometry {
+  id: string; complexId: string; phaseId?: string; source: string; verified: boolean;
+  coordinates: [number,number][][]; heightMeters?: number;
+}
+export interface EvidenceArtifact {
+  id: string; complexId: string; phaseId?: string;
+  kind: 'publication' | 'document' | 'relationship' | 'event' | 'observation' | 'legal-review';
+  source: string; text: string; date?: string; adId?: string; mediaId?: string; url?: string;
+  capturedAt: string; sha256?: string; bytes?: number;
+  origin?: 'manual' | 'import' | 'demo' | 'official';
+  availability?: 'ok' | 'unavailable' | 'needs_auth';
+  pageNumber?: number;
+}
+export interface ExtractedClaim {
+  period?: ApplicabilityPeriod;
+  id: string; complexId: string; phaseId?: string; artifactId: string; code: Code; quote: string;
+  reason?: string; runId?: string; hypothesisId?: string;
+  quoteStart?: number; quoteEnd?: number;
+  triage?: 'accepted' | 'rejected'; triagedBy?: string; triagedAt?: string; triageComment?: string;
+}
+export interface FactAssertion {
+  period?: ApplicabilityPeriod;
+  id: string; caseId: string; claimId: string; code: Code; status: 'candidate' | 'verified' | 'rejected';
+  evidence: Evidence; actor: string; at: string; comment: string;
+}
+export interface InvestigationCase {
+  period?: ApplicabilityPeriod;
+  id: string; complexId: string; phaseId?: string; title?: string; owner: string;
+  status: 'draft' | 'confirmed' | 'returned'; artifactIds: string[]; createdAt: string; updatedAt: string;
+}
+export interface CaseSignalSnapshot {
+  relations?: TypedRelation[];
+  period?: ApplicabilityPeriod;
+  imported?: boolean;
+  id: string; caseId: string; complexId: string; phaseId?: string; revision: number;
+  status: 'confirmed' | 'returned'; actor: string; at: string; comment: string;
+  complex: Complex; phase?: ConstructionPhase; assertions: FactAssertion[]; artifacts: EvidenceArtifact[];
+  ads?: Ad[]; mediaManifest?: SignalMaterialManifest[];
+  score: number; zone: Zone; weightsVersion: number; limitations: string[]; demo: boolean;
+}
+export type InvestigationCommand =
+  | {type:'relation.register';relation:RelationInput}
+  | {type:'relation.review';relationId:string;status:'verified'|'rejected';comment:string}
+  | { type: 'geometry.register'; geometry: MapGeometry }
+  | { type: 'phase.create'; phase: ConstructionPhase }
+  | { type: 'phase.update'; phase: ConstructionPhase }
+  | { type: 'artifact.register'; artifact: Omit<EvidenceArtifact, 'capturedAt' | 'sha256' | 'bytes'> }
+  | { type: 'case.create'; id: string; complexId: string; phaseId?: string; title?: string; period?: ApplicabilityPeriod }
+  | { type: 'case.attach'; caseId: string; artifactId: string }
+  | { type: 'claim.propose'; claim: Omit<ExtractedClaim, 'triage' | 'triagedBy' | 'triagedAt' | 'triageComment' | 'quoteStart' | 'quoteEnd'> }
+  | { type: 'ai.review'; claimId: string; decision: 'accepted' | 'rejected'; comment: string }
+  | { type: 'fact.review'; caseId: string; claimId: string; status: 'verified' | 'rejected'; evidence: EvidenceInput; comment: string }
+  | { type: 'case.decide'; caseId: string; status: 'confirmed' | 'returned'; comment: string }
+  | { type: 'case.reopen'; caseId: string; comment: string };
+
+export type RelationType='developer_of'|'authorized_company_of'|'contractor_of'|'advertises'|'covered_by'|'mentions'|'same_ad_account'|'located_on';
+export interface RelationInput {
+  id:string; complexId:string; phaseId?:string; fromId:string; toId:string; relationType:RelationType;
+  sourceArtifactIds:string[]; matchMethod:'manual'|'exact-id'|'name'|'address';
+}
+export interface TypedRelation extends RelationInput {
+  verificationStatus:'candidate'|'verified'|'rejected';capturedAt:string;actor:string;
+  reviewedBy?:string;reviewedAt?:string;reviewComment?:string;
+}

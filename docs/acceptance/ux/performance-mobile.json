@@ -1,0 +1,87 @@
+{
+  "measuredAt": "2026-10-19T04:25:27.346Z",
+  "project": "mobile",
+  "profile": {
+    "complexes": 100,
+    "publications": 1000,
+    "events": 10000,
+    "imageCacheMB": 0
+  },
+  "environment": {
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1",
+    "logicalCPUs": 16,
+    "viewport": {
+      "width": 390,
+      "height": 664
+    },
+    "devicePixelRatio": 3
+  },
+  "mapRendering": "maplibre-webgl",
+  "xrayCachedUI": {
+    "p50Ms": 92,
+    "p95Ms": 156,
+    "samples": [
+      25.59999999962747,
+      84.60000000009313,
+      182.10000000009313,
+      106.79999999981374,
+      96.3000000002794,
+      113.6999999997206,
+      115.8000000002794,
+      156,
+      88.29999999981374,
+      96.8000000002794,
+      108.89999999990687,
+      91.5,
+      102.60000000009313,
+      91.89999999990687,
+      94.79999999981374,
+      84.60000000009313,
+      88.79999999981374,
+      83.10000000009313,
+      85.8000000002794,
+      92
+    ]
+  },
+  "dossierCachedShell": {
+    "p50Ms": 33.39999999990687,
+    "p95Ms": 49.200000000186265,
+    "samples": [
+      52.10000000009313,
+      20.299999999813735,
+      49.200000000186265,
+      28.299999999813735,
+      46.60000000009313,
+      20.399999999906868,
+      45.89999999990687,
+      21.100000000093132,
+      33.6999999997206,
+      33,
+      32.299999999813735,
+      34.200000000186265,
+      33.700000000186265,
+      32.299999999813735,
+      33.39999999990687,
+      33.39999999990687,
+      32.700000000186265,
+      33.8000000002794,
+      34.1999999997206,
+      33.200000000186265
+    ]
+  },
+  "fiveFurtherTabCyclesHeap": {
+    "beforeUsedBytes": 55913076,
+    "afterUsedBytes": 56363272,
+    "deltaBytes": 450196,
+    "forcedGC": true
+  },
+  "errors": [],
+  "limitations": [
+    "D1 entity/event counts; 5–10MB image cache is not included.",
+    "Headless Chromium on execution host; hardware is not asserted to match reference D1 PC.",
+    "Basemap tiles are stubbed with a tiny PNG to isolate cached UI controls.",
+    "Timings measure DOM control activation to two animation frames; map worker/GPU completion is not measured.",
+    "Cold-start timing, sustained FPS, WebGL draw calls, and actual device GPU memory are not measured.",
+    "Single browser process; 20 samples are a sanity check, not a production performance guarantee."
+  ]
+}

@@ -27,6 +27,7 @@
  */
 
 import type { AppState } from './types';
+import { checkInvestigationRefs } from './validation';
 
 /** Версия формата backup-пакета. Не путать со schemaVersion workspace. */
 export const BACKUP_FORMAT_VERSION = 1;
@@ -384,6 +385,7 @@ export async function validateBackupPackage(zip: Uint8Array): Promise<ValidatedB
   if (!Array.isArray(workspace.complexes) || !Array.isArray(workspace.ads) || !Array.isArray(workspace.media)) {
     throw new Error('BACKUP_CORRUPT: workspace.json без complexes/ads/media');
   }
+  checkInvestigationRefs(workspace);
   const schemaVersion = workspace.schemaVersion ?? 2;
   if (schemaVersion > 3) throw new Error(`BACKUP_FUTURE_SCHEMA: schemaVersion ${schemaVersion} не поддерживается`);
   // Ссылки: каждое media workspace — в пакете; evidence.mediaIds/adId — в workspace.
@@ -435,6 +437,9 @@ export function previewRestore(state: AppState): RestorePreview {
  * Seed-комплексы (без решений) пустоту не нарушают — они заменяются целиком.
  */
 export function isRestoreTargetEmpty(state: AppState): boolean {
+  if(state.relations?.length) return false;
+  if (state.geometries?.length) return false;
+  if (state.cases?.length || state.artifacts?.length || state.claims?.length || state.assertions?.length || state.caseSnapshots?.length) return false;
   if (state.ads.length > 0 || state.media.length > 0 || state.audit.length > 0) return false;
   return !Object.values(state.signals ?? {}).some((s) => s.status !== 'draft');
 }
@@ -451,6 +456,12 @@ export function applyImportTransform(state: AppState, importer: string): AppStat
     delete next[key];
   }
   const preview = previewRestore(state);
+  if(next.relations) next.relations=next.relations.map(relation=>({...relation,verificationStatus:relation.verificationStatus==='verified'?'candidate':relation.verificationStatus}));
+  if(next.caseSnapshots) next.caseSnapshots=next.caseSnapshots.map(snapshot=>({...snapshot,imported:true}));
+  if(next.geometries) next.geometries=next.geometries.map(geometry=>({...geometry,verified:false}));
+  // Imported decisions remain historical snapshots; active facts need a new review.
+  if (next.assertions) next.assertions = next.assertions.map(item => item.status === 'verified' ? { ...item, status: 'candidate' as const } : item);
+  if (next.cases) next.cases = next.cases.map(item => ({ ...item, status: 'draft' as const, owner: importer }));
   for (const z of next.complexes as AppState['complexes']) {
     z.origin = 'imported';
     z.factors = (z.factors ?? []).map((f) =>

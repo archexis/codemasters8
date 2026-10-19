@@ -550,6 +550,17 @@ async function commitDemo(base: AppState, payload: Command, commandId: string, r
       localPayload = { type: 'media', media: stripIntegrity(cleanPayload.media) };
     }
     const next = applyCommand(env.state, localPayload, reviewer, { commandId, sourceVersion: env.version });
+    if (cleanPayload.type === 'artifact.register') {
+      const artifact = next.artifacts?.find(a => a.id === cleanPayload.artifact.id);
+      if (artifact) {
+        const bytes = new TextEncoder().encode(artifact.text);
+        artifact.bytes = bytes.byteLength;
+        if (globalThis.crypto?.subtle) {
+          const hash = await globalThis.crypto.subtle.digest('SHA-256', bytes);
+          artifact.sha256 = [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+      }
+    }
     if (fullMedia) {
       next.media.push(fullMedia);
       if (cleanPayload.type === 'ad' && cleanPayload.decision === 'confirmed' && cleanPayload.hypothesis) {
@@ -594,7 +605,10 @@ function commandZk(command: Command): string {
   if (command.type === 'factor' || command.type === 'readiness' || command.type === 'signal') return command.zkId;
   if (command.type === 'ad') return command.ad.zkId;
   if (command.type === 'media') return command.media.zkId;
-  return command.complex.id;
+  if (command.type === 'complex') return command.complex.id;
+  // Investigation commands reference cases/claims instead of accepting a raw
+  // file attachment. Their artifacts link already committed media explicitly.
+  throw new Error('Вложение допустимо только для команды объекта или публикации.');
 }
 
 function stripIntegrity(media: Media): Media {

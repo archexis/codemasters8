@@ -6,6 +6,8 @@
   import { parseAdText, parseCsvAds, resolveCsvHint, detectPlatform, adDedupeKey } from '../lib/parser';
   import { isCalendarDate } from '../lib/validation';
   import type { CsvParseResult, CsvRow } from '../lib/types';
+  import {supabase} from '../lib/supabase';
+  import {extractImage} from '../lib/workspace-api';
   import {
     uploadFile, unstageFileForCommand, stageFileForCommand, removeStagedFile, recordCleanupRetry,
     withCommandId, attachStagedMedia, newCommandId, getSessionGeneration, onSessionChange,
@@ -14,44 +16,128 @@
   let { workspace, zkId = '', initialText = '', commit }: { workspace: AppState; zkId?: string; initialText?: string; commit: (command: Command) => Promise<void> } = $props();
   let selected = $state(untrack(() => zkId || workspace.complexes[0]?.id || ''));
   let text = $state(untrack(() => initialText)); let url = $state(''); let account = $state(''); let platform = $state('');
-  let date = $state(new Date().toISOString().slice(0,10)); let csv = $state('');
+  let date = $state(''); let csv = $state('');
  let csvRows = $state<CsvParseResult | null>(null);
  let csvActiveId = $state<string | null>(null);
  let csvConfirmed = $state(false);
   let result = $state<Analysis | null>(null); let analyzedText = $state(''); let analyzedZk = $state('');
   let error = $state(''); let busy = $state(false); let saved = $state(false); let files = $state<FileList>();
-  let analystComment = $state(''); let evidenceText = $state('');
-  let commissioningSource=$state(''); let commissioningDate=$state('');
   let generation = 0;
   let controller: AbortController | null = null;
   let snapshot = $state<AiRunInput | null>(null);
-  let snapshotSession = -1;
   let comments = $state<Record<string,string>>({});
   let reviewed = $state<Record<string,string>>({});
   let publishedAdId = $state('');
+  let phaseId = $state('');
   let saving=$state(false);
-  let reviewIntents=new Map<string,{id:string;command:Command}>();
+  $effect(()=>{selected;phaseId='';});
+  const phases = $derived((workspace.phases ?? []).filter(p=>p.complexId===selected));
+  interface ReviewIntent {
+    claimId:string; claimCommand:Command; claimCommandId:string; claimDone:boolean;
+    reviewCommand:Command; reviewCommandId:string; reviewDone:boolean;
+  }
+  interface MaterialIntent {
+    key:string; session:number; adId:string; existing:boolean; adCommandId:string; adCommand:Command|null; adDone:boolean;
+    mediaId:string; mediaCommandId:string; media:Media|null; mediaDone:boolean;
+    artifactId:string; artifactCommandId:string; artifactCommand:Command|null; artifactDone:boolean;
+    reviews:Map<string,ReviewIntent>;
+  }
+  const materialIntents=new Map<string,MaterialIntent>();
+  function materialKey() { return JSON.stringify([selected,phaseId,text,url,account,date,source.label,currentFileSig()]); }
+  $effect(()=>{materialKey();saved=false;publishedAdId='';reviewed={};});
+  async function saveMaterial(hypothesis?:Hypothesis, decision:'accepted'|'rejected'='accepted') {
+    if(saving) return;
+    error=''; busy=true; saving=true;
+    const session=getSessionGeneration();
+    let active:MaterialIntent|undefined;
+    const assertCurrent=()=>{
+      if(session!==getSessionGeneration()) throw new SessionSupersededError();
+      if(active && materialKey()!==active.key) throw new Error('Ввод изменён во время сохранения. Верните исходные поля для повтора или сохраните новый материал.');
+    };
+    try {
+      if(!text.trim() || !selected) throw new Error('Укажите текст и ЖК.');
+      if(date && !isCalendarDate(date)) throw new Error('Укажите реальную дату публикации или оставьте поле пустым.');
+      if(hypothesis && (!result || stale || !text.includes(hypothesis.quote))) throw new Error('Нужна точная цитата из актуального оригинала.');
+      const comment=hypothesis ? comments[hypothesis.id ?? hypothesis.code]?.trim() : 'Ручное сохранение источника';
+      if(!comment) throw new Error('Укажите обоснование триажа.');
+      const key=materialKey();
+      active=materialIntents.get(key);
+      if(!active) {
+        const existing=workspace.ads.find(a=>adDedupeKey(a.zkId,a.text)===adDedupeKey(selected,text));
+        active={key,session,adId:existing?.id ?? `AD-${newCommandId()}`,existing:!!existing,adCommandId:newCommandId(),adCommand:null,adDone:!!existing,mediaId:newCommandId(),mediaCommandId:newCommandId(),media:null,mediaDone:false,artifactId:`ART-${newCommandId()}`,artifactCommandId:newCommandId(),artifactCommand:null,artifactDone:false,reviews:new Map()};
+        // Reuse the immutable original, including its exact text and publication date.
+        const original=existing ? $state.snapshot(existing) : {id:active.adId,zkId:selected,text,url,account,date:date || null,platform:source.label,captureAt:new Date().toISOString(),...(result && !stale ? {analysis:$state.snapshot(result)} : {})};
+        if(hypothesis && !original.text.includes(hypothesis.quote)) throw new Error('Текст уже сохранён в иной записи. Откройте исходную публикацию и повторите анализ её точного текста.');
+        active.adCommand={type:'ad',ad:original,decision:'saved',comment:'Сохранение первоисточника без подтверждения факторов'};
+        active.artifactCommand={type:'artifact.register',artifact:{id:active.artifactId,complexId:selected,...(phaseId ? {phaseId} : {}),kind:'publication',source:original.platform || 'Ручной ввод',text:original.text,...(original.date ? {date:original.date} : {}),adId:original.id,...(original.url ? {url:original.url} : {})}};
+        const priorArtifact=workspace.artifacts?.find(a=>a.adId===original.id && a.phaseId===(phaseId || undefined) && (!files?.[0] || !!a.mediaId));
+        if(priorArtifact && !files?.[0]) {active.artifactId=priorArtifact.id;active.artifactDone=true;}
+        materialIntents.set(key,active);
+      }
+      if(active.session!==session) throw new SessionSupersededError();
+      const file=files?.[0];
+      if(file && !active.media) {
+        active.media=await uploadFile(file,selected,{mediaId:active.mediaId});
+        const fileCommandId=active.existing ? active.mediaCommandId : active.adCommandId;
+        stageFileForCommand(fileCommandId,active.media.path);
+        assertCurrent();
+        if(active.adCommand?.type==='ad' && !active.existing) active.adCommand=attachStagedMedia(active.adCommand,active.media);
+        if(active.artifactCommand?.type==='artifact.register') active.artifactCommand.artifact.mediaId=active.media.id;
+      }
+      assertCurrent();
+      if(!active.adDone) {
+        await commit(withCommandId(active.adCommand!,active.adCommandId));
+        active.adDone=true;
+        if(active.media) {active.mediaDone=true;unstageFileForCommand(active.adCommandId,active.media.path);}
+        assertCurrent();
+      }
+      if(active.existing && active.media && !active.mediaDone) {
+        await commit(withCommandId({type:'media',media:active.media},active.mediaCommandId));
+        active.mediaDone=true;unstageFileForCommand(active.mediaCommandId,active.media.path);
+        assertCurrent();
+      }
+      if(!active.artifactDone) {
+        await commit(withCommandId(active.artifactCommand!,active.artifactCommandId));
+        active.artifactDone=true;assertCurrent();
+      }
+      if(hypothesis) {
+        const reviewKey=JSON.stringify([hypothesis.id ?? '',hypothesis.code,hypothesis.quote,result?.runId ?? '']);
+        let review=active.reviews.get(reviewKey);
+        const prior=workspace.claims?.find(c=>c.artifactId===active!.artifactId && c.code===hypothesis.code && c.quote===hypothesis.quote && c.runId===result?.runId);
+        if(!review) {
+          const claimId=prior?.id ?? `CL-${newCommandId()}`;
+          review={claimId,claimCommandId:newCommandId(),claimDone:!!prior,claimCommand:{type:'claim.propose',claim:{id:claimId,complexId:selected,...(phaseId ? {phaseId} : {}),artifactId:active.artifactId,code:hypothesis.code,quote:hypothesis.quote,reason:hypothesis.reason,...(result?.runId ? {runId:result.runId,hypothesisId:hypothesis.id} : {})}},reviewCommandId:newCommandId(),reviewDone:false,reviewCommand:{type:'ai.review',claimId,decision,comment}};
+          active.reviews.set(reviewKey,review);
+        } else if(review.reviewCommand.type==='ai.review' && (review.reviewCommand.decision!==decision || review.reviewCommand.comment!==comment)) {
+          if(!review.reviewDone) throw new UnknownCommitResultError('Сначала повторите прежний триаж с тем же обоснованием: его подтверждение ещё не получено.',review.reviewCommandId);
+          review.reviewCommand={type:'ai.review',claimId:review.claimId,decision,comment};review.reviewCommandId=newCommandId();review.reviewDone=false;
+        }
+        if(!review.claimDone) {await commit(withCommandId(review.claimCommand,review.claimCommandId));review.claimDone=true;assertCurrent();}
+        if(!review.reviewDone) {await commit(withCommandId(review.reviewCommand,review.reviewCommandId));review.reviewDone=true;assertCurrent();}
+        reviewed={...reviewed,[hypothesis.id ?? hypothesis.code]:decision};
+      }
+      assertCurrent();publishedAdId=active.adId;saved=true;
+    } catch(e) {
+      if(session!==getSessionGeneration()) return;
+      const unknown=e instanceof StaleConflictError || e instanceof UnknownCommitResultError || e instanceof SessionSupersededError;
+      error=e instanceof Error ? e.message : String(e);
+      // Acknowledged media stays attached even when a later workflow step fails.
+      if(!unknown && active?.media && !active.mediaDone) {
+        const failedPath=active.media.path;
+        try {await removeStagedFile(failedPath,active.existing ? active.mediaCommandId : active.adCommandId);active.media=null;active.adCommand=null;materialIntents.delete(active.key);}
+        catch(cleanupError) {recordCleanupRetry(failedPath);error+=` Очистка файла будет повторена: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`;}
+      }
+    } finally {if(session===getSessionGeneration()) {busy=false;saving=false;}}
+  }
   function cancelRun() { generation++; controller?.abort(); controller=null; busy=false; }
   onDestroy(cancelRun);
-  onMount(()=>onSessionChange(()=>{cancelRun(); result=null; snapshot=null; intent=null; publishedAdId='';}));
+  onMount(()=>onSessionChange(()=>{cancelRun(); result=null; snapshot=null; materialIntents.clear(); saving=false; publishedAdId='';error='';saved=false;comments={};reviewed={};text='';url='';account='';platform='';date='';files=undefined;selected='';phaseId='';csv='';csvRows=null;csvActiveId=null;csvConfirmed=false;}));
+  async function ocrImage(){const file=files?.[0];if(!file)return;const session=getSessionGeneration();const signature=currentFileSig();busy=true;error='';try{const output=await extractImage(file);if(session!==getSessionGeneration()||signature!==currentFileSig())return;text=output.text;result=null;snapshot=null;saved=false;if(!text.trim())throw new Error('Текст не распознан. Введите содержание вручную.');}catch(e){if(session===getSessionGeneration())error=e instanceof Error?e.message:String(e);}finally{if(session===getSessionGeneration())busy=false;}}
   function currentInput():AiRunInput {
     const file=files?.[0];
     return {text,zkId:selected,url,account,date:date.trim() || null,platform:source.label,...(file ? {attachments:[{name:file.name,size:file.size,type:file.type,lastModified:file.lastModified}]} : {})};
   }
 
-  /**
-   * S2.3 (C3). Намерение сохранения: стабильные adId/mediaId/path/commandId на
-   * всё время жизни одного результата анализа. Retry (потеря ответа, stale,
-   * cleanup) использует ПРЕЖНИЕ ID — новых сущностей не создаётся. Сброс при
-   * новом анализе, смене текста/объекта/файла.
-   */
-  interface SaveIntent {
-    commandId: string; adId: string; mediaId: string;
-    path: string | null; media: Media | null;
-    resultRef: Analysis | null; fileSig: string;
-    command: Command | null;
-  }
-  let intent = $state<SaveIntent | null>(null);
   function currentFileSig(): string {
     const f = files?.[0];
     return f ? `${f.name}:${f.size}:${f.lastModified}` : '';
@@ -89,121 +175,16 @@
   const stale = $derived(!snapshot || canonicalRunInput(currentInput()) !== canonicalRunInput(snapshot));
   function preset(id: string) { selected = id; text = workspace.ads.find(a => a.zkId === id)?.text || ''; result = null; saved = false; }
   async function run() {
+    if(saving) return;
     cancelRun();
-    error = ''; result = null; saved = false; intent = null; reviewed={}; comments={}; publishedAdId=''; reviewIntents.clear(); busy = true;
+    error = ''; result = null; saved = false; reviewed={}; comments={}; publishedAdId=''; busy = true;
     const request = ++generation; const session=getSessionGeneration(); const input=currentInput();
-    snapshot=structuredClone(input); snapshotSession=session; controller=new AbortController();
+    snapshot=structuredClone(input); controller=new AbortController();
     try {
       const output = await analyze(input,{runId:newRunId(),signal:controller.signal});
       if (generation === request && session===getSessionGeneration()) { result = output; analyzedText = input.text; analyzedZk = input.zkId; }
     } catch (e) { if(generation===request && session===getSessionGeneration()) error=e instanceof Error ? e.message : String(e); }
     finally { if (generation === request && session===getSessionGeneration()) busy = false; }
-  }
-  /**
-   * S2.3 (C3). Публикация с вложением как единое решение: upload → ОДНА команда
-   * (ad + evidence/media/decision) → saved=true только после ACK.
-   *  - upload fail: решения нет, commit не вызывается;
-   *  - известный отказ RPC: удаляем ТОЛЬКО staged-файлы этого commandId;
-   *    cleanup-fail → запись в очередь повтора, молча не глотаем;
-   *  - timeout/неизвестный исход: файл НЕ удаляем, retry тем же commandId;
-   *  - stale: файл НЕ удаляем, draft сохранён, решение — заново вручную.
-   * Нельзя просто всегда удалять файл в catch.
-   */
-  async function save(decision: 'saved' | 'confirmed' | 'rejected', hypothesis?: Hypothesis) {
-    busy = true; saving=true; error = '';
-    const saveRequest=generation;
-    const saveSession=getSessionGeneration();
-    try {
-      if(saveSession!==snapshotSession) throw new SessionSupersededError();
-      analystComment=hypothesis ? comments[hypothesis.id ?? hypothesis.code] ?? '' : '';
-      if (stale) throw new Error('Текст или объект изменён. Запустите анализ повторно.');
-      if (decision !== 'saved' && !analystComment.trim()) throw new Error('Укажите обоснование решения: reason модели решением не является.');
-      if (!result) throw new Error('Сначала запустите анализ.');
-      if (publishedAdId && hypothesis) {
-        const evidence={source:source.label || 'Ручной ввод',date:date || new Date().toISOString().slice(0,10),kind:'publication' as const,adId:publishedAdId,quote:hypothesis.quote,...(result.runId ? {runId:result.runId,hypothesisId:hypothesis.id} : {}),...(hypothesis.code==='R3' ? {text:evidenceText.trim(),...(result.runId && decision==='confirmed' ? {beforeCommissioning:{source:commissioningSource.trim(),date:commissioningDate,text:evidenceText.trim()}} : {})} : {})};
-        const key=hypothesis.id ?? hypothesis.code;
-        const cmd:Command={type:'factor',zkId:selected,code:hypothesis.code,status:decision==='confirmed' ? 'confirmed' : 'rejected',evidence,comment:analystComment.trim()};
-        const pending=reviewIntents.get(key);
-        if(pending && JSON.stringify(pending.command)!==JSON.stringify(cmd)) throw new UnknownCommitResultError('Сначала повторите прежнее решение с тем же обоснованием: его ACK ещё не получен.',pending.id);
-        const next=pending ?? {id:newCommandId(),command:cmd}; reviewIntents.set(key,next);
-        await commit(withCommandId(next.command,next.id));
-        reviewIntents.delete(key);
-        if(saveSession!==getSessionGeneration()) return;
-        reviewed={...reviewed,[hypothesis.id ?? hypothesis.code]:decision}; saved=true; return;
-      }
-      const fileSig = currentFileSig();
-      if (!intent || intent.resultRef !== result || intent.fileSig !== fileSig) {
-        intent = {
-          commandId: newCommandId(), adId: `AD-${newCommandId()}`, mediaId: newCommandId(),
-          path: null, media: null, resultRef: result, fileSig, command: null,
-        };
-      }
-      const active = intent;
-      const file = files?.[0];
-      // A lost ACK must replay the exact payload, including captureAt and metadata.
-      if (active.command) {
-        await commit(withCommandId(active.command, active.commandId));
-        if (active.path) unstageFileForCommand(active.commandId, active.path);
-        if(saveSession!==getSessionGeneration()) return;
-        publishedAdId=workspace.ads.find(a => a.zkId===selected && adDedupeKey(a.zkId,a.text)===adDedupeKey(selected,text))?.id ?? active.adId; intent=null; if(hypothesis) reviewed={...reviewed,[hypothesis.id ?? hypothesis.code]:decision}; saved = true;
-        return;
-      }
-      // 1. Upload до финального commit. Повтор — тем же mediaId (тот же путь).
-      if (file && !active.media) {
-        const uploaded = await uploadFile(file, selected, { mediaId: active.mediaId });
-        active.media = uploaded;
-        active.path = uploaded.path;
-        stageFileForCommand(active.commandId, uploaded.path);
-      }
-      if(saveSession!==getSessionGeneration() || saveRequest!==generation) throw new SessionSupersededError();
-      if(stale) throw new Error('Ввод изменён во время загрузки файла. Повторите анализ.');
-      // 2. Одна команда: публикация + вложение + evidence/решение.
-      const ad: Ad = { id: active.adId, zkId: selected, text, url, account, date: date.trim() ? date : null, platform: source.label, captureAt: new Date().toISOString(), analysis: result! };
-      // Гипотеза уходит урезанной {code, quote}; reason модели — отдельно в modelReason.
-      const wire = hypothesis ? { code: hypothesis.code, quote: hypothesis.quote,
-        ...(result.runId ? {runId:result.runId,hypothesisId:hypothesis.id} : {}),
-        ...(hypothesis.code === 'R3' ? { evidenceText: evidenceText.trim(),...(result.runId && decision==='confirmed' ? {beforeCommissioning:{source:commissioningSource.trim(),date:commissioningDate,text:evidenceText.trim()}} : {}) } : {}) } : undefined;
-      let cmd: Command = {
-        type: 'ad', ad, decision, hypothesis: wire,
-        comment: decision === 'saved' ? 'Ручная проверка публикации' : analystComment.trim(),
-        modelReason: hypothesis?.reason,
-      };
-      if (active.media) {
-        const attachment: Media = { ...active.media, note: `Источник публикации ${active.adId}` };
-        cmd = attachStagedMedia(cmd, attachment);
-      }
-      active.command = cmd;
-      await commit(withCommandId(active.command, active.commandId));
-      // 3. ACK получен: файл принят (ссылка в состоянии), убрать из staged БЕЗ удаления.
-      if (active.path) unstageFileForCommand(active.commandId, active.path);
-      else unstageFileForCommand(active.commandId);
-      if(saveSession!==getSessionGeneration()) return;
-      publishedAdId=workspace.ads.find(a => a.zkId===selected && adDedupeKey(a.zkId,a.text)===adDedupeKey(selected,text))?.id ?? active.adId; intent=null; if(hypothesis) reviewed={...reviewed,[hypothesis.id ?? hypothesis.code]:decision}; saved = true;
-    } catch (e) {
-      if(saveSession!==getSessionGeneration()) return;
-      if (e instanceof StaleConflictError || e instanceof UnknownCommitResultError || e instanceof SessionSupersededError) {
-        // Исход неизвестен или состояние ушло вперёд: файл НЕ удаляем,
-        // повтор тем же commandId безопасен (квитанция).
-        error = e instanceof Error ? e.message : String(e);
-      } else {
-        // Известный отказ RPC: чистим ТОЛЬКО staged-файлы этого намерения.
-        const msg = e instanceof Error ? e.message : String(e);
-        if(hypothesis) reviewIntents.delete(hypothesis.id ?? hypothesis.code);
-        const active = intent;
-        intent = null;
-        if (active?.path) {
-          try {
-            await removeStagedFile(active.path, active.commandId);
-          } catch (cleanupErr) {
-            recordCleanupRetry(active.path);
-            const cmsg = cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr);
-            error = `${msg} (очистка staged-файла не удалась: ${cmsg}; повтор запланирован)`;
-            return;
-          }
-        }
-        error = msg;
-      }
-    } finally { saving=false; if(saveSession===getSessionGeneration()) busy = false; }
   }
   /**
    * S3.3 (C4). Построчный CSV: preview → выбор одной валидной строки →
@@ -230,7 +211,7 @@
     date = row.date ?? ''; // неизвестна → null, не предыдущая/сегодня
     selected = row.mappedZkId ?? '';
     result = null; analyzedText = ''; analyzedZk = '';
-    error = ''; saved = false; intent = null; analystComment = ''; csvSaveNote = '';
+    error = ''; saved = false; csvSaveNote = '';
     files = undefined;
     csvActiveId = row.rowId; csvConfirmed = false;
   }
@@ -288,31 +269,33 @@
     <h2>01 / Исходные данные</h2>
     <div class="actions">{#each ['SQ-001', 'SQ-002', 'SQ-003'] as id, i}<button type="button" class="small" onclick={() => preset(id)}>Пример {String.fromCharCode(65 + i)}</button>{/each}</div>
     <label>Объект<select required bind:value={selected}>{#each workspace.complexes as z}<option value={z.id}>{z.name} · {z.id}</option>{/each}</select></label>
-    <label>Текст объявления<textarea required maxlength="20000" rows="8" bind:value={text} placeholder="Бронь квартиры — 500 000 тенге…"></textarea></label>
+    <label>Очередь<select bind:value={phaseId}><option value="">Очередь не определена / весь ЖК</option>{#each phases as p}<option value={p.id}>{p.name}</option>{/each}</select></label><label>Текст объявления<textarea required maxlength="20000" rows="8" bind:value={text} placeholder="Бронь квартиры — 500 000 тенге…"></textarea></label>
     <div class="form-grid"><label>Ссылка на источник<input type="url" bind:value={url} placeholder="https://"/></label><label>Площадка<input bind:value={platform} placeholder="Krisha.kz, Telegram…"/></label><label>Аккаунт<input bind:value={account}/></label><label>Дата публикации (пусто — не указана)<input type="date" bind:value={date}/></label></div>
     <p class="muted text-xs">Источник: {source.label} · определён {viaLabel(source.via)}. Публикация: {date.trim() ? date : 'не указана'}; фиксация — момент сохранения, датой публикации не считается. Система не загружает страницы по ссылке.</p>
-    <label>Скриншот / документ<input type="file" accept="image/png,image/jpeg,image/webp,application/pdf" bind:files/></label>
-    {#if busy}<button type="button" onclick={cancelRun}>Отменить анализ</button>{/if}
+    <label>Скриншот / документ<input type="file" accept="image/png,image/jpeg,image/webp,application/pdf" bind:files/></label>{#if supabase}<button type="button" disabled={busy||!files?.[0]?.type.startsWith('image/')} onclick={ocrImage}>Распознать изображение</button>{/if}
+    {#if busy && !saving}<button type="button" onclick={cancelRun}>Отменить анализ</button>{/if}
     <button class="primary" disabled={saving || !selected}>{busy ? 'Обработка…' : 'Проанализировать'}</button>
+    <button type="button" disabled={busy || !text.trim() || !selected} onclick={()=>saveMaterial()}>Сохранить материал без AI</button>
+    {#if saved && publishedAdId}<p class="success" role="status">Материал сохранён: {publishedAdId}. Его можно добавить в материалы дела.</p>{/if}
   </form>
   <section class="panel space-y-4" aria-live="polite">
-    <h2>02 / Анализ и решение</h2>
+    <h2>02 / Гипотезы ИИ</h2><p class="notice">Принятие гипотезы передаёт её на проверку. Баллы меняются только после проверки факта в деле.</p>
     {#if error}<p class="error" role="alert">{error}</p>{/if}
     {#if result}
       <span class="badge">{result.engine}</span>
       {#if stale}<p class="notice">Ввод изменён — повторите анализ перед сохранением.</p>{/if}
-      {#each result.hypotheses as h}<article class="hypothesis"><b>{h.code} · гипотеза</b><blockquote>«{h.quote}»</blockquote><p>{h.reason}</p>{#if h.code === 'R3'}{#if result.realAI}<label>Источник материала о вводе<input bind:value={commissioningSource}/></label><label>Дата материала о вводе<input type="date" bind:value={commissioningDate}/></label>{/if}<label>Датированный материал о том, что объект не введён<textarea bind:value={evidenceText} placeholder="Источник, дата YYYY-MM-DD и содержание проверки ввода объекта"></textarea></label>{/if}<label>Обоснование аналитика<input required placeholder="Почему подтверждаете/отклоняете" bind:value={comments[h.id ?? h.code]}/></label><div class="actions"><button disabled={busy || !!reviewed[h.id ?? h.code] || stale} onclick={() => save('confirmed', h)}>Подтвердить {h.code}</button><button disabled={busy || !!reviewed[h.id ?? h.code] || stale} onclick={() => save('rejected', h)}>Отклонить гипотезу</button></div></article>{/each}
+      {#each result.hypotheses as h}<article class="hypothesis"><b>{h.code} · гипотеза</b><blockquote>«{h.quote}»</blockquote><p>{h.reason}</p><label>Обоснование аналитика<input required placeholder="Почему принимаете/отклоняете гипотезу" bind:value={comments[h.id ?? h.code]}/></label><div class="actions"><button disabled={busy || !!reviewed[h.id ?? h.code] || stale} onclick={() => saveMaterial(h, 'accepted')}>Принять гипотезу {h.code}</button><button disabled={busy || !!reviewed[h.id ?? h.code] || stale} onclick={() => saveMaterial(h, 'rejected')}>Отклонить гипотезу</button></div></article>{/each}
       {#if !result.hypotheses.length}<p>Платёжных признаков не обнаружено. Это не подтверждает безопасность объекта.</p>{/if}
       {#if parsed?.entities.length}<div class="table-scroll"><table><thead><tr><th>Сущность</th><th>Значение</th><th>Цитата</th></tr></thead><tbody>{#each parsed.entities as entity}<tr><td>{entity.label}</td><td>{entity.value}</td><td>«{entity.quote}»</td></tr>{/each}</tbody></table></div>{/if}
-      <button disabled={busy || saved || stale} onclick={() => save('saved')}>Сохранить без подтверждения</button>
-      {#if saved}<p class="success" role="status">Публикация и решение сохранены.</p>{/if}
+      <button disabled={busy || saved || stale} onclick={() => saveMaterial()}>Сохранить без подтверждения</button>
+      {#if saved}<p class="success" role="status">Публикация сохранена. Триаж гипотезы не начисляет баллы.</p>{/if}
     {:else}<p class="muted">Здесь появятся дословные цитаты, извлечённые данные и гипотезы.</p>{/if}
   </section>
 </div>
 <section class="panel ai-review-history"><h2>Сохранённые решения гипотез</h2>
-{#each workspace.audit.filter(a => {const d=a.details as Command | undefined; return (d?.type==='factor' && !!d.evidence.adId) || (d?.type==='ad' && !!d.hypothesis);}) as a}
+{#each workspace.audit.filter(a => {const d=a.details as Command | undefined; return d?.type==='ai.review';}) as a}
 {@const d=a.details as Command}
-<p>{d.type==='factor' ? d.code : d.type==='ad' ? d.hypothesis?.code : ''} · {d.type==='factor' ? d.status : d.type==='ad' ? d.decision : ''} · {a.comment} · {a.reviewer}</p>
+<p>{d.type==='ai.review' ? workspace.claims?.find(c=>c.id===d.claimId)?.code : ''} · {d.type==='ai.review' ? (d.decision==='accepted' ? 'Гипотеза принята' : 'Гипотеза отклонена') : ''} · {a.comment} · {a.reviewer}</p>
 {/each}</section>
 <details class="panel mt-6"><summary>Импорт из CSV</summary><p class="muted my-3">Заголовки: text/текст, url/ссылка, platform/площадка, account/аккаунт, date/дата, zk/жк. Каждую строку проверяет человек.</p><label>CSV<textarea rows="4" data-testid="csv-input" bind:value={csv}></textarea></label><button data-testid="csv-preview" onclick={previewCsv}>Предпросмотр CSV</button>
   {#if csvRows}{#each csvRows.errors as e}<p class="error" data-testid="csv-error">{e}</p>{/each}

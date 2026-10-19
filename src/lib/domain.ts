@@ -5,6 +5,8 @@ import { adDedupeKey } from './parser';
 import { isDateLike, parseCommand, seedState } from './validation';
 import { buildSignalSnapshot, nextRevisionFor } from './signal-snapshot';
 import type { SignalDecisionOpts } from './signal-snapshot';
+import { applyInvestigationCommand, invalidateCaseAssertions } from './investigation';
+import type { InvestigationCommand } from './types';
 
 export type { Command } from './types';
 import type { ParsedCommand } from './types';
@@ -112,12 +114,15 @@ function requireAnalystComment(status: FactorStatus, comment: string) {
  */
 export function applyCommand(state: AppState, command: unknown, reviewer: string, opts?: SignalDecisionOpts): AppState {
   const cmd: ParsedCommand = parseCommand(command);
+  if (cmd.type.includes('.')) return applyInvestigationCommand(state, cmd as InvestigationCommand, reviewer, opts?.commandId);
   const next = structuredClone(state);
   const at = new Date().toISOString();
   const zkId = cmd.type === 'factor' || cmd.type === 'readiness' || cmd.type === 'signal' ? cmd.zkId
-    : cmd.type === 'ad' ? cmd.ad.zkId : cmd.type === 'media' ? cmd.media.zkId : cmd.complex.id;
+    : cmd.type === 'ad' ? cmd.ad.zkId : cmd.type === 'media' ? cmd.media.zkId : cmd.type === 'complex' ? cmd.complex.id : '';
   const z = next.complexes.find(z => z.id === zkId);
   if (!z && cmd.type !== 'complex') throw new Error('Объект не найден');
+  const legacyConfirmation=(cmd.type==='factor' && cmd.status==='confirmed') || (cmd.type==='ad' && cmd.decision==='confirmed' && !!cmd.hypothesis) || (cmd.type==='signal' && cmd.status==='confirmed');
+  if(legacyConfirmation && state.cases?.some(item=>item.complexId===zkId)) throw new Error('Подтверждение выполняется только через проверку факта и решение в активном деле');
   // S1.3. Авто-отзыв устаревших решений: текст причин копим сюда и дописываем
   // в audit-комментарий (изменение — в details/cmd, затронутые факторы — в
   // комментарии). Баллы начисляются только после нового confirm: score
@@ -262,6 +267,7 @@ export function applyCommand(state: AppState, command: unknown, reviewer: string
       break;
     }
   }
+  invalidateCaseAssertions(next,state,zkId,reviewer,at);
   if (cmd.type !== 'signal' && next.signals[zkId]) next.signals[zkId] = {...next.signals[zkId], status:'draft', at, reviewer, comment:'Новые факты: ' + cmd.type, reason:'Новые факты: ' + cmd.type, basedOnRevision: nextRevisionFor(next, zkId) - 1 || null};
   // S1.3. Audit хранит изменение (details=команда) и автоматически затронутые
   // факторы (комментарий). Повторное подтверждение явно требуется: баллы

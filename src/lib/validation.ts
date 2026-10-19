@@ -17,8 +17,15 @@ import type {
   Ad, AppState, Code, Complex, Evidence, EvidenceInput, FactorStatus, ParsedCommand,
 } from './types';
 import { isLegalBasisPair } from './types';
+import { computeScore } from './scoring';
+import { periodContains } from './applicability';
 
 export const ID_RE = /^[A-Za-z0-9-]{1,80}$/;
+export function relationEndpointExists(state:AppState, id:string):boolean {
+  return state.complexes.some(z=>`complex:${z.id}`===id || (!!z.bin && `organization:${z.bin}`===id)) ||
+    !!state.phases?.some(p=>`phase:${p.id}`===id) || !!state.artifacts?.some(a=>`document:${a.id}`===id) ||
+    state.ads.some(ad=>`publication:${ad.id}`===id || (!!ad.account && `account:${ad.platform}:${ad.account}`===id));
+}
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Строгая календарная дата YYYY-MM-DD: 2026-02-30 не проходит. */
@@ -122,13 +129,15 @@ const EvidenceInputSchema = z.strictObject({
   hypothesisId: IdField('evidence.hypothesisId').optional(),
 });
 
+const PeriodSchema = z.strictObject({from:z.string().refine(isCalendarDate,'Нужна календарная дата начала периода'),to:z.string().refine(isCalendarDate,'Нужна календарная дата конца периода').optional()}).refine(period=>!period.to || period.from<=period.to,'Конец периода не может быть раньше начала');
 const LegalBasisSchema = z.strictObject({
+  period:PeriodSchema.optional(),
   type: z.enum(['unknown', 'absent', 'guarantee', 'mio-permit']),
   status: z.enum(['unknown', 'absent-verified', 'verified']),
   source: z.string(),
-  checkedAt: z.string().refine(isDateLike, 'legalBasis.checkedAt: неверная календарная дата (нужна реальная YYYY-MM-DD)'),
+  checkedAt: z.string().refine(value => value === '' || isDateLike(value), 'legalBasis.checkedAt: неверная календарная дата (нужна реальная YYYY-MM-DD)'),
   reviewText: z.string(),
-});
+}).refine(lb => lb.status === 'unknown' || isDateLike(lb.checkedAt), 'Для проверенного основания укажите календарную дату проверки');
 
 const ClaimedSourceSchema = z.strictObject({
   value: z.number().refine(Number.isFinite, 'readinessClaimedSource.value: нужно конечное число'),
@@ -272,7 +281,69 @@ const SignalCommandSchema = z.strictObject({
 });
 const ComplexCommandSchema = z.strictObject({ type: z.literal('complex'), complex: ComplexSchema });
 
+const scopeFields = { complexId: IdField('complexId'), phaseId: IdField('phaseId').optional() };
+const RelationInputSchema=z.strictObject({
+  id:IdField('relation.id'),...scopeFields,fromId:z.string().min(1).max(1000),toId:z.string().min(1).max(1000),
+  relationType:z.enum(['developer_of','authorized_company_of','contractor_of','advertises','covered_by','mentions','same_ad_account','located_on']),
+  sourceArtifactIds:z.array(IdField('sourceArtifactId')).max(100),matchMethod:z.enum(['manual','exact-id','name','address']),
+});
+const RelationStoredSchema=RelationInputSchema.extend({verificationStatus:z.enum(['candidate','verified','rejected']),capturedAt:z.string(),actor:z.string(),reviewedBy:z.string().optional(),reviewedAt:z.string().optional(),reviewComment:z.string().optional()});
+const GeometrySchema = z.strictObject({
+  id:IdField('geometry.id'),...scopeFields,source:z.string().trim().min(1).max(2000),verified:z.boolean(),heightMeters:z.number().min(0).max(1000).optional(),
+  coordinates:z.array(z.array(z.tuple([z.number().min(-180).max(180),z.number().min(-85.051129).max(85.051129)])).min(4).max(10000).refine(r=>r.length>=4 && r[0][0]===r[r.length-1][0] && r[0][1]===r[r.length-1][1],'Контур должен быть замкнут')).min(1).max(100).refine(rings=>rings.reduce((sum,r)=>sum+r.length,0)<=10000,'Не более 10 000 вершин'),
+});
+const PhaseObservationSchema=z.strictObject({value:z.number().min(0).max(100),source:z.string().trim().min(1),date:z.string().refine(isCalendarDate,'Нужна календарная дата наблюдения')});
+const PhaseSchema = z.strictObject({
+  id: IdField('phase.id'), complexId: IdField('complexId'), name: z.string().trim().min(1), legalBasis: LegalBasisSchema.optional(),period:PeriodSchema.optional(),
+  readinessClaimed:z.number().min(0).max(100).nullable().optional(),readinessClaimedSource:PhaseObservationSchema.nullable().optional(),
+  readinessConfirmed:z.number().min(0).max(100).nullable().optional(),readinessSources:z.array(PhaseObservationSchema).optional(),
+}).superRefine((phase,ctx)=>{
+  if(phase.readinessClaimed!=null && phase.readinessClaimedSource?.value!==phase.readinessClaimed) ctx.addIssue({code:'custom',message:'Для заявленной готовности очереди нужны совпадающее значение, источник и дата'});
+  if(phase.readinessConfirmed!=null && phase.readinessSources?.at(-1)?.value!==phase.readinessConfirmed) ctx.addIssue({code:'custom',message:'Подтверждённая готовность очереди должна совпадать с последним наблюдением'});
+});
+const ArtifactInputSchema = z.strictObject({
+  id: IdField('artifact.id'), ...scopeFields,
+  kind: z.enum(['publication', 'document', 'relationship', 'event', 'observation', 'legal-review']),
+  source: z.string().trim().min(1), text: z.string().min(1),
+  origin: z.enum(['manual','import','demo','official']).optional(),
+  availability: z.enum(['ok','unavailable','needs_auth']).optional(),
+  pageNumber:z.number().int().min(1).max(100000).optional(),
+  date: z.string().refine(isDateLike).optional(), adId: IdField('adId').optional(), mediaId: IdField('mediaId').optional(),
+  url: z.string().url().refine(v => /^https?:\/\//.test(v)).optional(),
+});
+const ArtifactStoredSchema = ArtifactInputSchema.extend({capturedAt:z.string(),sha256:z.string().regex(/^[a-f0-9]{64}$/i).optional(),bytes:z.number().int().nonnegative().optional()});
+const ClaimInputSchema = z.strictObject({
+  period:PeriodSchema.optional(),
+  id: IdField('claim.id'), ...scopeFields, artifactId: IdField('artifactId'),
+  code: z.enum(['R1','R2','R3','R4','R5','R6']), quote: z.string().trim().min(1),
+  reason: z.string().optional(), runId: IdField('runId').optional(), hypothesisId: IdField('hypothesisId').optional(),
+});
+const CaseSchema = z.strictObject({
+  period:PeriodSchema.optional(),
+  id: IdField('case.id'), ...scopeFields, title: z.string().optional(), owner: z.string(),
+  status: z.enum(['draft','confirmed','returned']), artifactIds: z.array(IdField('artifactId')),
+  createdAt: z.string(), updatedAt: z.string(),
+});
+const AssertionSchema = z.strictObject({
+  period:PeriodSchema.optional(),
+  id: IdField('assertion.id'), caseId: IdField('caseId'), claimId: IdField('claimId'), code: z.enum(['R1','R2','R3','R4','R5','R6']),
+  status: z.enum(['candidate','verified','rejected']), evidence: EvidenceFullSchema, actor: z.string(), at: z.string(), comment: z.string(),
+});
+const decisionComment = z.string().trim().min(1);
 const SCHEMAS: Record<string, z.ZodType> = {
+  'relation.register':z.strictObject({type:z.literal('relation.register'),relation:RelationInputSchema}),
+  'relation.review':z.strictObject({type:z.literal('relation.review'),relationId:IdField('relationId'),status:z.enum(['verified','rejected']),comment:z.string().trim().min(1)}),
+  'geometry.register':z.strictObject({type:z.literal('geometry.register'),geometry:GeometrySchema}),
+  'phase.create': z.strictObject({ type: z.literal('phase.create'), phase: PhaseSchema }),
+  'phase.update': z.strictObject({ type: z.literal('phase.update'), phase: PhaseSchema }),
+  'artifact.register': z.strictObject({ type: z.literal('artifact.register'), artifact: ArtifactInputSchema }),
+  'claim.propose': z.strictObject({ type: z.literal('claim.propose'), claim: ClaimInputSchema }),
+  'case.create': z.strictObject({ type: z.literal('case.create'), id: IdField('case.id'), ...scopeFields, title: z.string().optional(),period:PeriodSchema.optional() }),
+  'case.attach': z.strictObject({ type: z.literal('case.attach'), caseId: IdField('caseId'), artifactId: IdField('artifactId') }),
+  'ai.review': z.strictObject({ type: z.literal('ai.review'), claimId: IdField('claimId'), decision: z.enum(['accepted','rejected']), comment: decisionComment }),
+  'fact.review': z.strictObject({ type: z.literal('fact.review'), caseId: IdField('caseId'), claimId: IdField('claimId'), status: z.enum(['verified','rejected']), evidence: EvidenceInputSchema, comment: decisionComment }),
+  'case.decide': z.strictObject({ type: z.literal('case.decide'), caseId: IdField('caseId'), status: z.enum(['confirmed','returned']), comment: decisionComment }),
+  'case.reopen': z.strictObject({ type: z.literal('case.reopen'), caseId: IdField('caseId'), comment: decisionComment }),
   factor: FactorCommandSchema,
   ad: AdCommandSchema,
   media: MediaCommandSchema,
@@ -355,6 +426,15 @@ export function parseCommand(raw: unknown): ParsedCommand {
     throw new Error(describeIssue(parsed.error.issues[0], String(rec.type)));
   }
   const data = parsed.data as Record<string, never>;
+  if (rec.type === 'phase.create' || rec.type === 'phase.update') {
+    const phase = data.phase as z.infer<typeof PhaseSchema>;
+    if (phase.legalBasis) {
+      const lb = phase.legalBasis;
+      if (!isLegalBasisPair(lb.type,lb.status)) throw new Error('phase.legalBasis: несогласованная пара type/status');
+      if (lb.status !== 'unknown' && (!lb.source.trim() || !lb.reviewText.trim())) throw new Error('Укажите источник и содержание проверки основания очереди');
+    }
+  }
+  if (rec.type === 'artifact.register' && (data.artifact as z.infer<typeof ArtifactInputSchema>).origin === 'official') throw new Error('Официальное происхождение назначает доверенный серверный импорт; ручная регистрация не подтверждает официальный источник');
   if (rec.type === 'complex') checkComplexInput(data.complex as z.infer<typeof ComplexSchema>);
   if (rec.type === 'factor') {
     const f = data as unknown as { zkId: string; code: Code; status: FactorStatus; evidence: EvidenceInput; comment: string };
@@ -676,6 +756,28 @@ const LoadedAuditSchema = z.strictObject({
 });
 
 export const StateSchema = z.strictObject({
+  relations:z.array(RelationStoredSchema).optional(),
+  geometries:z.array(GeometrySchema).optional(),
+  phases: z.array(PhaseSchema).optional(),
+  artifacts: z.array(ArtifactStoredSchema).optional(),
+  claims: z.array(ClaimInputSchema.extend({ quoteStart:z.number().int().nonnegative().optional(),quoteEnd:z.number().int().positive().optional(),triage: z.enum(['accepted','rejected']).optional(), triagedBy: z.string().optional(), triagedAt: z.string().optional(), triageComment: z.string().optional() })).optional(),
+  assertions: z.array(AssertionSchema).optional(),
+  cases: z.array(CaseSchema).optional(),
+  caseSnapshots: z.array(z.strictObject({
+    relations:z.array(RelationStoredSchema).optional(),
+    period:PeriodSchema.optional(),
+    imported:z.boolean().optional(),
+    id: IdField('snapshot.id'), caseId: IdField('caseId'), ...scopeFields, revision: z.number().int().positive(),
+    status: z.enum(['confirmed','returned']), actor: z.string(), at: z.string(), comment: z.string(),
+    complex: LoadedComplexSchema, phase: PhaseSchema.optional(), assertions: z.array(AssertionSchema),
+    artifacts: z.array(ArtifactStoredSchema),
+    ads: z.array(AdSchema).optional(),
+    mediaManifest: z.array(z.strictObject({
+      kind:z.enum(['ad','media']),id:z.string(),name:z.string().optional(),mediaKind:z.string().optional(),capturedAt:z.string().optional(),note:z.string().optional(),
+      path:z.string().optional(),sha256:z.string().nullable().optional(),bytes:z.number().nullable().optional(),
+    })).optional(),
+    score: z.number().min(0).max(100), zone: z.enum(['green','yellow','red']), weightsVersion: z.number(), limitations: z.array(z.string()), demo: z.boolean(),
+  })).optional(),
   schemaVersion: z.literal(3),
   complexes: z.array(LoadedComplexSchema),
   ads: z.array(AdSchema),
@@ -711,6 +813,7 @@ function describeStateIssue(issue: z.core.$ZodIssue): string {
  * (миграция обязана была такие снять; ручная правка v3 — тоже отказ).
  */
 export function checkStateRefs(state: AppState): void {
+  checkInvestigationRefs(state);
   const complexIds = new Set(state.complexes.map((c) => c.id));
   const adsById = new Map(state.ads.map((a) => [a.id, a]));
   const mediaIds = new Set(state.media.map((m) => m.id));
@@ -787,6 +890,65 @@ export function checkStateRefs(state: AppState): void {
   }
   for (const e of state.audit) {
     if (!complexIds.has(e.zkId)) throw new Error(`state.audit.${e.id}: неизвестный zkId ${e.zkId}`);
+  }
+}
+
+/** Scope checks apply on every load/restore as well as during command execution. */
+export function checkInvestigationRefs(state: AppState): void {
+  const groups = [state.relations,state.geometries, state.phases, state.artifacts, state.claims, state.assertions, state.cases, state.caseSnapshots];
+  for (const group of groups) if (group && new Set(group.map(x => x.id)).size !== group.length) throw new Error('state: повтор идентификатора расследования');
+  const scope = (item: {complexId:string; phaseId?:string}) => {
+    if (!state.complexes.some(z => z.id === item.complexId)) throw new Error('state: неизвестный объект расследования');
+    if (item.phaseId && !state.phases?.some(p => p.id === item.phaseId && p.complexId === item.complexId)) throw new Error('state: неверная очередь расследования');
+  };
+  for (const phase of state.phases ?? []) scope(phase);
+  for (const geometry of state.geometries ?? []) scope(geometry);
+  for(const relation of state.relations ?? []) {
+    scope(relation);
+    if(relation.fromId===relation.toId || !relationEndpointExists(state,relation.fromId) || !relationEndpointExists(state,relation.toId)) throw new Error('state: неизвестная сторона связи');
+    for(const id of relation.sourceArtifactIds) if(!state.artifacts?.some(a=>a.id===id && a.complexId===relation.complexId && a.phaseId===relation.phaseId)) throw new Error('state: источник связи вне области применимости');
+    if(relation.verificationStatus==='verified' && (!relation.sourceArtifactIds.length || !relation.reviewedBy || !relation.reviewedAt || !relation.reviewComment?.trim())) throw new Error('state: связь не имеет документального подтверждения');
+  }
+  for (const artifact of state.artifacts ?? []) {
+    scope(artifact);
+    if (artifact.adId && !state.ads.some(ad => ad.id === artifact.adId && ad.zkId === artifact.complexId && ad.text === artifact.text)) throw new Error('state: артефакт не совпадает с публикацией');
+    if (artifact.mediaId && !state.media.some(m => m.id === artifact.mediaId && m.zkId === artifact.complexId)) throw new Error('state: отсутствует файл артефакта');
+  }
+  for (const claim of state.claims ?? []) {
+    scope(claim);
+    const artifact=state.artifacts?.find(a => a.id === claim.artifactId);
+    if (!artifact || artifact.complexId !== claim.complexId || artifact.phaseId !== claim.phaseId || !artifact.text.includes(claim.quote)) throw new Error('state: некорректный источник или цитата утверждения');
+    if((claim.quoteStart!==undefined || claim.quoteEnd!==undefined) && (claim.quoteStart!==artifact.text.indexOf(claim.quote) || claim.quoteEnd!==artifact.text.indexOf(claim.quote)+claim.quote.length)) throw new Error('state: положение цитаты не соответствует оригиналу');
+    const phase=state.phases?.find(p=>p.id===claim.phaseId);
+    if(phase?.period && claim.period && !periodContains(phase.period,claim.period)) throw new Error('state: период утверждения вне очереди');
+  }
+  for (const item of state.cases ?? []) {
+    scope(item);
+    for (const id of item.artifactIds) if(!state.artifacts?.some(a => a.id === id && a.complexId === item.complexId && a.phaseId === item.phaseId)) throw new Error('state: материал не входит в область дела');
+    const phase=state.phases?.find(p=>p.id===item.phaseId);
+    if(phase?.period && item.period && !periodContains(phase.period,item.period)) throw new Error('state: период дела вне очереди');
+  }
+  for (const assertion of state.assertions ?? []) {
+    const item=state.cases?.find(c => c.id === assertion.caseId);
+    const claim=state.claims?.find(c => c.id === assertion.claimId);
+    if (!item || !claim || claim.code !== assertion.code || claim.complexId !== item.complexId || claim.phaseId !== item.phaseId || !item.artifactIds.includes(claim.artifactId) || assertion.evidence.zkId !== item.complexId) throw new Error('state: проверка факта вне дела');
+    const artifact=state.artifacts?.find(a=>a.id===claim.artifactId);
+    if(assertion.evidence.quote !== claim.quote || assertion.evidence.adId !== artifact?.adId) throw new Error('state: доказательство не совпадает с исходным утверждением');
+    if(JSON.stringify(assertion.period)!==JSON.stringify(item.period ?? claim.period)) throw new Error('state: период факта не соответствует делу и утверждению');
+    for(const id of assertion.evidence.mediaIds ?? []) if(!state.media.some(m=>m.id===id && m.zkId===item.complexId)) throw new Error('state: файл доказательства не найден');
+  }
+  const revisions=new Map<string,number>();
+  for (const snapshot of state.caseSnapshots ?? []) {
+    const item=state.cases?.find(c => c.id === snapshot.caseId);
+    if(!item || snapshot.complexId !== item.complexId || snapshot.phaseId !== item.phaseId || snapshot.complex.id !== item.complexId) throw new Error('state: снимок относится к другому делу');
+    const expected=(revisions.get(item.id) ?? 0)+1;
+    if(snapshot.revision !== expected) throw new Error('state: версии снимков должны идти последовательно');
+    revisions.set(item.id,expected);
+    const computed=computeScore(snapshot.complex.factors);
+    if(snapshot.score!==computed.score || snapshot.zone!==computed.zone) throw new Error('state: скоринг снимка не соответствует подтверждённым факторам');
+    for(const artifact of snapshot.artifacts) if(artifact.complexId !== item.complexId || artifact.phaseId !== item.phaseId) throw new Error('state: материал снимка относится к другому делу');
+    for(const ad of snapshot.ads ?? []) if(ad.zkId!==item.complexId) throw new Error('state: публикация снимка относится к другому объекту');
+    for(const assertion of snapshot.assertions) if(assertion.caseId!==item.id || assertion.evidence.zkId!==item.complexId) throw new Error('state: факт снимка относится к другому делу');
   }
 }
 
