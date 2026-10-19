@@ -243,7 +243,7 @@
         <p class="map-disclosure">Без координат: {complexes.length - summaries.length}. {city3d ? '3D — настоящий объёмный город: реальные дома, рельеф и небо. Подсвеченные корпуса те же: проверенные контуры или условная схема 60 × 44 м, высота 36 м.' : dimensional ? '2.5D: объёмные коробки вместо точек. Проверенные контуры используются при наличии; остальные коробки условные (60 × 44 м, высота 36 м).' : '2D: метки объектов и проверенные контуры.'} {!liveRegistryAvailable ? 'Live-сверка реестров недоступна. ' : ''}Координаты приблизительные. Дата спутникового снимка неизвестна. Нулевой балл не подтверждает безопасность.</p>
       </div>
     {/if}
-    <div class="map-caption"><span>ӨСКЕМЕН · {visible.length} объектов{summaries.some(s => s.demo) ? ' · DEMO' : ''}</span>{#if relatedIds}<button class="small" onclick={() => relatedIds = null}>Все объекты</button>{/if}<button class="small map-about-toggle" onclick={() => aboutOpen = !aboutOpen} aria-expanded={aboutOpen}>О данных</button></div>
+    <div class="map-caption"><span>Өскемен · {visible.length} объектов{summaries.some(s => s.demo) ? ' · демо' : ''}</span>{#if relatedIds}<button class="small" onclick={() => relatedIds = null}>Все объекты</button>{/if}<button class="small map-about-toggle" onclick={() => aboutOpen = !aboutOpen} aria-expanded={aboutOpen}>О данных</button></div>
     <div class="map-legend map-legend-float" aria-live="polite">
     {#if theme === 'off'}<span>Базовая зона: зелёная / жёлтая / красная — по подтверждённым факторам</span>
     {:else if theme === 'legal'}<span><i style="background:#388068"></i> Проверенное основание</span><span><i style="background:#bf453e"></i> Проверенное отсутствие</span><span><i style:background={UNKNOWN_COLOR}></i> Требует проверки</span>
