@@ -321,8 +321,12 @@ button[aria-pressed=true] {background:#1d1d1f;color:#fff;}
 .map-float-top .segmented button { overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
 .map-page .map-preview .preview-actions button { flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .map-float-top .map-list-toggle { align-self: center; }
-.map-page .map-preview h3 { letter-spacing: -0.01em; line-height: 1.2; overflow-wrap: anywhere; font-weight: 700; font-size: 21px; }
+.map-page .map-preview h3 { letter-spacing: -0.01em; line-height: 1.2; overflow-wrap: anywhere; font-weight: 700; font-size: 21px; margin: 6px 0 2px; }
+.map-page .map-preview .preview-sub { font-size: 12.5px; color: var(--ink-2); margin: 0; }
 .map-page .map-preview p { overflow-wrap: anywhere; }
+.map-page .map-preview .preview-model p { font-size: 12.5px; margin: 6px 0 0; line-height: 1.55; }
+.map-page .map-preview .preview-model p.muted { color: var(--ink-2); }
+.map-page .map-preview .text-button { display: block; margin-top: 12px; }
 .map-page .map-preview .preview-actions { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-soft); }
 @media(max-width:640px){
   .map-page { margin: 0; }
