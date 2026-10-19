@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { Map as MapType, GeoJSONSource } from 'maplibre-gl';
+  import type { Map as MapType, GeoJSONSource, FillExtrusionLayerSpecification } from 'maplibre-gl';
   import type { Ad, Complex } from '../lib/types';
   import { zoneLabel } from '../lib/scoring';
   import { hasCoordinates, summarizeMap, buildingShapes, worldPoint, worldCoordinates, relatedMapPlaces, UNKNOWN_COLOR, type XRayTheme, type MapGeometry, type MapRelation } from '../lib/map-model';
@@ -17,6 +17,7 @@
   let warning = $state('');
   let satellite = $state(false);
   let dimensional = $state(false);
+  let city3d = $state(false);
   let theme = $state<XRayTheme>('off');
   let query = $state('');
   let zone = $state('all');
@@ -25,6 +26,8 @@
   let relatedIds = $state<string[] | null>(null);
   let camera = $state({ lng: 82.614, lat: 49.984, zoom: 12, bearing: 0 });
   let width = $state(800);
+  let listOpen = $state(false);
+  let aboutOpen = $state(false);
   let height = $state(520);
   const themes: { id: XRayTheme; title: string }[] = [{ id: 'off', title: 'Выкл' }, { id: 'legal', title: 'Правовой' }, { id: 'construction', title: 'Стройка' }, { id: 'advertising', title: 'Реклама' }];
   const summaries = $derived(complexes.filter(hasCoordinates).map(z => summarizeMap(z, theme, ads)));
@@ -33,6 +36,7 @@
   const geojson = $derived({ type: 'FeatureCollection' as const, features: visible.map(z => ({ type: 'Feature' as const, geometry: { type: 'Point' as const, coordinates: [z.lng, z.lat] }, properties: { id: z.id, color: z.color } })) });
   const footprints = $derived(buildingShapes(visible, geometry));
   const selectedBox = $derived(footprints.features.find(f=>f.properties.id===selectedId && (!selectedPhase || f.properties.phaseId===selectedPhase)));
+  const selectedGeom = $derived(geometry.find(g => g.complexId===selected?.id && (!selectedPhase || !g.phaseId || g.phaseId===selectedPhase)));
   const center = $derived(worldPoint(camera.lng, camera.lat, Math.floor(camera.zoom)));
   const tiles = $derived.by(() => {
     const zoom = Math.floor(camera.zoom); const count = 2 ** zoom; const result = [];
@@ -64,14 +68,52 @@
   }
   $effect(() => { const data = geojson; if (loaded) { markersReady = false; (map?.getSource('complexes') as GeoJSONSource | undefined)?.setData(data); } });
   $effect(() => { const data = footprints; if (loaded) (map?.getSource('footprints') as GeoJSONSource | undefined)?.setData(data); });
-  $effect(() => { if (loaded && map) map.setLayoutProperty('satellite', 'visibility', satellite ? 'visible' : 'none'); });
+  function ensureSatellite() {
+    if (!map || map.getSource('esri')) return;
+    try {
+      map.addSource('esri', { type: 'raster', tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'], tileSize: 256, attribution: 'Esri World Imagery' });
+      const raster = { id: 'satellite', type: 'raster' as const, source: 'esri' };
+      try { map.addLayer(raster, 'clusters'); } catch { map.addLayer(raster); }
+    } catch { /* Спутник недоступен — базовая карта продолжает работать. */ }
+  }
+  $effect(() => { if (loaded && map) { if (satellite) ensureSatellite(); if (map.getLayer('satellite')) map.setLayoutProperty('satellite', 'visibility', satellite ? 'visible' : 'none'); } });
+  function ensureTerrain() {
+    if (!map || map.getSource('terrain-dem')) return;
+    try {
+      map.addSource('terrain-dem', { type: 'raster-dem', tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'], tileSize: 256, maxzoom: 15, encoding: 'terrarium' });
+    } catch { /* Без рельефа — город остаётся плоским. */ }
+  }
+  function ensureCity3D() {
+    if (!map || map.getSource('openmaptiles')) return;
+    try {
+      map.addSource('openmaptiles', { type: 'vector', url: 'https://tiles.openfreemap.org/planet' });
+      const city: FillExtrusionLayerSpecification = { id: 'city3d-buildings', type: 'fill-extrusion', source: 'openmaptiles', 'source-layer': 'building', filter: ['>', ['coalesce', ['get', 'render_height'], 0], 0], paint: { 'fill-extrusion-color': '#ccd6cb', 'fill-extrusion-height': ['coalesce', ['get', 'render_height'], 12], 'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], 0], 'fill-extrusion-opacity': 0.88, 'fill-extrusion-vertical-gradient': true } };
+      try { map.addLayer(city, 'buildings'); } catch { try { map.addLayer(city); } catch { /* Настоящие 3D-дома недоступны — остаются условные коробки. */ } }
+    } catch { /* Настоящие 3D-дома недоступны — остаются условные коробки. */ }
+  }
   $effect(() => {
     if (loaded && map) {
       const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      map.easeTo({ pitch: dimensional ? 55 : 0, zoom: dimensional ? Math.max(map.getZoom(),14.5) : map.getZoom(), bearing: dimensional ? map.getBearing() : 0, duration: reduce ? 0 : 450 });
-      map.setLayoutProperty('buildings', 'visibility', dimensional ? 'visible' : 'none');
-      for (const layer of ['points','clusters']) map.setLayoutProperty(layer,'visibility',dimensional ? 'none' : 'visible');
-      map.setLayoutProperty('footprints-flat','visibility',dimensional ? 'none' : 'visible');
+      try {
+        if (city3d) {
+          // Настоящий 3D-город: реальные дома, рельеф и небо. Тяжёлые слои — только по первому включению.
+          ensureCity3D(); ensureTerrain();
+          try { map.setTerrain({ source: 'terrain-dem', exaggeration: 1.2 }); } catch { /* Рельеф недоступен. */ }
+          try { (map as unknown as { setSky?: (s: object) => void }).setSky?.({ 'sky-color': '#8db4dd', 'horizon-color': '#e8eef0', 'fog-color': '#dfe6ea', 'sky-horizon-blend': 0.5, 'horizon-fog-blend': 0.5, 'fog-ground-blend': 0.5 }); } catch { /* Без неба. */ }
+          if (map.getLayer('city3d-buildings')) map.setLayoutProperty('city3d-buildings', 'visibility', 'visible');
+          map.easeTo({ pitch: 65, zoom: Math.max(map.getZoom(), 15), duration: reduce ? 0 : 600 });
+        } else {
+          try { map.setTerrain(null); } catch { /* Рельефа и не было. */ }
+          try { (map as unknown as { setSky?: (s: null) => void }).setSky?.(null as never); } catch { /* Неба и не было. */ }
+          if (map.getLayer('city3d-buildings')) map.setLayoutProperty('city3d-buildings', 'visibility', 'none');
+          const flat = !dimensional;
+          map.easeTo({ pitch: dimensional ? 55 : 0, zoom: flat ? map.getZoom() : Math.max(map.getZoom(), 14.5), bearing: flat ? 0 : map.getBearing(), duration: reduce ? 0 : 450 });
+        }
+        map.setLayoutProperty('buildings', 'visibility', (!dimensional && !city3d) ? 'none' : 'visible');
+        const pts = (!dimensional && !city3d) ? 'visible' : 'none';
+        for (const layer of ['points', 'clusters']) map.setLayoutProperty(layer, 'visibility', pts);
+        map.setLayoutProperty('footprints-flat', 'visibility', (!dimensional && !city3d) ? 'visible' : 'none');
+      } catch { /* Камера и слои остаются как были. */ }
     }
   });
   onMount(() => {
@@ -86,7 +128,7 @@
         query = typeof saved.query === 'string' ? saved.query.slice(0, 200) : '';
         selectedId = typeof saved.selectedId === 'string' ? saved.selectedId : '';
         selectedPhase = typeof saved.selectedPhase === 'string' ? saved.selectedPhase : undefined;
-        satellite = saved.satellite === true; dimensional = saved.dimensional === true;
+        satellite = saved.satellite === true; dimensional = saved.dimensional === true; city3d = saved.city3d === true && saved.dimensional !== true;
       }
     } catch { /* Storage may be unavailable; the map remains usable. */ }
     const observer = new ResizeObserver(entries => { width = entries[0].contentRect.width; height = entries[0].contentRect.height; map?.resize(); });
@@ -98,13 +140,12 @@
       try {
         // Vite relocates the main module; its original relative worker URL cannot survive prebundling.
         ml.setWorkerUrl(worker.default);
-        map = new ml.Map({ container, center: [camera.lng, camera.lat], zoom: camera.zoom, bearing: camera.bearing, maxPitch: 60, fadeDuration: 100, maxTileCacheSize: 80, style: {
+        map = new ml.Map({ container, center: [camera.lng, camera.lat], zoom: camera.zoom, bearing: camera.bearing, maxPitch: 68, fadeDuration: 100, maxTileCacheSize: 80, style: {
           version: 8, sources: {
             osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, attribution: '© OpenStreetMap contributors' },
-            esri: { type: 'raster', tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'], tileSize: 256, attribution: 'Esri World Imagery' },
-          }, layers: [{ id: 'osm', type: 'raster', source: 'osm' }, { id: 'satellite', type: 'raster', source: 'esri', layout: { visibility: satellite ? 'visible' : 'none' } }],
+          }, layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
         } });
-        map.addControl(new ml.NavigationControl(), 'top-right');
+        map.addControl(new ml.NavigationControl({ visualizePitch: true, showCompass: true }), 'top-right');
         map.on('webglcontextlost', () => { if (!disposed) releaseWebGL('WebGL недоступен. Включена функциональная 2D-карта.'); });
         map.on('error', () => { warning = 'Часть картографических данных недоступна. Маркеры и список объектов работают.'; });
         map.on('moveend', () => { if (map) { const c = map.getCenter(); camera = { lng: c.lng, lat: c.lat, zoom: map.getZoom(), bearing: map.getBearing() }; } });
@@ -131,22 +172,23 @@
       } catch { releaseWebGL('WebGL недоступен. Включена функциональная 2D-карта.'); }
     }).catch(() => { if (!disposed) releaseWebGL('Картографический модуль недоступен. Включена 2D-карта.'); });
     return () => {
-      try { sessionStorage.setItem('saq-map-view-v1', JSON.stringify({ center: [camera.lng, camera.lat], zoom: camera.zoom, bearing: camera.bearing, theme, zone, query, selectedId, selectedPhase, satellite, dimensional })); } catch { /* Best-effort view persistence, no dossier data. */ }
+      try { sessionStorage.setItem('saq-map-view-v1', JSON.stringify({ center: [camera.lng, camera.lat], zoom: camera.zoom, bearing: camera.bearing, theme, zone, query, selectedId, selectedPhase, satellite, dimensional, city3d })); } catch { /* Best-effort view persistence, no dossier data. */ }
       disposed = true; observer.disconnect(); document.removeEventListener('visibilitychange', visibility); loaded = false; map?.stop(); map?.remove(); map = undefined;
       window.clearTimeout(startupTimer);
     };
   });
 </script>
 <section class="map-shell" aria-label="Карта объектов">
-  <div class="map-tools">
-    <input aria-label="Поиск ЖК, БИН или адреса на карте" placeholder="Поиск ЖК, БИН, адреса" bind:value={query} />
-    <select aria-label="Базовая зона риска" bind:value={zone}><option value="all">Все зоны риска</option><option value="green">Зелёная</option><option value="yellow">Жёлтая</option><option value="red">Красная</option></select>
-    <div class="segmented" aria-label="Подложка"><button aria-pressed={!satellite || fallback} onclick={() => satellite = false}>Карта</button><button disabled={fallback} aria-pressed={satellite && !fallback} onclick={() => satellite = true}>Спутник</button></div>
-    <div class="segmented" aria-label="Размерность карты"><button aria-pressed={!dimensional} onclick={() => dimensional = false}>2D</button><button disabled={fallback} aria-pressed={dimensional} onclick={() => dimensional = true}>2.5D</button></div>
-    <div class="segmented xray" aria-label="Тема X-Ray"><span>X-Ray</span>{#each themes as t}<button aria-pressed={theme === t.id} onclick={() => theme = t.id}>{t.title}</button>{/each}</div>
-  </div>
   <div class="map-wrap" data-map-ready={fallback || markersReady}>
     <div bind:this={container} class="map" aria-label="Карта объектов Өскемена"></div>
+    <div class="map-tools map-float-top">
+      <button class="small map-list-toggle" aria-expanded={listOpen} onclick={() => listOpen = !listOpen}>Список · {visible.length}</button>
+      <input class="map-search" aria-label="Поиск ЖК, БИН или адреса на карте" placeholder="Поиск ЖК, БИН, адреса" bind:value={query} />
+      <select aria-label="Базовая зона риска" bind:value={zone}><option value="all">Все зоны риска</option><option value="green">Зелёная</option><option value="yellow">Жёлтая</option><option value="red">Красная</option></select>
+      <div class="segmented" aria-label="Подложка"><button aria-pressed={!satellite || fallback} onclick={() => satellite = false}>Карта</button><button disabled={fallback} aria-pressed={satellite && !fallback} onclick={() => satellite = true}>Спутник</button></div>
+      <div class="segmented" aria-label="Размерность карты"><button title="Плоская карта: метки и контуры" aria-pressed={!dimensional && !city3d} onclick={() => { dimensional = false; city3d = false; }}>2D</button><button title="2.5D: условные объёмные коробки корпусов" disabled={fallback} aria-pressed={dimensional} onclick={() => { dimensional = true; city3d = false; }}>2.5D</button><button title="Настоящий 3D-город: реальные дома, рельеф и небо" disabled={fallback} aria-pressed={city3d} onclick={() => { city3d = true; dimensional = false; }}>3D</button></div>
+      <div class="segmented xray" aria-label="Тема X-Ray"><span>X-Ray</span>{#each themes as t}<button aria-pressed={theme === t.id} onclick={() => theme = t.id}>{t.title}</button>{/each}</div>
+    </div>
     {#if fallback}
       <div class="fallback-map" style:height="{height}px" aria-label="Двумерная карта без WebGL">
         {#each tiles as tile (tile.key)}<img class="tile" src={tile.url} alt="" width="256" height="256" style:left="{tile.x}px" style:top="{tile.y}px" draggable="false" />{/each}
@@ -159,30 +201,57 @@
     {#if warning}<p class="map-status" role="status">{warning}</p>{/if}
     {#if selected}
       <aside class="map-preview" aria-label="Предпросмотр ЖК">
-        <button class="close-preview" aria-label="Закрыть предпросмотр" onclick={() => selectedId = ''}>×</button>
-        <span class="preview-eyebrow">{selected.demo ? 'DEMO · ' : ''}{selectedPhase ? `Очередь ${selectedPhase}` : 'Жилой комплекс'}</span>
-        <h3>{selected.name}</h3><p>{selected.address}</p><p>{selected.developer}{selected.bin ? ` · БИН ${selected.bin}` : ' · БИН неизвестен'}</p>
-        <p><strong>{selected.score} / 100 · {zoneLabel(selected.zone)} зона</strong></p>
+        <div class="preview-top"><span class="preview-eyebrow">{selected.demo ? 'Демо · ' : ''}{selectedPhase ? `Очередь ${selectedPhase}` : 'Жилой комплекс'}</span><button class="close-preview" aria-label="Закрыть предпросмотр" onclick={() => selectedId = ''}>×</button></div>
+        <h3>{selected.name}</h3>
+        <p class="preview-sub">{selected.address}</p>
+        <div class="preview-score" style:border-left-color={selected.color}><strong>{selected.score}</strong><span>{zoneLabel(selected.zone)} зона</span></div>
+        <dl class="preview-facts">
+          <div><dt>Застройщик</dt><dd>{selected.developer}</dd></div>
+          <div><dt>БИН</dt><dd>{selected.bin ?? 'Не указан'}</dd></div>
+          <div><dt>Источник</dt><dd>{selected.source || 'Не зафиксирован'}</dd></div>
+          <div><dt>Проверено</dt><dd>{selected.date || '—'}</dd></div>
+          <div><dt>Публикации</dt><dd>{selected.publications ?? 'нет данных'}</dd></div>
+        </dl>
         <p class="key-fact"><span class="legend-dot" style:background={selected.color}></span>{selected.label}</p>
-        {#if dimensional && selectedBox && (selectedBox.properties.approximateFootprint || selectedBox.properties.approximateHeight)}<p class="preview-meta">Условная 3D-коробка: {selectedBox.properties.approximateFootprint ? 'контур и высота приблизительные' : 'контур проверен, высота условная'}. Геометрия не является обмером здания.</p>{/if}
-        <p class="preview-meta">{selected.source ? `${selected.source} · сверка ${selected.date}` : 'Источник и дата проверки этого признака не зафиксированы'} · Публикаций: {selected.publications ?? 'неизвестно'}</p>
+        {#if selectedBox}
+        <div class="preview-model">
+          <strong>{selectedBox.properties.approximateFootprint || selectedBox.properties.approximateHeight ? 'Условная 3D-коробка' : 'Модель здания'}</strong>
+          <dl>
+            <div><dt>Высота</dt><dd>{selectedBox.properties.height} м{selectedBox.properties.approximateHeight ? ' · условная' : ' · измеренная'}</dd></div>
+            <div><dt>Контур</dt><dd>{selectedBox.properties.approximateFootprint ? 'схема 60 × 44 м' : 'проверенный контур'}</dd></div>
+            <div><dt>Источник</dt><dd>{selectedGeom?.source ?? 'схема по координатам'}</dd></div>
+          </dl>
+          <button class="text-button" onclick={() => open('timeline')}>Смотреть прогресс в хронологии →</button>
+        </div>
+        {/if}
+        {#if (dimensional || city3d) && selectedBox && (selectedBox.properties.approximateFootprint || selectedBox.properties.approximateHeight)}<p class="preview-meta">{selectedBox.properties.approximateFootprint ? 'Контур и высота — схема, не обмер.' : 'Высота условная, контур проверен.'}</p>{/if}
         <div class="preview-actions"><button onclick={() => open()}>Открыть досье</button><button class="secondary" onclick={related}>Показать связи</button></div>
         {#if theme === 'construction'}<button class="text-button" onclick={() => open('timeline')}>Открыть хронологию →</button>{/if}
         {#if theme === 'advertising'}<button class="text-button" onclick={() => open('verification')}>Открыть публикации →</button>{/if}
-        {#if relatedIds}<p class="preview-meta">Проверенные связанные ЖК с координатами: {relatedIds.length - 1}. Роли компаний смотрите в досье.</p>{/if}
+        {#if relatedIds}<p class="preview-meta">Связанных ЖК: {relatedIds.length - 1}.</p>{/if}
       </aside>
     {/if}
-    <div class="map-caption"><span>ӨСКЕМЕН · {visible.length} объектов{summaries.some(s => s.demo) ? ' · DEMO' : ''}</span>{#if relatedIds}<button class="small" onclick={() => relatedIds = null}>Все объекты</button>{/if}</div>
-  </div>
-  <div class="map-legend" aria-live="polite">
+    {#if listOpen}
+      <aside class="map-list-panel" aria-label="Список объектов">
+        <div class="map-list-head"><strong>Объекты · {visible.length}</strong><button class="small" aria-label="Закрыть список" onclick={() => listOpen = false}>×</button></div>
+        <div class="map-list-body">{#each visible as item (item.id)}<button class:active={item.id===selectedId} onclick={() => select(item.id)}><span>{item.name}</span><small>{item.label}</small></button>{:else}<p>Объектов по выбранным условиям нет.</p>{/each}</div>
+      </aside>
+    {/if}
+    {#if aboutOpen}
+      <div class="map-about-float" role="dialog" aria-label="О карте и данных">
+        <div class="map-list-head"><strong>О карте и данных</strong><button class="small" aria-label="Закрыть сведения" onclick={() => aboutOpen = false}>×</button></div>
+        <p class="map-disclosure">Без координат: {complexes.length - summaries.length}. {city3d ? '3D — настоящий объёмный город: реальные дома, рельеф и небо. Подсвеченные корпуса те же: проверенные контуры или условная схема 60 × 44 м, высота 36 м.' : dimensional ? '2.5D: объёмные коробки вместо точек. Проверенные контуры используются при наличии; остальные коробки условные (60 × 44 м, высота 36 м).' : '2D: метки объектов и проверенные контуры.'} {!liveRegistryAvailable ? 'Live-сверка реестров недоступна. ' : ''}Координаты приблизительные. Дата спутникового снимка неизвестна. Нулевой балл не подтверждает безопасность.</p>
+      </div>
+    {/if}
+    <div class="map-caption"><span>ӨСКЕМЕН · {visible.length} объектов{summaries.some(s => s.demo) ? ' · DEMO' : ''}</span>{#if relatedIds}<button class="small" onclick={() => relatedIds = null}>Все объекты</button>{/if}<button class="small map-about-toggle" onclick={() => aboutOpen = !aboutOpen} aria-expanded={aboutOpen}>О данных</button></div>
+    <div class="map-legend map-legend-float" aria-live="polite">
     {#if theme === 'off'}<span>Базовая зона: зелёная / жёлтая / красная — по подтверждённым факторам</span>
     {:else if theme === 'legal'}<span><i style="background:#388068"></i> Проверенное основание</span><span><i style="background:#bf453e"></i> Проверенное отсутствие</span><span><i style:background={UNKNOWN_COLOR}></i> Требует проверки</span>
     {:else if theme === 'construction'}<span><i style="background:#388068"></i> Подтверждённая готовность</span><span><i style="background:#b47b11"></i> Разрыв ≥20 п.п.</span><span><i style:background={UNKNOWN_COLOR}></i> Нет измеренной готовности</span>
     {:else}<span><i style="background:#bf453e"></i> Проверено предложение денег</span><span><i style:background={UNKNOWN_COLOR}></i> Не подтверждено / нет данных</span>{/if}
   </div>
-  <p class="map-disclosure">Без координат: {complexes.length - summaries.length}. {dimensional ? '2.5D: объёмные коробки вместо точек. Проверенные контуры используются при наличии; остальные коробки условные (60 × 44 м, высота 36 м).' : '2D: метки объектов и проверенные контуры.'} {!liveRegistryAvailable ? 'Live-сверка реестров недоступна. ' : ''}Координаты приблизительные. Дата спутникового снимка неизвестна. Нулевой балл не подтверждает безопасность.</p>
-  <details class="map-list"><summary>Доступный список · {visible.length} объектов</summary>{#each visible as item (item.id)}<button onclick={() => select(item.id)}>{item.name} — {item.label}</button>{:else}<p>Объектов по выбранным условиям нет.</p>{/each}</details>
+  </div>
 </section>
 <style>
-  .map-shell{min-width:0}.map-tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;align-items:center}.map-tools input{flex:1;min-width:180px}.map-tools select{width:auto}.segmented{display:flex;gap:2px;padding:3px;border:1px solid #ced8cc;border-radius:7px;background:#f0f3ec;align-items:center}.segmented button{background:transparent;color:#294b40;padding:7px 10px;font-size:12px;white-space:nowrap}.segmented button[aria-pressed=true]{background:#244c3f;color:white}.segmented button:disabled{opacity:.4;cursor:not-allowed}.segmented span{font-size:11px;padding:0 7px}.map-wrap{position:relative;overflow:hidden}.map{height:520px;width:100%}.map-status{pointer-events:none;position:absolute;left:12px;top:10px;right:100px;z-index:2;background:#fff4d9;color:#684c14;padding:8px;border-radius:5px;font-size:12px;margin:0}.map-preview{position:absolute;right:16px;bottom:55px;z-index:3;background:#fffffff5;border:1px solid #cdd7c7;border-radius:10px;width:min(340px,calc(100% - 32px));padding:18px;box-shadow:0 8px 24px #183e3326;max-height:calc(100% - 105px);overflow:auto}.map-preview h3{margin:5px 25px 8px 0;font-size:20px}.map-preview p{font-size:12px;margin:7px 0}.map-preview .preview-meta{font-size:11px;color:#586858;line-height:1.5}.preview-eyebrow{font-size:10px;letter-spacing:1px;color:#56715e}.close-preview{position:absolute;right:8px;top:8px;padding:2px 9px;background:transparent;color:#294b40;font-size:22px}.preview-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.preview-actions button{font-size:12px;padding:8px 10px}.key-fact{display:flex;gap:7px;align-items:center}.legend-dot{width:10px;height:10px;flex-shrink:0;border-radius:50%}.text-button{background:none;color:#235742;font-size:12px;padding:7px 0;text-decoration:underline}.map-caption{z-index:1;bottom:25px;left:12px;max-width:calc(100% - 24px);letter-spacing:.5px}.map-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:#425347;padding:6px 0}.map-legend span{display:flex;gap:5px;align-items:center}.map-legend i{height:10px;width:10px;border-radius:50%;display:inline-block}.map-disclosure{font-size:11px;color:#5c6b5c;line-height:1.6}.map-list{font-size:12px}.map-list button{display:block;text-align:left;background:transparent;color:#294b40;margin:5px 0}.fallback-map{position:absolute;inset:0;overflow:hidden;background:#dfe8dc}.tile{position:absolute;max-width:none;pointer-events:none}.fallback-point{position:absolute;transform:translate(-50%,-50%);width:23px;height:23px;border:3px solid white;border-radius:50%;padding:0;box-shadow:0 1px 4px #0006}.fallback-controls{position:absolute;right:8px;top:8px;display:grid;grid-template-columns:repeat(2,34px);gap:3px}.fallback-controls button{padding:5px;background:white;color:#234a3d}.attribution{position:absolute;right:0;bottom:0;padding:2px 4px;font-size:10px;background:#fffd;color:#244c3f}@media(max-width:640px){.map{height:560px}.map-preview{right:8px;bottom:55px;width:calc(100% - 16px);max-height:330px;padding:12px}.map-tools{gap:6px}.map-tools input{min-width:100%;width:100%}.segmented button{padding:7px}.xray{width:100%;justify-content:space-between}.map-caption{font-size:9px}}
+  .map-shell{min-width:0}.map-tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;align-items:center}.map-tools input{flex:1;min-width:180px}.map-tools select{width:auto}.segmented{display:flex;gap:2px;padding:3px;border:1px solid #ced8cc;border-radius:7px;background:#f0f3ec;align-items:center}.segmented button{background:transparent;color:#294b40;padding:7px 10px;font-size:12px;white-space:nowrap}.segmented button[aria-pressed=true]{background:#244c3f;color:white}.segmented button:disabled{opacity:.4;cursor:not-allowed}.segmented span{font-size:11px;padding:0 7px}.map-wrap{position:relative;overflow:hidden}.map{height:520px;width:100%}.map-status{pointer-events:none;position:absolute;left:12px;top:10px;right:100px;z-index:2;background:#fff4d9;color:#684c14;padding:8px;border-radius:5px;font-size:12px;margin:0}.map-preview{position:absolute;right:16px;bottom:55px;z-index:3;background:#fffffff5;border:1px solid #cdd7c7;border-radius:10px;width:min(340px,calc(100% - 32px));padding:18px;box-shadow:0 8px 24px #183e3326;max-height:calc(100% - 105px);overflow:auto}.map-preview h3{margin:5px 25px 8px 0;font-size:20px}.map-preview p{font-size:12px;margin:7px 0}.map-preview .preview-meta{font-size:11px;color:#586858;line-height:1.5}.preview-eyebrow{font-size:10px;letter-spacing:1px;color:#56715e}.close-preview{position:absolute;right:8px;top:8px;padding:2px 9px;background:transparent;color:#294b40;font-size:22px}.preview-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.preview-actions button{font-size:12px;padding:8px 10px}.key-fact{display:flex;gap:7px;align-items:center}.legend-dot{width:10px;height:10px;flex-shrink:0;border-radius:50%}.text-button{background:none;color:#235742;font-size:12px;padding:7px 0;text-decoration:underline}.map-caption{z-index:1;bottom:25px;left:12px;max-width:calc(100% - 24px);letter-spacing:.5px}.map-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:#425347;padding:6px 0}.map-legend span{display:flex;gap:5px;align-items:center}.map-legend i{height:10px;width:10px;border-radius:50%;display:inline-block}.map-disclosure{font-size:11px;color:#5c6b5c;line-height:1.6}.fallback-map{position:absolute;inset:0;overflow:hidden;background:#dfe8dc}.tile{position:absolute;max-width:none;pointer-events:none}.fallback-point{position:absolute;transform:translate(-50%,-50%);width:23px;height:23px;border:3px solid white;border-radius:50%;padding:0;box-shadow:0 1px 4px #0006}.fallback-controls{position:absolute;right:8px;top:8px;display:grid;grid-template-columns:repeat(2,34px);gap:3px}.fallback-controls button{padding:5px;background:white;color:#234a3d}.attribution{position:absolute;right:0;bottom:0;padding:2px 4px;font-size:10px;background:#fffd;color:#244c3f}@media(max-width:640px){.map{height:560px}.map-preview{right:8px;bottom:55px;width:calc(100% - 16px);max-height:330px;padding:12px}.map-tools{gap:6px}.map-tools input{min-width:0;flex:1 1 140px;width:auto}.segmented button{padding:7px}.segmented{flex:0 0 auto}.xray{flex:0 0 auto}.map-caption{font-size:9px}}
 </style>

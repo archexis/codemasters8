@@ -105,18 +105,16 @@
 </script>
 <svelte:window onkeydown={e => { if (e.key === 'Escape') { authOpen = false; menu = false; } }}/>
 <header class="topbar no-print"><a class="brand" href="#/map"><span class="brand-symbol">S</span><span>SAQ QURYLYS<small>САҚ · МОНИТОРИНГ РИСКОВ</small></span></a><button class="mobile-menu" aria-expanded={menu} aria-controls="navigation" onclick={() => menu = !menu}>Меню</button><nav id="navigation" class:open={menu} aria-label="Основная навигация">{#each ['map','publications','registries'] as key}<a href="#/{key}" class:active={page === key || (key==='publications'&&page==='analyze')} aria-current={page===key?'page':undefined}>{titles[key]}</a>{/each}</nav><div class="account"><span class="mode-dot"></span><button class="small" onclick={() => authOpen = !authOpen}>{reviewer || 'Войти'}</button></div></header>
-<div class="status-strip no-print"><span>{demoMode ? 'DEMO · данные хранятся в этом браузере' : 'SUPABASE · персональное рабочее пространство'}</span><span>Өскемен / Усть-Каменогорск</span></div>
+<div class="status-strip no-print"><span>{demoMode ? 'Демо-данные · хранятся в этом браузере' : 'Вы вошли · ваше рабочее место'}</span><span>Өскемен / Усть-Каменогорск</span></div>
 {#if authOpen}<section class="auth-panel no-print"><h2>{demoMode ? 'Демонстрационный сеанс' : 'Вход оператора'}</h2>{#if demoMode}<p>Демо-аналитик. Данные хранятся в этом браузере.</p><button onclick={reset}>Сбросить демо</button>{:else if reviewer !== 'Демо-аналитик'}<p>{reviewer}</p><div class="actions"><button onclick={async () => { await supabase!.auth.signOut(); authOpen = false; }}>Выйти</button><button onclick={exportApi}>Экспорт через API</button></div>{:else}<form onsubmit={e => { e.preventDefault(); void auth(); }} class="space-y-3"><label>Email<input type="email" autocomplete="username" required bind:value={email}/></label><label>Пароль<input type="password" autocomplete="current-password" minlength="8" required bind:value={password}/></label><button class="primary" disabled={authBusy}>Войти</button></form>{/if}<div class="actions mt-4"><a class="button small" href="#/backup" onclick={()=>authOpen=false}>Резервная копия</a><button class="small" onclick={() => authOpen = false}>Закрыть</button></div></section>{/if}
 <main>
 {#if error}<div class="error mb-5" role="alert">{error}<button class="small ml-3" onclick={reload}>Повторить загрузку</button></div>{/if}
 {#if notice}<div class="notice no-print mb-5" role="status">{notice}<button class="small ml-3" onclick={() => notice = ''}>Закрыть</button></div>{/if}
 {#if loading}<p role="status">Загрузка рабочего пространства…</p>
 {:else if page==='map'}
-<div class="page-heading"><div><p class="eyebrow">ӨСКЕМЕН · ТЕРРИТОРИАЛЬНЫЙ МОНИТОРИНГ</p><h1>Карта рисков</h1></div><a class="button" href="#/registries">Открыть каталог ↗</a></div>
-<RiskMap complexes={shown} ads={workspace.ads} geometry={workspace.geometries??[]} relations={(workspace.relations??[]).filter(r=>r.fromId.startsWith('complex:')&&r.toId.startsWith('complex:')).map(r=>({fromId:r.fromId.slice(8),toId:r.toId.slice(8),verified:r.verificationStatus==='verified'}))}/>
-<p class="muted text-xs mt-4">Признаки риска требуют проверки человеком. Нулевой балл не доказывает безопасность; неизвестное основание не начисляет R1.</p>
+<div class="map-page"><RiskMap complexes={shown} ads={workspace.ads} geometry={workspace.geometries??[]} relations={(workspace.relations??[]).filter(r=>r.fromId.startsWith('complex:')&&r.toId.startsWith('complex:')).map(r=>({fromId:r.fromId.slice(8),toId:r.toId.slice(8),verified:r.verificationStatus==='verified'}))}/></div>
 {:else if page==='publications'||page==='analyze'}
-<Publications {workspace} {commit} adding={page==='analyze'||params.has('add')} initialText={params.get('text')||''} complexId={page==='analyze'?zkId:params.get('complex')||''}/>
+<div class="pub-page"><Publications {workspace} {commit} adding={page==='analyze'||params.has('add')} initialText={params.get('text')||''} complexId={page==='analyze'?zkId:params.get('complex')||''}/></div>
 {:else if page==='registries'}<RegistryCatalog workspace={scopedWorkspace} {commit}/>
 {:else if page==='complexes'||page==='cases'}
 {#if selected&&(page!=='cases'||selectedCase)&&(!phaseId||workspace.phases?.some(p=>p.id===phaseId&&p.complexId===zkId))}
