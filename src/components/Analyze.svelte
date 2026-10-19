@@ -262,7 +262,7 @@
     } catch (e) { error = e instanceof Error ? e.message : String(e); } finally { busy = false; }
   }
 </script>
-<div class="page-heading"><div><p class="eyebrow">ПУБЛИКАЦИЯ → ГИПОТЕЗА → РЕШЕНИЕ</p><h1>Проверка объявления</h1></div></div>
+<div class="page-heading"><div><p class="eyebrow">Публикация → гипотеза → решение</p><h1>Проверка объявления</h1></div></div>
 <p class="muted mb-6">Вставьте текст и зафиксируйте источник. Анализ предлагает гипотезы; факторы подтверждает аналитик.</p>
 <div class="two-col">
   <form class="panel space-y-4" onsubmit={e => { e.preventDefault(); void run(); }}>

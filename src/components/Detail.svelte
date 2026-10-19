@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { AppState, Code, Complex, FactorStatus } from '../lib/types';
   import type { Command } from '../lib/domain';
-  import { codes, computeScore, FACTOR_META, WEIGHTS, zoneLabel } from '../lib/scoring';
+  import { codes, computeScore, FACTOR_META, WEIGHTS, zoneLabel, scoreBreakdown } from '../lib/scoring';
   import { uploadFile, removeFile } from '../lib/repository';
   import { safeUrl } from '../lib/domain';
   import { detectPlatform } from '../lib/parser';
@@ -24,6 +24,10 @@
   }
   let ready = $state<number | undefined>(); let observationSource = $state(''); let observationDate = $state(new Date().toISOString().slice(0,10)); let note = $state(''); let files = $state<FileList>();
   const score = $derived(computeScore(complex.factors));
+  const breakdown = $derived(scoreBreakdown(complex.factors));
+  const formula = $derived(breakdown.components.filter(c => c.counted).map(c => `${c.code} +${c.weight}`).join(' + ') || 'нет подтверждённых факторов');
+  const statusWord = (s: string) => s === 'confirmed' ? 'подтверждён' : s === 'rejected' ? 'отклонён' : s === 'hypothesis' ? 'гипотеза' : 'нужна проверка';
+  const statusClass = (s: string) => s === 'confirmed' ? 'is-confirmed' : s === 'rejected' ? 'is-rejected' : s === 'hypothesis' ? 'is-hypothesis' : 'is-pending';
   const currentSignal = $derived(workspace.signals[complex.id]);
   const displayComplex = $derived(signal && currentSignal?.status !== 'draft' && currentSignal?.snapshot ? currentSignal.snapshot : complex);
   const displayScore = $derived(computeScore(displayComplex.factors));
@@ -53,7 +57,7 @@
   }
 </script>
 {#if !signal}
-<div class="page-heading"><div><a href="#/overview" class="muted">← Все объекты</a><p class="eyebrow mt-5">{complex.id} / {signal ? 'СИГНАЛЬНАЯ КАРТОЧКА' : complex.demo ? 'ДЕМОНСТРАЦИОННЫЙ ОБЪЕКТ' : 'КАРТОЧКА ОБЪЕКТА'}</p><h1>{complex.name}</h1><p class="muted mt-2">{complex.address}</p></div><div class="risk-score {score.zone}"><strong>{score.score}</strong><span>{zoneLabel(score.zone)} зона</span></div></div>
+<div class="page-heading"><div><a href="#/overview" class="muted">← Все объекты</a><p class="eyebrow mt-5">{complex.id} · {complex.demo ? 'демо, вымышленный объект' : 'карточка объекта'}</p><h1>{complex.name}</h1><p class="muted mt-2">{complex.address}</p></div><div class="risk-score {score.zone}"><strong>{score.score}</strong><span class="zone-word">{zoneLabel(score.zone)} зона · из 100</span><span class="formula">{formula}</span>{#if breakdown.pending.length}<span class="pending-note">На проверке: {breakdown.pending.join(', ')} — в сумму не входят</span>{/if}</div></div>
 <div class="actions mb-6 no-print"><a class="button" href="#/analyze/{complex.id}">Проверить объявление</a><a class="button" href={signal ? `#/detail/${complex.id}` : `#/signal/${complex.id}`}>{signal ? 'К карточке объекта' : 'Сигнальная карточка'}</a>{#if !signal}<button onclick={() => edit = !edit}>Редактировать объект</button>{/if}</div>
 {#if error}<p class="error mb-4" role="alert">{error}</p>{/if}
 {#if edit}<ComplexForm value={complex} onsave={async z => { await commit({ type: 'complex', complex: z }); edit = false; }} oncancel={() => edit = false}/>{/if}
@@ -62,7 +66,7 @@
   <SignalCard {workspace} zkId={complex.id} {commit}/>
 {:else}
   <div class="two-col mb-6"><section class="panel"><h2>Объект и основание</h2><dl><dt>Застройщик</dt><dd>{complex.developer}</dd><dt>БИН</dt><dd>{complex.bin || 'Не указан'}</dd><dt>Стадия</dt><dd>{complex.stage}</dd><dt>Готовность</dt><dd>Заявлена: {complex.readinessClaimed ?? '—'}% · подтверждена: {complex.readinessConfirmed ?? '—'}%</dd><dt>Правовое основание</dt><dd>{complex.legalBasis.status === 'verified' ? 'Подтверждено' : complex.legalBasis.status === 'absent-verified' ? 'Отсутствие проверено' : 'Нужна проверка'}</dd><dt>Источник / дата</dt><dd>{complex.legalBasis.source} · {complex.legalBasis.checkedAt}</dd></dl><p class="muted mt-4">{complex.note}</p></section>
-  <section class="panel"><h2>Факторы риска</h2>{#each codes as c}{@const f = complex.factors.find(f => f.code === c)}<div class="factor-row"><span><b>{c}</b> {FACTOR_META[c].title}<small>{f?.status === 'confirmed' ? 'Подтверждён' : f?.status === 'rejected' ? 'Отклонён' : f?.status === 'hypothesis' ? 'Гипотеза' : 'Нужна проверка'} · {f?.evidence?.source || FACTOR_META[c].hint}</small></span><b>+{WEIGHTS[c]}</b></div>{/each}</section></div>
+  <section class="panel"><h2>Факторы риска</h2>{#each codes as c}{@const f = complex.factors.find(f => f.code === c)}{@const st = f?.status ?? 'needs-verification'}<div class="factor-row {st === 'confirmed' ? 'is-confirmed' : st === 'rejected' ? 'is-rejected' : st === 'hypothesis' ? 'is-hypothesis' : 'is-pending'}"><span><b>{c}</b> {FACTOR_META[c].title}<small><span class="st {st === 'confirmed' ? 'confirmed' : st === 'rejected' ? 'rejected' : st === 'hypothesis' ? 'hypothesis' : 'pending'}">{statusWord(st)}</span> · {f?.evidence?.source || FACTOR_META[c].hint}</small></span><b>+{st === 'confirmed' ? WEIGHTS[c] : 0}</b></div>{/each}<p class="notice mt-4">Считаются только подтверждённые факторы. Неподтверждённые показывают +0, пока проверка не завершена.</p></section></div>
   {#if r1Revoked || r5Revoked}<section class="panel mb-6"><h2>Снятые решения</h2>
     {#if r1Revoked}<p><b>R1</b> — решение снято: материалы legalBasis изменились (type/status/source/checkedAt/reviewText). Требуется повторное подтверждение; баллы начисляются только после нового confirm.</p>{/if}
     {#if r5Revoked}<p><b>R5</b> — решение снято: наблюдения готовности изменились (новое значение, источник или разрыв &lt;20 п.п.). Требуется повторное подтверждение; баллы начисляются только после нового confirm.</p>{/if}

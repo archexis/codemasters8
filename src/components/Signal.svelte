@@ -27,13 +27,13 @@
 </div>
 {#if error}<p role="alert">{error}</p>{/if}
 <article class="panel signal-sheet">
-  <p class="eyebrow">SAQ QURYLYS · СИГНАЛЬНАЯ КАРТОЧКА</p>
+  <p class="eyebrow">SAQ Qurylys · сигнальная карточка</p>
   <h1>{z?.name ?? zkId}</h1><p>{z?.address ?? 'Исторический адрес неизвестен'}</p>
   <p>ID {vm.id} · ЖК {zkId} · revision {vm.revision || 'draft'} · sourceVersion {vm.sourceVersion}</p>
   <p>Статус: <b>{vm.status === 'confirmed' ? 'Подтверждён' : vm.status === 'returned' ? 'Возвращён' : 'Черновик'}</b> · basedOnRevision {vm.basedOnRevision ?? 'нет'}</p>
   <p>{vm.at} · автор: {vm.reviewer}</p><p>Обоснование: {vm.comment || 'не указано'}</p>
   {#if incomplete}<p class="error">legacyIncomplete: исторический снимок неполон. Полная утверждённая карточка недоступна; требуется новая проверка.</p>{:else if z}
-    <div class="risk-score {vm.zone}"><strong>{vm.score}</strong><span>{zoneLabel(vm.zone ?? 'green')} зона</span></div>
+    <div class="risk-score {vm.zone}"><strong>{vm.score}</strong><span class="zone-word">{zoneLabel(vm.zone ?? 'green')} зона · из 100</span><span class="formula">Сумма подтверждённых факторов · веса v{vm.weightsVersion}: R1 35, R2 25, R3 10, R4 15, R5 10, R6 5</span></div>
     <p>Счёт: {vm.score} · зона {vm.zone} · weightsVersion {vm.weightsVersion}. Веса: R1 35; R2 25; R3 10; R4 15; R5 10; R6 5.</p>
     <p>Застройщик: {z.developer} · БИН: {z.bin || 'не указан'} · стадия: {z.stage || 'не указана'} · происхождение: {z.origin} {z.demo ? '(DEMO)' : ''}</p>
     <h2>Сверка правового основания</h2><p>{z.legalBasis.type} / {z.legalBasis.status} · {z.legalBasis.source || 'не указан'} · {z.legalBasis.checkedAt || 'дата неизвестна'}</p><p>{z.legalBasis.reviewText || 'материал отсутствует'}</p>
