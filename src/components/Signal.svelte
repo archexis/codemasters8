@@ -29,13 +29,12 @@
 <article class="panel signal-sheet">
   <p class="eyebrow">SAQ Qurylys · сигнальная карточка</p>
   <h1>{z?.name ?? zkId}</h1><p>{z?.address ?? 'Исторический адрес неизвестен'}</p>
-  <p>ID {vm.id} · ЖК {zkId} · revision {vm.revision || 'draft'} · sourceVersion {vm.sourceVersion}</p>
-  <p>Статус: <b>{vm.status === 'confirmed' ? 'Подтверждён' : vm.status === 'returned' ? 'Возвращён' : 'Черновик'}</b> · basedOnRevision {vm.basedOnRevision ?? 'нет'}</p>
+  <p>Статус: <b>{vm.status === 'confirmed' ? 'Подтверждён' : vm.status === 'returned' ? 'Возвращён' : 'Черновик'}</b></p>
+  <details class="tech no-print"><summary>Технические детали снимка</summary><p>ID {vm.id} · ЖК {zkId} · revision {vm.revision || 'draft'} · sourceVersion {vm.sourceVersion} · basedOnRevision {vm.basedOnRevision ?? 'нет'}</p></details>
   <p>{vm.at} · автор: {vm.reviewer}</p><p>Обоснование: {vm.comment || 'не указано'}</p>
   {#if incomplete}<p class="error">legacyIncomplete: исторический снимок неполон. Полная утверждённая карточка недоступна; требуется новая проверка.</p>{:else if z}
-    <div class="risk-score {vm.zone}"><strong>{vm.score}</strong><span class="zone-word">{zoneLabel(vm.zone ?? 'green')} зона · из 100</span><span class="formula">Сумма подтверждённых факторов · веса v{vm.weightsVersion}: R1 35, R2 25, R3 10, R4 15, R5 10, R6 5</span></div>
-    <p>Счёт: {vm.score} · зона {vm.zone} · weightsVersion {vm.weightsVersion}. Веса: R1 35; R2 25; R3 10; R4 15; R5 10; R6 5.</p>
-    <p>Застройщик: {z.developer} · БИН: {z.bin || 'не указан'} · стадия: {z.stage || 'не указана'} · происхождение: {z.origin} {z.demo ? '(DEMO)' : ''}</p>
+    <div class="risk-score {vm.zone}"><strong>{vm.score}</strong><span class="zone-total">из 100</span><span class="formula">Сумма подтверждённых факторов · веса v{vm.weightsVersion}: R1 35, R2 25, R3 10, R4 15, R5 10, R6 5</span></div>
+    <p>Застройщик: {z.developer} · БИН: {z.bin || 'не указан'} · стадия: {z.stage || 'не указана'}</p>
     <h2>Сверка правового основания</h2><p>{z.legalBasis.type} / {z.legalBasis.status} · {z.legalBasis.source || 'не указан'} · {z.legalBasis.checkedAt || 'дата неизвестна'}</p><p>{z.legalBasis.reviewText || 'материал отсутствует'}</p>
     {#each z.factors.filter(f=>f.status==='confirmed') as f}
       <section class="factor-print"><h2>{f.code} +{WEIGHTS[f.code]} · {FACTOR_META[f.code].title}</h2>
@@ -46,11 +45,10 @@
         {#if f.evidence?.adId}{@const ad=vm.ads?.find(a=>a.id===f.evidence?.adId)}
           {#if ad}<p>Публикация {ad.id} · дата: {ad.date ?? 'не указана'} · фиксация: {ad.captureAt}</p><p>{ad.platform} · {ad.account} · {ad.url || 'URL не указан'}</p><p class="publication-text">{ad.text}</p>{#each ad.sightings ?? [] as sight}<p>Фиксация источника: {sight.source} · {sight.date ?? 'дата неизвестна'} · {sight.captureAt}</p>{/each}{:else}<p>Публикация отсутствует в снимке</p>{/if}
         {/if}
-        <p>Material IDs: {f.evidence?.mediaIds?.join(', ') || 'нет файлов'}</p>
+        <p>Файлы: {f.evidence?.mediaIds?.join(', ') || 'нет'}</p>
       </section>
     {/each}
-    {#each vm.mediaManifest ?? [] as m}{#if m.kind==='media' && m.path}<div class="no-print"><MediaCard media={{id:m.id,zkId,path:m.path,name:m.name ?? m.id,kind:m.mediaKind ?? 'document',date:m.capturedAt?.slice(0,10) ?? '2000-01-01',note:m.note ?? '',ready:null,sha256:m.sha256,bytes:m.bytes}}/></div>{/if}<p>Manifest: {m.kind} / {m.id} · {m.path ?? ''} · SHA256 {m.sha256 ?? 'не указан'} · bytes {m.bytes ?? 'не указаны'}</p>{/each}
-    {#each vm.aiProvenance ?? [] as ai}<p>AI provenance: {ai.code} · run {ai.runId} · {ai.provider ?? 'не указан'} / {ai.model ?? 'не указана'} · prompt {ai.promptVersion ?? 'не указан'} · hash {ai.inputHash ?? 'не указан'} · hypothesis {ai.hypothesisId ?? 'не указана'}</p>{/each}
+    <details class="tech"><summary>Приложения и происхождение данных</summary>{#each vm.mediaManifest ?? [] as m}{#if m.kind==='media' && m.path}<div class="no-print"><MediaCard media={{id:m.id,zkId,path:m.path,name:m.name ?? m.id,kind:m.mediaKind ?? 'document',date:m.capturedAt?.slice(0,10) ?? '2000-01-01',note:m.note ?? '',ready:null,sha256:m.sha256,bytes:m.bytes}}/></div>{/if}<p>Приложение: {m.id} · SHA256 {m.sha256 ?? 'не зафиксирован'} · байт: {m.bytes ?? 'неизвестно'}</p>{/each}{#each vm.aiProvenance ?? [] as ai}<p>Анализ: {ai.code} · модель {ai.model ?? 'не указана'} · гипотеза {ai.hypothesisId ?? 'не указана'}</p>{/each}</details>
   {/if}
   <p>Признаки риска не устанавливают факт правонарушения. Решение принимает человек.</p>
 </article>

@@ -27,7 +27,6 @@
   let camera = $state({ lng: 82.614, lat: 49.984, zoom: 12, bearing: 0 });
   let width = $state(800);
   let listOpen = $state(false);
-  let aboutOpen = $state(false);
   let height = $state(520);
   const themes: { id: XRayTheme; title: string }[] = [{ id: 'off', title: 'Выкл' }, { id: 'legal', title: 'Правовой' }, { id: 'construction', title: 'Стройка' }, { id: 'advertising', title: 'Реклама' }];
   const summaries = $derived(complexes.filter(hasCoordinates).map(z => summarizeMap(z, theme, ads)));
@@ -131,8 +130,10 @@
         satellite = saved.satellite === true; dimensional = saved.dimensional === true; city3d = saved.city3d === true && saved.dimensional !== true;
       }
     } catch { /* Storage may be unavailable; the map remains usable. */ }
-    const observer = new ResizeObserver(entries => { width = entries[0].contentRect.width; height = entries[0].contentRect.height; map?.resize(); });
+    const observer = new ResizeObserver(entries => { width = entries[0].contentRect.width; height = entries[0].contentRect.height; if (map) map.resize(); });
     observer.observe(container);
+    const onWindowResize = () => { if (map) map.resize(); };
+    window.addEventListener('resize', onWindowResize);
     function visibility() { if (document.hidden) map?.stop(); else map?.resize(); }
     document.addEventListener('visibilitychange', visibility);
     Promise.all([import('maplibre-gl'), import('maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url')]).then(([ml, worker]) => {
@@ -168,12 +169,14 @@
             try { const zoom = await (active.getSource('complexes') as GeoJSONSource).getClusterExpansionZoom(Number(f.properties.cluster_id)); if (!disposed && map === active) active.easeTo({ center: f.geometry.coordinates as [number, number], zoom }); } catch { /* Map may unmount during cluster expansion. */ }
           });
           loaded = true;
+        try { map.resize(); } catch { /* Canvas подтянется следующим кадром. */ }
+        window.setTimeout(() => { try { if (!disposed) map?.resize(); } catch { /* ignore */ } }, 600);
         });
       } catch { releaseWebGL('WebGL недоступен. Включена функциональная 2D-карта.'); }
     }).catch(() => { if (!disposed) releaseWebGL('Картографический модуль недоступен. Включена 2D-карта.'); });
     return () => {
       try { sessionStorage.setItem('saq-map-view-v1', JSON.stringify({ center: [camera.lng, camera.lat], zoom: camera.zoom, bearing: camera.bearing, theme, zone, query, selectedId, selectedPhase, satellite, dimensional, city3d })); } catch { /* Best-effort view persistence, no dossier data. */ }
-      disposed = true; observer.disconnect(); document.removeEventListener('visibilitychange', visibility); loaded = false; map?.stop(); map?.remove(); map = undefined;
+      disposed = true; observer.disconnect(); document.removeEventListener('visibilitychange', visibility); window.removeEventListener('resize', onWindowResize); loaded = false; map?.stop(); map?.remove(); map = undefined;
       window.clearTimeout(startupTimer);
     };
   });
@@ -204,7 +207,7 @@
         <div class="preview-top"><span class="preview-eyebrow">{selected.demo ? 'Демо · ' : ''}{selectedPhase ? `Очередь ${selectedPhase}` : 'Жилой комплекс'}</span><button class="close-preview" aria-label="Закрыть предпросмотр" onclick={() => selectedId = ''}>×</button></div>
         <h3>{selected.name}</h3>
         <p class="preview-sub">{selected.address}</p>
-        <div class="preview-score" style:border-left-color={selected.color}><strong>{selected.score}</strong><span>{zoneLabel(selected.zone)} зона</span></div>
+        <div class="preview-score"><strong>{selected.score}</strong><span class="legend-dot" role="img" aria-label={zoneLabel(selected.zone) + ' зона'} style:background={selected.color}></span></div>
         <dl class="preview-facts">
           <div><dt>Застройщик</dt><dd>{selected.developer}</dd></div>
           <div><dt>БИН</dt><dd>{selected.bin ?? 'Не указан'}</dd></div>
@@ -237,14 +240,8 @@
         <div class="map-list-body">{#each visible as item (item.id)}<button class:active={item.id===selectedId} onclick={() => select(item.id)}><span>{item.name}</span><small>{item.label}</small></button>{:else}<p>Объектов по выбранным условиям нет.</p>{/each}</div>
       </aside>
     {/if}
-    {#if aboutOpen}
-      <div class="map-about-float" role="dialog" aria-label="О карте и данных">
-        <div class="map-list-head"><strong>О карте и данных</strong><button class="small" aria-label="Закрыть сведения" onclick={() => aboutOpen = false}>×</button></div>
-        <p class="map-disclosure">Без координат: {complexes.length - summaries.length}. {city3d ? '3D — настоящий объёмный город: реальные дома, рельеф и небо. Подсвеченные корпуса те же: проверенные контуры или условная схема 60 × 44 м, высота 36 м.' : dimensional ? '2.5D: объёмные коробки вместо точек. Проверенные контуры используются при наличии; остальные коробки условные (60 × 44 м, высота 36 м).' : '2D: метки объектов и проверенные контуры.'} {!liveRegistryAvailable ? 'Live-сверка реестров недоступна. ' : ''}Координаты приблизительные. Дата спутникового снимка неизвестна. Нулевой балл не подтверждает безопасность.</p>
-      </div>
-    {/if}
-    <div class="map-caption"><span>Өскемен · {visible.length} объектов{summaries.some(s => s.demo) ? ' · демо' : ''}</span>{#if relatedIds}<button class="small" onclick={() => relatedIds = null}>Все объекты</button>{/if}<button class="small map-about-toggle" onclick={() => aboutOpen = !aboutOpen} aria-expanded={aboutOpen}>О данных</button></div>
-    <div class="map-legend map-legend-float" aria-live="polite">
+    <div class="map-caption visually-hidden"><span>Өскемен · {visible.length} объектов{summaries.some(s => s.demo) ? ' · демо' : ''}</span>{#if relatedIds}<button class="small" onclick={() => relatedIds = null}>Все объекты</button>{/if}</div>
+    <div class="map-legend map-legend-float visually-hidden" aria-live="polite">
     {#if theme === 'off'}<span>Базовая зона: зелёная / жёлтая / красная — по подтверждённым факторам</span>
     {:else if theme === 'legal'}<span><i style="background:#388068"></i> Проверенное основание</span><span><i style="background:#bf453e"></i> Проверенное отсутствие</span><span><i style:background={UNKNOWN_COLOR}></i> Требует проверки</span>
     {:else if theme === 'construction'}<span><i style="background:#388068"></i> Подтверждённая готовность</span><span><i style="background:#b47b11"></i> Разрыв ≥20 п.п.</span><span><i style:background={UNKNOWN_COLOR}></i> Нет измеренной готовности</span>
@@ -253,5 +250,5 @@
   </div>
 </section>
 <style>
-  .map-shell{min-width:0}.map-tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;align-items:center}.map-tools input{flex:1;min-width:180px}.map-tools select{width:auto}.segmented{display:flex;gap:0;padding:0;border:1px solid #17150e;border-radius:3px;background:#fff;align-items:stretch}.segmented button{background:#fff;color:#4a463b;padding:8px 11px;font-size:12px;white-space:nowrap;border:0;border-right:1px solid #e3dfd2;border-radius:0}.segmented button[aria-pressed=true]{background:#17150e;color:#fff}.segmented button:disabled{opacity:.4;cursor:not-allowed}.segmented span{font-size:11px;padding:0 7px}.map-wrap{position:relative;overflow:hidden}.map{height:520px;width:100%}.map-status{pointer-events:none;position:absolute;left:12px;top:10px;right:100px;z-index:2;background:#fff;color:#17150e;padding:8px 10px;border:1px solid #17150e;border-left-width:4px;border-radius:3px;font-size:12px;margin:0}.map-preview{position:absolute;right:16px;bottom:55px;z-index:3;background:#fff;border:1px solid #17150e;border-top:3px solid #17150e;border-radius:3px;width:min(340px,calc(100% - 32px));padding:18px;max-height:calc(100% - 105px);overflow:auto}.map-preview h3{margin:5px 25px 8px 0;font-size:21px;font-family:Georgia,serif;font-weight:400}.map-preview p{font-size:12px;margin:7px 0}.map-preview .preview-meta{font-size:11px;color:#586858;line-height:1.5}.preview-eyebrow{font-size:12px;color:#4a463b;font-weight:500}.close-preview{position:absolute;right:8px;top:8px;padding:2px 9px;background:#fff;color:#17150e;font-size:22px;border:1px solid #e3dfd2}.preview-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;border-top:1px solid #e3dfd2;padding-top:12px}.preview-actions button{font-size:12px;padding:8px 10px}.key-fact{display:flex;gap:7px;align-items:center}.legend-dot{width:14px;height:3px;flex-shrink:0;border-radius:0}.text-button{background:none;border:0;color:#17150e;font-size:12px;padding:7px 0;text-decoration:underline}.map-caption{z-index:1;bottom:25px;left:12px;max-width:calc(100% - 24px)}.map-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:#4a463b;padding:6px 0}.map-legend span{display:flex;gap:5px;align-items:center}.map-legend i{height:3px;width:14px;display:inline-block}.map-disclosure{font-size:11px;color:#4a463b;line-height:1.6}.fallback-map{position:absolute;inset:0;overflow:hidden;background:#e9e6d9}.tile{position:absolute;max-width:none;pointer-events:none}.fallback-point{position:absolute;transform:translate(-50%,-50%);width:18px;height:18px;border:2px solid white;border-radius:0;padding:0}.fallback-controls{position:absolute;right:8px;top:8px;display:grid;grid-template-columns:repeat(2,34px);gap:3px}.fallback-controls button{padding:5px;background:white;color:#17150e;border:1px solid #17150e}.attribution{position:absolute;right:0;bottom:0;padding:2px 4px;font-size:10px;background:#fff;color:#17150e}@media(max-width:640px){.map{height:560px}.map-preview{right:8px;bottom:55px;width:calc(100% - 16px);max-height:330px;padding:12px}.map-tools{gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.map-tools::-webkit-scrollbar{display:none}.map-tools input{min-width:0;flex:1 1 140px;width:auto}.segmented button{padding:7px}.segmented{flex:0 0 auto}.xray{flex:0 0 auto}.map-caption{font-size:9px}}
+  .map-shell{min-width:0}.map-tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;align-items:center}.map-tools input{flex:1;min-width:180px}.map-tools select{width:auto}.segmented{display:flex;gap:2px;padding:3px;border:0;border-radius:12px;background:rgba(0,0,0,0.06);align-items:center}.segmented button{background:transparent;box-shadow:none;border:0;border-radius:9px;color:#6e6e73;padding:7px 11px;font-size:13px;font-weight:600;white-space:nowrap}.segmented button[aria-pressed=true]{background:#fff;color:#1d1d1f;box-shadow:0 1px 4px rgba(0,0,0,0.16)}.segmented button:disabled{opacity:.4;cursor:not-allowed}.segmented span{font-size:11px;padding:0 7px}.map-wrap{position:relative;overflow:hidden}.map{height:100%;min-height:520px;width:100%}.map-status{pointer-events:none;position:absolute;left:12px;top:10px;right:100px;z-index:2;background:rgba(255,255,255,0.88);color:#1d1d1f;padding:9px 13px;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,0.1);font-size:12.5px;margin:0}.map-preview{position:absolute;z-index:3;max-height:calc(100% - 105px);overflow:auto}.map-preview h3{margin:5px 25px 8px 0;font-size:21px;font-weight:700;letter-spacing:-0.01em}.map-preview p{font-size:12px;margin:7px 0}.map-preview .preview-meta{font-size:11px;color:#586858;line-height:1.5}.preview-eyebrow{font-size:12px;color:#4a463b;font-weight:500}.close-preview{position:absolute;right:8px;top:8px;padding:2px 9px;background:#fff;color:#17150e;font-size:22px;border:1px solid #e3dfd2}.preview-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;border-top:1px solid #e3dfd2;padding-top:12px}.preview-actions button{font-size:12px;padding:8px 10px}.key-fact{display:flex;gap:7px;align-items:center}.legend-dot{width:10px;height:10px;flex-shrink:0;border-radius:50%}.text-button{background:none;border:0;color:#0071e3;font-size:12px;padding:7px 0;font-weight:600}.map-caption{z-index:1;bottom:25px;left:12px;max-width:calc(100% - 24px)}.map-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:#6e6e73;padding:6px 0}.map-legend span{display:flex;gap:5px;align-items:center}.map-legend i{height:10px;width:10px;border-radius:50%;display:inline-block}.fallback-map{position:absolute;inset:0;overflow:hidden;background:#eceef1}.tile{position:absolute;max-width:none;pointer-events:none}.fallback-point{position:absolute;transform:translate(-50%,-50%);width:18px;height:18px;border:2px solid white;border-radius:50%;padding:0;box-shadow:0 1px 5px rgba(0,0,0,0.3)}.fallback-controls{position:absolute;right:8px;top:8px;display:grid;grid-template-columns:repeat(2,34px);gap:6px}.fallback-controls button{padding:5px;background:rgba(255,255,255,0.92);color:#1d1d1f;border:0;border-radius:9px;box-shadow:0 1px 4px rgba(0,0,0,0.16)}.attribution{position:absolute;right:0;bottom:0;padding:2px 4px;font-size:10px;background:rgba(255,255,255,0.85);color:#6e6e73}@media(max-width:640px){.map{min-height:440px}.map-preview{right:8px;bottom:55px;width:calc(100% - 16px);max-height:330px;padding:12px}.map-tools{gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.map-tools::-webkit-scrollbar{display:none}.map-tools input{min-width:0;flex:1 1 140px;width:auto}.segmented button{padding:7px}.segmented{flex:0 0 auto}.xray{flex:0 0 auto}.map-caption{font-size:9px}}
 </style>

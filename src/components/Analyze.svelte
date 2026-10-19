@@ -266,7 +266,7 @@
 <p class="muted mb-6">Вставьте текст и зафиксируйте источник. Анализ предлагает гипотезы; факторы подтверждает аналитик.</p>
 <div class="two-col">
   <form class="panel space-y-4" onsubmit={e => { e.preventDefault(); void run(); }}>
-    <h2>01 / Исходные данные</h2>
+    <h2>Исходные данные</h2>
     <div class="actions">{#each ['SQ-001', 'SQ-002', 'SQ-003'] as id, i}<button type="button" class="small" onclick={() => preset(id)}>Пример {String.fromCharCode(65 + i)}</button>{/each}</div>
     <label>Объект<select required bind:value={selected}>{#each workspace.complexes as z}<option value={z.id}>{z.name} · {z.id}</option>{/each}</select></label>
     <label>Очередь<select bind:value={phaseId}><option value="">Очередь не определена / весь ЖК</option>{#each phases as p}<option value={p.id}>{p.name}</option>{/each}</select></label><label>Текст объявления<textarea required maxlength="20000" rows="8" bind:value={text} placeholder="Бронь квартиры — 500 000 тенге…"></textarea></label>
@@ -279,7 +279,7 @@
     {#if saved && publishedAdId}<p class="success" role="status">Материал сохранён: {publishedAdId}. Его можно добавить в материалы дела.</p>{/if}
   </form>
   <section class="panel space-y-4" aria-live="polite">
-    <h2>02 / Гипотезы ИИ</h2><p class="notice">Принятие гипотезы передаёт её на проверку. Баллы меняются только после проверки факта в деле.</p>
+    <h2>Гипотезы ИИ</h2><p class="notice">Принятие гипотезы передаёт её на проверку. Баллы меняются только после проверки факта в деле.</p>
     {#if error}<p class="error" role="alert">{error}</p>{/if}
     {#if result}
       <span class="badge">{result.engine}</span>
