@@ -4,7 +4,7 @@ Node 24.18.0/npm 11.16.0 и Python 3.11.0 проверены в этом окр�
 
 ## Чистый запуск
 
-1. Получить именно candidate SHA из RELEASE_MANIFEST.json. Не копировать .env, node_modules, .venv, dist или caches. `node tools/s6-clean-room.mjs` переносит полный текущий source manifest, нужные untracked и документацию в новую .temp директорию, проверяет SHA256 каждого файла и выполняет npm ci/build/check, Python venv+locked install+pytest. Он не заменяет рабочие env/БД.
+1. Проверить RELEASE_MANIFEST.json: у текущего dirty-кандидата candidateSHA=null; воспроизводимое состояние задают baseHead и sourceByteManifest фактических байтов. Старые candidate SHA и отчёты S6 относятся к архиву. Не копировать .env, node_modules, .venv, dist или caches. Для чистой проверки скопировать manifest-файлы в отдельный каталог, сверить SHA256, выполнить npm ci/check/build и Python venv+locked install+pytest. Исторический tools/s6-clean-room.mjs привязан к Windows и пишет в архив docs/acceptance/s6; текущую приёмку им не перезаписывать. Он копирует только выбранные документы, а не весь пакет.
 2. `npm ci`, затем `npm run dev -- --port 5173 --strictPort`. Без env работает DEMO. Вход не нужен. Открыть http://127.0.0.1:5173. DEMO parser не является LLM.
 3. Для connected создать отдельный локальный Supabase project с уникальным project_id и свободными API/DB/Studio/Auth ports. Сначала `npx supabase start --help`, затем start из его каталога. Не выполнять reset рабочей БД. Применить **все** SQL из supabase/migrations в лексикографическом порядке, включая корректирующие миграции. Исторические миграции не редактировать. Создать операторскую учётку административно; регистрации в UI нет. initialize_workspace загружает seed только для вошедшего пользователя.
 4. Скопировать .env.example в игнорируемую .env. VITE_SUPABASE_URL/ANON_KEY — публичные URL/key; SUPABASE_URL/ANON_KEY — FastAPI. CORS_ORIGINS и ALLOWED_ORIGIN должны совпадать с фактическим frontend origin. VITE_API_URL задаёт backend URL. Секреты не имеют префикса VITE_.
@@ -27,4 +27,23 @@ Rollback: остановить запись; запустить совмести
 
 ## Проверка
 
-T/U/B/E/C/A/F/L: команды docs/sprints/EXECUTION.md. `npm run test:local` читает игнорируемый supabase/.temp/status.json, создаёт и удаляет только свои аккаунты/файлы. Чужой порт 5174 не занимать; C использует tools/acceptance.cloud.config.ts и 5184. `npm run test:deepseek` вызывает платный provider; повторять только при изменении AI inputs. Секреты никогда не выводить в логи. `npm run gate -- 6` должен честно остаться ненулевым, пока candidate SHA не доступен адресату.
+Offline: `npm run verify:score` последовательно запускает check/unit/build/E2E/mocked HTTP/API/Edge tests/Edge typecheck и записывает verification.json с исходным manifest и sourceUnchanged. Он не запускает live Supabase или платный provider. Команды и буквы T/U/B/E/C/A/F/L в docs/sprints/EXECUTION.md относятся к историческому S6. `npm run test:local` читает игнорируемый supabase/.temp/status.json, создаёт и удаляет только свои аккаунты/файлы. Порты смотреть в актуальных playwright*.config.ts; не занимать чужие процессы. `npm run test:cloud` использует playwright.cloud.config.ts. tools/acceptance.cloud.config.ts относится к отдельной исторической приёмке. `npm run test:deepseek` вызывает платный provider и требует отдельного согласованного бюджета и SAQ_ALLOW_PAID_AI=1. Без согласования статус NOT_RUN. Секреты никогда не выводить в логи. `npm run gate -- 6` проверяет архивные S6 artifacts; его результат не сертифицирует текущий dirty-кандидат.
+
+
+## Приёмка score-maxxing (19 октября 2026)
+
+Текущие результаты: [REPORT](acceptance/score-maxxing/REPORT.md). `npm run test:cloud` — mocked HTTP; `npm run test:local` — настоящий локальный стек. Не смешивать эти статусы.
+`npm run test:api` использует backend/.venv (Scripts/python.exe на Windows, bin/python на Unix), иначе активный python. SAQ_PYTHON задаёт явный исполняемый файл.
+Live frontend: 127.0.0.1:5175, API: 127.0.0.1:8005; SAQ_LIVE_API_URL меняет API адрес. FastAPI CORS_ORIGINS и Edge ALLOWED_ORIGIN должны включать точный frontend origin.
+Runtime артефакты — только test-results/. Обычный E2E пишет в test-results/e2e; cloud/live имеют отдельные каталоги. Отобранный пакет копируется после остановки Vite.
+Платный AI: установить SAQ_ALLOW_PAID_AI=1 только после согласования не более 13 вызовов. --reuse-eval явно оставляет eval архивным и не даёт нового полного PASS.
+Dirty-кандидат идентифицируется baseHead и sourceByteManifest; candidateSHA отсутствует до отдельного коммита (null). Публикация этого состояния не выполняется автоматически.
+
+Чистая установка зависимостей проверена отдельно. Ранний clean-room snapshot предшествовал последним исправлениям; его PASS нельзя переносить на итоговый sourceByteManifest без сверки файлов. Runtime текущей среды: Node 24.18.0, npm 11.16.0, Python 3.11.0, Deno 2.9.6, Supabase CLI 2.121, Docker 29.1.3.
+
+`npm run test:local` сохраняет успешный summary в test-results/score-maxxing/local-live-<UTC-run-id>/live-test-report.json. Trace/screenshots Playwright остаются в test-results/live; terminal log следует сохранить рядом с summary.
+
+## Публикация Vercel DEMO
+
+Пользователь выбрал публичный DEMO; connected AI остаётся локальным. `vercel.json` задаёт Vite/npm ci/dist. Загружать только отслеживаемые исходники отдельного candidate SHA; `.vercelignore` исключает env, evidence, test-results, docs и backend. Публичные env VITE_SUPABASE_URL/ANON_KEY должны быть пустыми. Никогда не загружать .env.edge. В Vercel использовать проект saq-qurylys / spydonnys-projects. После deploy проверить HTTP без авторизации и UI конкретного SHA.
+Свежий paid AI PASS и ограничения — REPORT/paid-ai. 1 USD согласован, выполнено15 запросов с двумя исправлениями test harness; следующий запуск требует нового лимита количества и остатка бюджета.

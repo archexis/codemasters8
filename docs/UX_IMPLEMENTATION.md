@@ -1,6 +1,8 @@
 # UX architecture transition — implementation record
 
-Date: 19 October 2026. Baseline commit: `29c4e754eaeeee949b73cf711abf7dddea585bb5`.
+Historical UX implementation record; its checks describe the earlier snapshot. Current acceptance: [score-maxxing REPORT](acceptance/score-maxxing/REPORT.md).
+
+Date: 19 October 2026. Historical baseline commit: `29c4e754eaeeee949b73cf711abf7dddea585bb5`.
 
 The target remains `docs/UI-UX-FRESH+NEW-FUNC/README.md` and documents 00–10. This record describes implemented code and reproducible checks, and does not replace the target or historical S0–S6 acceptance.
 
@@ -33,7 +35,7 @@ backend/.venv/Scripts/python.exe -m pytest backend/tests -q
 
 Target UX browser tests cover desktop and mobile, WebGL failure, map preview/dossier navigation, original publication inspection, independent case decisions, persistence after reload and the new-material → R2 → frozen signal path.
 
-`docs/acceptance/ux/performance-*.json` records the measured dataset, host, timings and limitations. Screenshots are under `docs/acceptance/ux/screenshots/`. These files are observations from the current test run, not a guarantee of performance on the reference machine.
+`docs/acceptance/ux/performance-*.json` records the measured dataset, host, timings and limitations. Screenshots are under `docs/acceptance/ux/screenshots/`. These files are observations from that historical UX test run, not a guarantee of performance on the reference machine.
 
 The historical E2E suite contains assertions about replaced screens and direct factor confirmation in Analyze. Passing new UX tests must not be described as a fresh pass of that historical suite.
 
@@ -44,8 +46,11 @@ The historical E2E suite contains assertions about replaced screens and direct f
 - Organizations still derive from existing source identifiers; a complete independent organization catalogue and automated reconciliation against authoritative role registries remain future work. Typed relationship records and their explicit review are persisted.
 - Image previews use the existing private-media viewer. A thumbnail pipeline, validated image registration/pixel-diff and saved comparable-camera metadata are not complete. Side-by-side comparison remains available.
 - The live model was not re-certified on new input in this run. Provider credentials and an authenticated running Supabase/Edge environment are required; DEMO continues to identify the local parser explicitly.
-- Local Docker was unavailable during development. PGlite/API/browser checks do not replace a live migration, RLS/Storage/Edge integration run or deployment validation.
+- Historical limitation: local Docker was unavailable during the original UX development. Current score-maxxing work has a separate local Docker/live run; consult its REPORT. PGlite/API/browser checks do not replace a live migration, RLS/Storage/Edge integration run or deployment validation.
 - The D1 sanity dataset includes 100 complexes, 1,000 publications and 10,000 events, with synthetic basemap tiles. The required 5–10 MB image cache, sustained map FPS, GPU resource cleanup, reference-device D1 and the complete D3 profile require additional measurements.
-- The historical E2E acceptance suite and release gates must be migrated/re-run against the final candidate before declaring the full plan complete.
+- The score-maxxing work migrates and reruns browser contracts. Only its final source-bound REPORT establishes current results; historical release gates retain their original scope.
 
 No production database migration, deployment, push, submission or external message is part of these local changes.
+
+
+Текущие исправления и новые доказательства см. [score-maxxing REPORT](acceptance/score-maxxing/REPORT.md): toolbar карты занимает отдельную строку; прежние изменения размеров карты сохранены; статусы печатного snapshot локализованы. Предыдущие результаты этого документа являются архивом.

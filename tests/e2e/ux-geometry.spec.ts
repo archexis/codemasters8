@@ -5,7 +5,7 @@ test('2.5D replaces seed points with clickable schematic boxes and restores poin
     const response=await route.fetch();const source=await response.text();
     await route.fulfill({response,body:source.replace('map = new ml.Map(', 'map = window.__uxGeometryMap = new ml.Map(')});
   });
-  await page.goto('/#/map');
+  await page.goto('/#/map',{waitUntil:'domcontentloaded'});
   await expect(page.locator('.map-wrap')).toHaveAttribute('data-map-ready','true',{timeout:15000});
   await page.getByRole('button',{name:'2.5D',exact:true}).click();
   await expect.poll(()=>page.evaluate(()=>{
@@ -34,7 +34,7 @@ test('manual GeoJSON import persists and feeds a real fill-extrusion layer', asy
     const response = await route.fetch(); const source = await response.text();
     await route.fulfill({ response, body: source.replace('map = new ml.Map(', 'map = window.__uxGeometryMap = new ml.Map(') });
   });
-  await page.goto('/#/registries');
+  await page.goto('/#/registries',{waitUntil:'domcontentloaded'});
   await page.getByRole('button', { name: 'Импорт GeoJSON', exact: true }).click();
   const form = page.locator('form').filter({ has: page.getByRole('heading', { name: 'Контур для 2.5D-карты', exact: true }) });
   await form.getByLabel(/^ЖК/).selectOption('SQ-001');
@@ -44,10 +44,10 @@ test('manual GeoJSON import persists and feeds a real fill-extrusion layer', asy
   await form.getByLabel('Я проверил контур и его источник', { exact: true }).check();
   await form.getByRole('button', { name: 'Сохранить контур', exact: true }).click();
   await expect(form.getByRole('status')).toContainText('Контур сохранён');
-  await page.reload();
+  await page.reload({waitUntil:'domcontentloaded'});
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('sq_svelte_demo_v2')!).state.geometries);
   expect(saved).toHaveLength(1); expect(saved[0]).toMatchObject({ complexId: 'SQ-001', heightMeters: 48, verified: true });
-  await page.goto('/#/map');
+  await page.goto('/#/map',{waitUntil:'domcontentloaded'});
   await expect(page.locator('.map-wrap')).toHaveAttribute('data-map-ready', 'true', { timeout: 15000 });
   await expect(page.getByRole('button', { name: '2.5D', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: '2.5D', exact: true }).click();
@@ -59,14 +59,14 @@ test('manual GeoJSON import persists and feeds a real fill-extrusion layer', asy
 });
 
 test('new phase has unknown legal scope and does not inherit whole-complex factors', async ({ page }) => {
-  await page.goto('/#/complexes/SQ-002');
+  await page.goto('/#/complexes/SQ-002',{waitUntil:'domcontentloaded'});
   await page.getByText('Очереди и применимость документов', { exact: true }).click();
   await page.getByLabel('Название новой очереди', { exact: true }).fill('DEMO отдельная очередь');
   await page.getByRole('button', { name: 'Добавить очередь', exact: true }).click();
   await expect(page).toHaveURL(/phase=PH-/);
   await expect(page.locator('.risk-score strong')).toHaveText('0');
   await expect(page.locator('.dossier-context')).toContainText('Правовое основание не установлено');
-  await page.reload();
+  await page.reload({waitUntil:'domcontentloaded'});
   await expect(page.locator('.risk-score strong')).toHaveText('0');
   await expect(page.getByLabel('Область проверки')).toContainText('DEMO отдельная очередь');
 });

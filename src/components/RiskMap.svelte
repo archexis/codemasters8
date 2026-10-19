@@ -179,8 +179,6 @@
   });
 </script>
 <section class="map-shell" aria-label="Карта объектов">
-  <div class="map-wrap" data-map-ready={fallback || markersReady}>
-    <div bind:this={container} class="map" aria-label="Карта объектов Өскемена"></div>
     <div class="map-tools map-float-top">
       <button class="small map-list-toggle" aria-expanded={listOpen} onclick={() => listOpen = !listOpen}>Список · {visible.length}</button>
       <input class="map-search" aria-label="Поиск ЖК, БИН или адреса на карте" placeholder="Поиск ЖК, БИН, адреса" bind:value={query} />
@@ -189,6 +187,8 @@
       <div class="segmented" aria-label="Размерность карты"><button title="Плоская карта: метки и контуры" aria-pressed={!dimensional && !city3d} onclick={() => { dimensional = false; city3d = false; }}>2D</button><button title="2.5D: условные объёмные коробки корпусов" disabled={fallback} aria-pressed={dimensional} onclick={() => { dimensional = true; city3d = false; }}>2.5D</button><button title="Настоящий 3D-город: реальные дома, рельеф и небо" disabled={fallback} aria-pressed={city3d} onclick={() => { city3d = true; dimensional = false; }}>3D</button></div>
       <div class="segmented xray" aria-label="Тема X-Ray"><span>X-Ray</span>{#each themes as t}<button aria-pressed={theme === t.id} onclick={() => theme = t.id}>{t.title}</button>{/each}</div>
     </div>
+  <div class="map-wrap" data-map-ready={fallback || markersReady}>
+    <div bind:this={container} class="map" aria-label="Карта объектов Өскемена"></div>
     {#if fallback}
       <div class="fallback-map" style:height="{height}px" aria-label="Двумерная карта без WebGL">
         {#each tiles as tile (tile.key)}<img class="tile" src={tile.url} alt="" width="256" height="256" style:left="{tile.x}px" style:top="{tile.y}px" draggable="false" />{/each}

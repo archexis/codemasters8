@@ -30,10 +30,11 @@ test('S6 actual Auth/RPC/Storage/API/Edge negative matrix', async () => {
     expect((await a.rpc('apply_command',{command:cmd,expected_version:1})).error).not.toBeNull();
     expect((await apply(a,{...cmd,reviewer:ids[1]})).error).not.toBeNull();
     // Extra actor/time fields cannot become server attribution even if ignored.
-    const commandId=randomUUID(), before=Date.now();
+    const serverTime=async()=>{const response=await fetch(`${url}/auth/v1/health`,{headers:{apikey:key}});const time=Date.parse(response.headers.get('date')??'');expect(Number.isFinite(time)).toBe(true);return time;};
+    const commandId=randomUUID(), before=await serverTime();
     const saved=await a.rpc('apply_command',{command:{...cmd,actorId:ids[1],at:'1999-01-01T00:00:00Z'},expected_version:1,command_id:commandId}); expect(saved.error).toBeNull();
     const event=saved.data.data.audit.find((e:any)=>e.commandId===commandId);expect(event).toBeTruthy();
-    expect(event.reviewer).toBe((await a.auth.getUser()).data.user!.email); expect(Date.parse(event.at)).toBeGreaterThanOrEqual(before-1000);expect(Date.parse(event.at)).toBeLessThanOrEqual(Date.now()+1000);
+    expect(event.reviewer).toBe((await a.auth.getUser()).data.user!.email); expect(Date.parse(event.at)).toBeGreaterThanOrEqual(before-1000);expect(Date.parse(event.at)).toBeLessThanOrEqual((await serverTime())+1000);
     const mediaId='m-'+randomUUID(), path=`${ids[0]}/SQ-002/${mediaId}.png`; paths.push(path);
     const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
     expect((await a.storage.from('evidence').upload(path,png,{contentType:'image/png'})).error).toBeNull();
@@ -101,20 +102,21 @@ test('S6 browser offline/expired save preserves form; no server secrets in stora
  for(const p of ['.env.edge','.temp/s4-repair/edge.env']) {try{const m=readFileSync(p,'utf8').match(/^LLM_API_KEY=(.+)$/m);if(m)needles.push(m[1].trim().replace(/^['"]|['"]$/g,''));}catch{}}
  const findings:{type:string;present:boolean}[]=[];let requests=0;
  page.on('request',r=>{requests++; const text=JSON.stringify(r.headers())+(r.postData()??'')+r.url();if(needles.some(s=>s&&text.includes(s)))findings.push({type:'request/server secret',present:true});});
- await page.goto('/'); await page.getByRole('button',{name:'Демо-аналитик',exact:true}).click();
+ await page.goto('/',{waitUntil:'domcontentloaded'}); await page.getByRole('button',{name:'Демо-аналитик',exact:true}).click();
  await page.getByLabel('Email',{exact:true}).fill(process.env.SAQ_LIVE_EMAIL!); await page.getByLabel('Пароль',{exact:true}).fill(process.env.SAQ_LIVE_PASSWORD!);
  await page.getByRole('button',{name:'Войти',exact:true}).last().click(); await expect(page.getByRole('button',{name:process.env.SAQ_LIVE_EMAIL!,exact:true})).toBeVisible();
- await page.goto('/#/detail/SQ-002');
- const value=page.getByLabel('Подтверждённая готовность, %'),source=page.getByLabel('Источник наблюдения');await value.fill('17');await source.fill('S6 offline observation');
+ await page.goto('/#/detail/SQ-002',{waitUntil:'domcontentloaded'});
+ await page.getByText('Зафиксировать документальную готовность',{exact:true}).click();await page.getByLabel('Дата наблюдения',{exact:true}).fill('2026-10-19');
+ const value=page.getByLabel('Готовность по документу, %'),source=page.getByLabel('Источник измеренной готовности');await value.fill('17');await source.fill('S6 offline observation');
  await page.evaluate(async()=>{const path='/src/lib/supabase.ts';const {supabase}=await import(/* @vite-ignore */ path);const r=await supabase.auth.refreshSession();if(r.error)throw r.error;});
  await expect(value).toHaveValue('17');await expect(source).toHaveValue('S6 offline observation');
- await context.setOffline(true); await page.getByRole('button',{name:'Зафиксировать готовность'}).click(); await expect(page.getByRole('alert')).toBeVisible();
+ await context.setOffline(true); await page.getByRole('button',{name:'Сохранить наблюдение'}).click(); await expect(page.getByRole('alert')).toBeVisible();
  await expect(value).toHaveValue('17');await expect(source).toHaveValue('S6 offline observation');await context.setOffline(false);
  await page.route('**/rest/v1/rpc/apply_command',r=>r.fulfill({status:401,contentType:'application/json',body:JSON.stringify({message:'JWT expired',code:'PGRST303'})}));
- await page.getByRole('button',{name:'Зафиксировать готовность'}).click();await expect(page.getByRole('alert')).toContainText('JWT expired'); await expect(value).toHaveValue('17'); await expect(source).toHaveValue('S6 offline observation');
+ await page.getByRole('button',{name:'Сохранить наблюдение'}).click();await expect(page.getByRole('alert')).toContainText('JWT expired'); await expect(value).toHaveValue('17'); await expect(source).toHaveValue('S6 offline observation');
  const storage=await page.evaluate(()=>JSON.stringify({local:{...localStorage},session:{...sessionStorage}}));
  if(needles.some(s=>s&&storage.includes(s)))findings.push({type:'browser storage/server secret',present:true});
- writeFileSync('docs/acceptance/s6/browser-secrets.json',JSON.stringify({status:findings.length?'FAIL':'PASS',requests,scope:'request URL/headers/body + localStorage/sessionStorage after real connected login and failed saves',findings},null,2)+'\n');
+ writeFileSync(test.info().outputPath('browser-secrets.json'),JSON.stringify({status:findings.length?'FAIL':'PASS',requests,scope:'request URL/headers/body + localStorage/sessionStorage after real connected login and failed saves',findings},null,2)+'\n');
  expect(findings).toEqual([]);
 });
 
@@ -128,7 +130,7 @@ test('S6 real A logout/B login discards an in-flight A workspace response',async
    const c=createClient(url,key,{auth:{persistSession:false}});expect((await c.auth.signInWithPassword({email,password})).error).toBeNull();const w=await c.rpc('initialize_workspace');expect(w.error).toBeNull();
    if(n===0){const complex={...w.data.data.complexes[0],id:'S6-PRIVATE',name:'S6 A private case',origin:'manual',factors:[]};expect((await c.rpc('apply_command',{command:{type:'complex',complex},expected_version:1,command_id:randomUUID()})).error).toBeNull();}
   }
-  await page.goto('/#/overview');await expect(page.locator('tbody tr')).toHaveCount(16);
+  await page.goto('/#/registries',{waitUntil:'domcontentloaded'});await expect(page.locator('tbody tr')).toHaveCount(16);
   await page.evaluate(async({email,password})=>{const path='/src/lib/supabase.ts';const {supabase}=await import(/* @vite-ignore */path);const r=await supabase.auth.signInWithPassword({email,password});if(r.error)throw r.error;},{email:users[0].email,password});
   await expect(page.getByText('S6 A private case',{exact:true})).toBeVisible();
   await page.route('**/rest/v1/workspaces?*',async route=>{

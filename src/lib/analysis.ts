@@ -18,7 +18,7 @@ export async function analyze(input: AiRunInput, opts: {runId:string; signal:Abo
     throw new Error(`AI-анализ недоступен: ${detail?.error_code ?? error.message}. Для pending/failed после таймаута начните новый запуск.`);
   }
   const result = schema.parse(data);
-  if (!result.runId || result.status!=='succeeded' || result.hypotheses.some(h => !h.id || !input.text.includes(h.quote))) throw new Error('Некорректный доверенный результат модели');
+  if (result.runId !== opts.runId || result.status!=='succeeded' || result.hypotheses.some(h => !h.id || !input.text.includes(h.quote))) throw new Error('Некорректный доверенный результат модели');
   return result;
 }
 

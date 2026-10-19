@@ -21,7 +21,7 @@ npm run dev -- --port 5173 --strictPort
 
 FastAPI: создать backend/.venv, установить `backend/requirements.lock.txt`, запустить `backend/.venv/Scripts/python.exe -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000`. На Unix использовать bin/python. SUPABASE_URL/ANON_KEY и CORS_ORIGINS — серверная конфигурация API; service_role ему не нужен.
 
-Edge: LLM_API_URL/MODEL/API_KEY, LLM_THINKING, ALLOWED_ORIGIN — только сервер. Локальный runtime предоставляет SUPABASE_URL/ANON_KEY/SERVICE_ROLE_KEY; последний пишет доверенный analysis_runs. `npx supabase functions serve analyze --env-file .env.edge`. Ключи не имеют префикса VITE_ и не попадают в Git. Внешний provider — OpenAI-compatible, проверен DeepSeek Flash. Prompt/schema и AI evidence связаны hashes в приёмке. Ошибка LLM не заменяется parser-success.
+Edge: LLM_API_URL/MODEL/API_KEY, LLM_THINKING, ALLOWED_ORIGIN — только сервер. Локальный runtime предоставляет SUPABASE_URL/ANON_KEY/SERVICE_ROLE_KEY; последний пишет доверенный analysis_runs. `npx supabase functions serve analyze --env-file .env.edge`. Ключи не имеют префикса VITE_ и не попадают в Git. Внешний provider — OpenAI-compatible; DeepSeek Flash проверялся в архивном прогоне, свежий платный прогон NOT_RUN. Prompt/schema и AI evidence связаны hashes в приёмке. Ошибка LLM не заменяется parser-success.
 
 AI: body ≤100000 bytes, text ≤20000 JS characters, quota 30/час/пользователь, timeout provider 30 секунд. Только R2/R3 extraction с точной цитатой. Подтверждение человеком требует источников/дат/материала; unknown даёт 0. R1/R4/R5/R6 проверяются вручную, R3 требует отдельного материала о вводе. Score — сумма уникальных confirmed факторов, до 100; red требует R1+R2. A/B/C: 35/70/10.
 
@@ -38,18 +38,20 @@ npm run check
 npm test
 npm run build
 npm run test:e2e
-npx playwright test --config tools/acceptance.cloud.config.ts
+npm run test:cloud
 npm run test:edge
 npx deno check supabase/functions/analyze/index.ts
-backend/.venv/Scripts/python.exe -m pytest backend/tests -q
+npm run test:api
 npm run test:local
-npm run gate -- 6
+npm run verify:score
 ```
 
-L читает игнорируемый supabase/.temp/status.json и создаёт временные аккаунты. C использует mock HTTP, не cloud. AI `npm run test:deepseek` — платный inference, отдельно от unit. [Сценарий и резервные материалы](docs/DEMO_SCRIPT.md), [приёмка S6](docs/acceptance/sprint-6.md), [release manifest](docs/RELEASE_MANIFEST.json). Gate6 остаётся BLOCKED, пока именно candidate SHA не доступен адресату. Production deploy/push/отправка заявки не входят в выполненные действия.
+`test:local` читает игнорируемый supabase/.temp/status.json и создаёт временные аккаунты. `test:cloud` использует mock HTTP. AI `npm run test:deepseek` требует явного `SAQ_ALLOW_PAID_AI=1` после согласования бюджета (до 13 вызовов: 12 eval + 1 browser), отдельно от unit. `test:api` выбирает backend/.venv, затем активный python; переопределение — SAQ_PYTHON. [Сценарий и резервные материалы](docs/DEMO_SCRIPT.md), [приёмка S6](docs/acceptance/sprint-6.md), [release manifest](docs/RELEASE_MANIFEST.json). Исторический gate6 проверяет архив S6 и не является текущей приёмкой. Текущий dirty-кандидат идентифицируется baseHead и manifest фактических байтов; candidateSHA до отдельного коммита равен null. Production deploy/push/отправка заявки не входят в выполненные действия.
 
 ## Стек и ограничения
 
 Svelte 5/TypeScript/Vite/Tailwind, Supabase Auth/PostgreSQL JSONB/RLS/Storage/Edge, FastAPI, MapLibre, Zod, PapaParse; версии и лицензируемые зависимости — package-lock.json и Python lockfile. Разработка и тестирование с AI assistance; решения и материалы проверяет человек.
 
 Нет OCR, скрейпинга, живой сверки госреестров, CV дронов, общих организаций и полного двуязычного UI. Карта зависит от WebGL/OSM/Esri; независимый список остаётся рабочим. Seed содержит synthetic и явно датированный public snapshot. Исторические docs аудита не заменяют текущие CONTRACTS и приёмку.
+
+Текущая передача разработки: [score-maxxing REPORT](docs/acceptance/score-maxxing/REPORT.md). Архивы S4–S6 отражают прежний код и не заменяют эту приёмку.

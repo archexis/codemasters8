@@ -1,0 +1,173 @@
+
+> saq-qurylys@2.0.0 test:e2e
+> playwright test --reporter=line,json
+
+[WebServer] (node:36152) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 130 tests using 2 workers
+
+(node:49356) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:45148) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/130] [chromium] › tests\e2e\ai-review.spec.ts:51:3 › stale snapshot blocks save after Текст объявления change during request
+[2/130] [chromium] › tests\e2e\ai-review.spec.ts:17:1 › triage retains one publication; only a case fact adds +25 after reload
+[3/130] [chromium] › tests\e2e\ai-review.spec.ts:51:3 › stale snapshot blocks save after Ссылка на источник change during request
+[4/130] [chromium] › tests\e2e\ai-review.spec.ts:51:3 › stale snapshot blocks save after Аккаунт change during request
+[5/130] [chromium] › tests\e2e\ai-review.spec.ts:51:3 › stale snapshot blocks save after Дата публикации (пусто — не указана) change during request
+[6/130] [chromium] › tests\e2e\ai-review.spec.ts:51:3 › stale snapshot blocks save after Площадка change during request
+[7/130] [chromium] › tests\e2e\ai-review.spec.ts:51:3 › stale snapshot blocks save after Объект change during request
+[8/130] [chromium] › tests\e2e\ai-review.spec.ts:51:3 › stale snapshot blocks save after Скриншот / документ change during request
+[9/130] [chromium] › tests\e2e\ai-review.spec.ts:63:1 › cancel/new run ignores late success and error; unmount aborts
+[10/130] [chromium] › tests\e2e\ai-review.spec.ts:76:1 › session change aborts pending run and discards late results/errors
+[11/130] [chromium] › tests\e2e\ai-review.spec.ts:84:1 › ordinary Analyze dedupe keeps the persisted ad ID for the next independent review
+[12/130] [chromium] › tests\e2e\case-retry.spec.ts:19:1 › fact review retries its persisted receipt without a second assertion
+[13/130] [chromium] › tests\e2e\case-retry.spec.ts:32:1 › signal decision retains payload and ID after lost ACK
+[14/130] [chromium] › tests\e2e\case-retry.spec.ts:47:1 › case creation reuses its entity and command IDs after lost ACK
+[15/130] [chromium] › tests\e2e\case-retry.spec.ts:59:1 › stale attachment can retry saved delivery after its original button is disabled
+[16/130] [chromium] › tests\e2e\csv-import.spec.ts:27:1 › preview: valid, bad date, unknown zk и duplicate имеют точные причины
+[17/130] [chromium] › tests\e2e\csv-import.spec.ts:38:1 › valid сохраняется без анализа; saved не дублируется; вторая строка независима
+[18/130] [chromium] › tests\e2e\csv-import.spec.ts:73:1 › неизвестная дата → пусто, а не предыдущая/сегодня
+[19/130] [chromium] › tests\e2e\csv-import.spec.ts:87:1 › уникальное имя — предложение; save до выбора закрыт
+[20/130] [chromium] › tests\e2e\evidence-failures.spec.ts:34:1 › F1: чужой MIME не даёт решения и не сохраняет публикацию
+[21/130] [chromium] › tests\e2e\evidence-failures.spec.ts:46:1 › F2: файл больше 20 МБ отклоняется до commit
+[22/130] [chromium] › tests\e2e\evidence-failures.spec.ts:58:1 › F3+F4: повторный материал сохраняет одну публикацию и оба принятых файла
+[23/130] [chromium] › tests\e2e\evidence-failures.spec.ts:84:1 › F5+F6: saved только после ACK; ID и квитанция стабильны после reload
+[24/130] [chromium] › tests\e2e\evidence-failures.spec.ts:106:1 › F7: две DEMO-вкладки через Web Locks — оба решения применены без потерь
+[25/130] [chromium] › tests\e2e\evidence-failures.spec.ts:126:1 › F8: очередь повтора очистки переживает reload
+[26/130] [chromium] › tests\e2e\legal-invariants.spec.ts:4:1 › C: verified guarantee prevents R1 in a new case
+[27/130] [chromium] › tests\e2e\legal-invariants.spec.ts:28:1 › new publication and verified R2 add 25 only within the active case
+[28/130] [chromium] › tests\e2e\legal-invariants.spec.ts:32:1 › withdrawing a case fact reduces its score and keeps the review history
+[29/130] [chromium] › tests\e2e\legal-invariants.spec.ts:42:1 › invented quote is rejected and remains editable
+[30/130] [chromium] › tests\e2e\review-regressions.spec.ts:5:1 › lost commit ACK replays the identical publication and keeps its attachment
+[31/130] [chromium] › tests\e2e\review-regressions.spec.ts:46:1 › confirmed publication includes its attachment in exported signal materials
+[32/130] [chromium] › tests\e2e\review-regressions.spec.ts:68:1 › R3 accepts dated analyst material and retries a corrected decision with its file
+[33/130] [chromium] › tests\e2e\s6-demo-replay.spec.ts:3:1 › S6 reserve screens replay the exact archived synthetic connected case
+[34/130] [chromium] › tests\e2e\s6-locks.spec.ts:2:1 › S6 missing Web Locks blocks writes and retains input/read access
+[35/130] [chromium] › tests\e2e\s6-ux.spec.ts:3:1 › S6 seven direct routes, unknown IDs/routes/revisions and no-results
+[36/130] [chromium] › tests\e2e\s6-ux.spec.ts:10:1 › S6 WebGL failure and empty workspace retain independent list
+[37/130] [chromium] › tests\e2e\s6-ux.spec.ts:16:1 › S6 keyboard path, visible focus, labels and safe text rendering
+[38/130] [chromium] › tests\e2e\s6-ux.spec.ts:38:1 › S6 failed map tiles leave the searchable object list usable
+[39/130] [chromium] › tests\e2e\signal-export.spec.ts:3:55 › S5 print confirmed: immutable revision and full text
+[40/130] [chromium] › tests\e2e\signal-export.spec.ts:3:55 › S5 print long: immutable revision and full text
+[41/130] [chromium] › tests\e2e\signal-export.spec.ts:3:55 › S5 print returned: immutable revision and full text
+[42/130] [chromium] › tests\e2e\signal-revision.spec.ts:2:41 › signal: invalid and missing revisions recover without live fallback
+[43/130] [chromium] › tests\e2e\signal-revision.spec.ts:2:41 › export: invalid and missing revisions recover without live fallback
+[44/130] [chromium] › tests\e2e\signal-revision.spec.ts:17:1 › version selector keeps frozen view and export href aligned
+[45/130] [chromium] › tests\e2e\source-roundtrip.spec.ts:34:1 › source roundtrip: preview → save valid → reload → re-import без дублей
+[46/130] [chromium] › tests\e2e\ux-geometry.spec.ts:3:1 › 2.5D replaces seed points with clickable schematic boxes and restores points in 2D
+[47/130] [chromium] › tests\e2e\ux-geometry.spec.ts:31:1 › manual GeoJSON import persists and feeds a real fill-extrusion layer
+[48/130] [chromium] › tests\e2e\ux-geometry.spec.ts:61:1 › new phase has unknown legal scope and does not inherit whole-complex factors
+[49/130] [chromium] › tests\e2e\ux-performance.spec.ts:6:1 › D1 browser cached UI timing and five-cycle heap sanity
+[50/130] [chromium] › tests\e2e\ux-review.spec.ts:3:1 › AI triage accepts a verbatim candidate without adding risk points
+[51/130] [chromium] › tests\e2e\ux-review.spec.ts:22:1 › publications keep their filters after dossier navigation and reload
+[52/130] [chromium] › tests\e2e\ux-review.spec.ts:36:1 › case deep link cannot switch its scope using a forged phase parameter
+[53/130] [chromium] › tests\e2e\ux-review.spec.ts:47:1 › documented relation has independent review and does not add risk points
+[54/130] [chromium] › tests\e2e\ux-review.spec.ts:76:1 › a dated case retains its applicability period in a returned signal snapshot
+[55/130] [chromium] › tests\e2e\workflows.spec.ts:3:1 › map search, risk filter, dossier and direct reload
+[56/130] [chromium] › tests\e2e\workflows.spec.ts:14:1 › independent triage decisions survive reload without verifying facts
+[57/130] [chromium] › tests\e2e\workflows.spec.ts:27:1 › verified case signal survives reload and prints its snapshot
+[58/130] [chromium] › tests\e2e\workflows.spec.ts:39:1 › document file survives reload; readiness observation does not confirm R5
+[59/130] [chromium] › tests\e2e\workflows.spec.ts:55:1 › create/edit object, empty search, unknown route and narrow layout
+[60/130] [chromium] › tests\e2e\workflows.spec.ts:67:1 › analysis route preserves explicitly supplied input
+(node:33148) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:48584) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[61/130] [chromium] › tests\e2e\ux-target.spec.ts:42:2 › fallback acceptance › target map: disabled WebGL retains a usable 2D map, markers and zoom
+[62/130] [chromium] › tests\e2e\ux-target.spec.ts:5:1 › target map: one X-Ray theme, preview, dossier and retained view
+[63/130] [chromium] › tests\e2e\ux-target.spec.ts:69:1 › target navigation: three top-level sections and publications original stays separate from score
+[64/130] [chromium] › tests\e2e\ux-target.spec.ts:84:1 › target cases: isolated draft cannot confirm inherited facts and returned snapshot survives reload
+[65/130] [chromium] › tests\e2e\ux-target.spec.ts:105:1 › target vertical flow: manual publication becomes evidence and verified R2 in a versioned case
+(node:19580) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[66/130] [mobile] › tests\e2e\ai-review.spec.ts:17:1 › triage retains one publication; only a case fact adds +25 after reload
+(node:4384) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[67/130] [mobile] › tests\e2e\ai-review.spec.ts:51:3 › stale snapshot blocks save after Текст объявления change during request
+[68/130] [mobile] › tests\e2e\ai-review.spec.ts:51:3 › stale snapshot blocks save after Ссылка на источник change during request
+[69/130] [mobile] › tests\e2e\ai-review.spec.ts:51:3 › stale snapshot blocks save after Аккаунт change during request
+[70/130] [mobile] › tests\e2e\ai-review.spec.ts:51:3 › stale snapshot blocks save after Дата публикации (пусто — не указана) change during request
+[71/130] [mobile] › tests\e2e\ai-review.spec.ts:51:3 › stale snapshot blocks save after Площадка change during request
+[72/130] [mobile] › tests\e2e\ai-review.spec.ts:51:3 › stale snapshot blocks save after Объект change during request
+[73/130] [mobile] › tests\e2e\ai-review.spec.ts:51:3 › stale snapshot blocks save after Скриншот / документ change during request
+[74/130] [mobile] › tests\e2e\ai-review.spec.ts:63:1 › cancel/new run ignores late success and error; unmount aborts
+[75/130] [mobile] › tests\e2e\ai-review.spec.ts:76:1 › session change aborts pending run and discards late results/errors
+[76/130] [mobile] › tests\e2e\ai-review.spec.ts:84:1 › ordinary Analyze dedupe keeps the persisted ad ID for the next independent review
+[77/130] [mobile] › tests\e2e\case-retry.spec.ts:19:1 › fact review retries its persisted receipt without a second assertion
+[78/130] [mobile] › tests\e2e\case-retry.spec.ts:32:1 › signal decision retains payload and ID after lost ACK
+[79/130] [mobile] › tests\e2e\case-retry.spec.ts:47:1 › case creation reuses its entity and command IDs after lost ACK
+[80/130] [mobile] › tests\e2e\case-retry.spec.ts:59:1 › stale attachment can retry saved delivery after its original button is disabled
+[81/130] [mobile] › tests\e2e\csv-import.spec.ts:27:1 › preview: valid, bad date, unknown zk и duplicate имеют точные причины
+[82/130] [mobile] › tests\e2e\csv-import.spec.ts:38:1 › valid сохраняется без анализа; saved не дублируется; вторая строка независима
+[83/130] [mobile] › tests\e2e\csv-import.spec.ts:73:1 › неизвестная дата → пусто, а не предыдущая/сегодня
+[84/130] [mobile] › tests\e2e\csv-import.spec.ts:87:1 › уникальное имя — предложение; save до выбора закрыт
+[85/130] [mobile] › tests\e2e\evidence-failures.spec.ts:34:1 › F1: чужой MIME не даёт решения и не сохраняет публикацию
+[86/130] [mobile] › tests\e2e\evidence-failures.spec.ts:46:1 › F2: файл больше 20 МБ отклоняется до commit
+[87/130] [mobile] › tests\e2e\evidence-failures.spec.ts:58:1 › F3+F4: повторный материал сохраняет одну публикацию и оба принятых файла
+[88/130] [mobile] › tests\e2e\evidence-failures.spec.ts:84:1 › F5+F6: saved только после ACK; ID и квитанция стабильны после reload
+[89/130] [mobile] › tests\e2e\evidence-failures.spec.ts:106:1 › F7: две DEMO-вкладки через Web Locks — оба решения применены без потерь
+[90/130] [mobile] › tests\e2e\evidence-failures.spec.ts:126:1 › F8: очередь повтора очистки переживает reload
+[91/130] [mobile] › tests\e2e\legal-invariants.spec.ts:4:1 › C: verified guarantee prevents R1 in a new case
+[92/130] [mobile] › tests\e2e\legal-invariants.spec.ts:28:1 › new publication and verified R2 add 25 only within the active case
+[93/130] [mobile] › tests\e2e\legal-invariants.spec.ts:32:1 › withdrawing a case fact reduces its score and keeps the review history
+[94/130] [mobile] › tests\e2e\legal-invariants.spec.ts:42:1 › invented quote is rejected and remains editable
+[95/130] [mobile] › tests\e2e\review-regressions.spec.ts:5:1 › lost commit ACK replays the identical publication and keeps its attachment
+[96/130] [mobile] › tests\e2e\review-regressions.spec.ts:46:1 › confirmed publication includes its attachment in exported signal materials
+[97/130] [mobile] › tests\e2e\review-regressions.spec.ts:68:1 › R3 accepts dated analyst material and retries a corrected decision with its file
+[98/130] [mobile] › tests\e2e\s6-demo-replay.spec.ts:3:1 › S6 reserve screens replay the exact archived synthetic connected case
+[99/130] [mobile] › tests\e2e\s6-locks.spec.ts:2:1 › S6 missing Web Locks blocks writes and retains input/read access
+[100/130] [mobile] › tests\e2e\s6-ux.spec.ts:3:1 › S6 seven direct routes, unknown IDs/routes/revisions and no-results
+[101/130] [mobile] › tests\e2e\s6-ux.spec.ts:10:1 › S6 WebGL failure and empty workspace retain independent list
+[102/130] [mobile] › tests\e2e\s6-ux.spec.ts:16:1 › S6 keyboard path, visible focus, labels and safe text rendering
+[103/130] [mobile] › tests\e2e\s6-ux.spec.ts:38:1 › S6 failed map tiles leave the searchable object list usable
+[104/130] [mobile] › tests\e2e\signal-export.spec.ts:3:55 › S5 print confirmed: immutable revision and full text
+[105/130] [mobile] › tests\e2e\signal-export.spec.ts:3:55 › S5 print long: immutable revision and full text
+[106/130] [mobile] › tests\e2e\signal-export.spec.ts:3:55 › S5 print returned: immutable revision and full text
+[107/130] [mobile] › tests\e2e\signal-revision.spec.ts:2:41 › signal: invalid and missing revisions recover without live fallback
+[108/130] [mobile] › tests\e2e\signal-revision.spec.ts:2:41 › export: invalid and missing revisions recover without live fallback
+[109/130] [mobile] › tests\e2e\signal-revision.spec.ts:17:1 › version selector keeps frozen view and export href aligned
+[110/130] [mobile] › tests\e2e\source-roundtrip.spec.ts:34:1 › source roundtrip: preview → save valid → reload → re-import без дублей
+[111/130] [mobile] › tests\e2e\ux-geometry.spec.ts:3:1 › 2.5D replaces seed points with clickable schematic boxes and restores points in 2D
+[112/130] [mobile] › tests\e2e\ux-geometry.spec.ts:31:1 › manual GeoJSON import persists and feeds a real fill-extrusion layer
+[113/130] [mobile] › tests\e2e\ux-geometry.spec.ts:61:1 › new phase has unknown legal scope and does not inherit whole-complex factors
+[114/130] [mobile] › tests\e2e\ux-performance.spec.ts:6:1 › D1 browser cached UI timing and five-cycle heap sanity
+[115/130] [mobile] › tests\e2e\ux-review.spec.ts:3:1 › AI triage accepts a verbatim candidate without adding risk points
+[116/130] [mobile] › tests\e2e\ux-review.spec.ts:22:1 › publications keep their filters after dossier navigation and reload
+[117/130] [mobile] › tests\e2e\ux-review.spec.ts:36:1 › case deep link cannot switch its scope using a forged phase parameter
+[118/130] [mobile] › tests\e2e\ux-review.spec.ts:47:1 › documented relation has independent review and does not add risk points
+[119/130] [mobile] › tests\e2e\ux-review.spec.ts:76:1 › a dated case retains its applicability period in a returned signal snapshot
+[120/130] [mobile] › tests\e2e\workflows.spec.ts:3:1 › map search, risk filter, dossier and direct reload
+[121/130] [mobile] › tests\e2e\workflows.spec.ts:14:1 › independent triage decisions survive reload without verifying facts
+[122/130] [mobile] › tests\e2e\workflows.spec.ts:27:1 › verified case signal survives reload and prints its snapshot
+[123/130] [mobile] › tests\e2e\workflows.spec.ts:39:1 › document file survives reload; readiness observation does not confirm R5
+[124/130] [mobile] › tests\e2e\workflows.spec.ts:55:1 › create/edit object, empty search, unknown route and narrow layout
+[125/130] [mobile] › tests\e2e\workflows.spec.ts:67:1 › analysis route preserves explicitly supplied input
+(node:50388) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+
+
+(node:47140) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[126/130] [mobile] › tests\e2e\ux-target.spec.ts:42:2 › fallback acceptance › target map: disabled WebGL retains a usable 2D map, markers and zoom
+[127/130] [mobile] › tests\e2e\ux-target.spec.ts:5:1 › target map: one X-Ray theme, preview, dossier and retained view
+[128/130] [mobile] › tests\e2e\ux-target.spec.ts:69:1 › target navigation: three top-level sections and publications original stays separate from score
+[129/130] [mobile] › tests\e2e\ux-target.spec.ts:84:1 › target cases: isolated draft cannot confirm inherited facts and returned snapshot survives reload
+[130/130] [mobile] › tests\e2e\ux-target.spec.ts:105:1 › target vertical flow: manual publication becomes evidence and verified R2 in a versioned case
+  130 passed (2.9m)

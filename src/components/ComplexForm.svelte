@@ -2,7 +2,7 @@
   import { untrack } from 'svelte';
   import type { Complex, LegalBasisType } from '../lib/types';
   let { value, onsave, oncancel }: { value?: Complex; onsave: (z: Complex) => Promise<void>; oncancel: () => void } = $props();
-  let form = $state<Complex>(untrack(() => structuredClone(value ? $state.snapshot(value) : { id: `SQ-${crypto.randomUUID().slice(0, 8)}`, name: '', city: 'Өскемен', address: '', developer: '', bin: null, lat: null, lng: null, origin: 'manual', stage: '', readinessClaimed: null, readinessConfirmed: null, readinessSources: [], readinessClaimedSource: null, legalBasis: { type: 'unknown', status: 'unknown', source: '', checkedAt: new Date().toISOString().slice(0,10), reviewText: '' }, note: '', factors: [], events: [], sources: [] })));
+  let form = $state<Complex>(untrack(() => structuredClone(value ? $state.snapshot(value) : { id: `SQ-${crypto.randomUUID().slice(0, 8)}`, name: '', city: 'Өскемен', address: '', developer: '', bin: null, lat: null, lng: null, origin: 'manual', stage: '', readinessClaimed: null, readinessConfirmed: null, readinessSources: [], readinessClaimedSource: null, legalBasis: { type: 'unknown', status: 'unknown', source: '', checkedAt: '', reviewText: '' }, note: '', factors: [], events: [], sources: [] })));
   // C1. type/status выбираются только согласованной парой — одним селектом варианта.
   const PAIR: Record<LegalBasisType, { status: 'unknown' | 'absent-verified' | 'verified'; label: string }> = {
     'unknown': { status: 'unknown', label: 'Не проверено' },
@@ -47,7 +47,7 @@
       <option value="guarantee">{PAIR['guarantee'].label}</option>
       <option value="mio-permit">{PAIR['mio-permit'].label}</option>
     </select></label>
-    <label>Дата сверки<input required type="date" bind:value={form.legalBasis.checkedAt}/></label>
+    <label>Дата сверки<input required={variant!=='unknown'} type="date" bind:value={form.legalBasis.checkedAt}/></label>
   </div>
   <p class="muted text-xs">Пара основание/статус: {variant} / {PAIR[variant].status}. Варианты продукта, не исчерпывающая юридическая классификация.</p>
   <label>Источник проверки основания<input bind:value={form.legalBasis.source} required={variant !== 'unknown'} placeholder="Проверяемая ссылка или название документа с сохранённым содержанием"/></label>

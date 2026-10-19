@@ -1,70 +1,50 @@
-import { expect, test } from '@playwright/test';
+import {expect,test} from '@playwright/test';
+import {manualCase,verifyFact} from '../helpers/case-ui';
 
-/**
- * S1.5 — правовые инварианты через browser-путь (прямые RPC corpus I01–I18
- * покрыты в S1.2 и здесь не дублируются).
- * База: SQ-003 = сценарий C (гарантия verified, R3 = 10, зелёная);
- * SQ-001 = сценарий A (R2 + R3 = 35).
- */
-test('C: попытка подтвердить R1 блокирована, счёт остаётся зелёным', async ({ page }) => {
-  await page.goto('/#/detail/SQ-003');
-  await expect(page.locator('.risk-score strong')).toHaveText('10');
-  await page.getByRole('combobox', { name: /^Фактор/ }).selectOption('R1');
-  await page.getByLabel('Источник доказательства').fill('Ручная сверка');
-  await page.getByLabel(/Содержание правовой сверки/).fill('Сверка гарантии единого оператора: основание подтверждено, отсутствие не установлено.');
-  await page.getByLabel(/Комментарий аналитика/).fill('Попытка подтвердить R1 при действующей гарантии');
-  await page.getByRole('button', { name: 'Сохранить решение' }).click();
-  await expect(page.getByRole('alert')).toContainText('R1 требует');
-  await expect(page.locator('.risk-score strong')).toHaveText('10');
+test('C: verified guarantee prevents R1 in a new case',async({page})=>{
+ await page.goto('/#/registries',{waitUntil:'domcontentloaded'});
+ await page.getByRole('button',{name:'Добавить документ',exact:true}).click();
+ await page.getByLabel('Тип материала').selectOption('legal-review');
+ await page.getByLabel(/^ЖК/).selectOption('SQ-003');
+ await page.getByLabel('Источник / номер документа').fill('Сверка гарантии');
+ await page.getByLabel('Дата документа, если известна').fill('2026-10-19');
+ const quote='Гарантия Единого оператора подтверждена, отсутствие не установлено.';
+ await page.getByLabel('Исходное содержание / текст выбранной страницы').fill(quote);
+ await page.getByRole('button',{name:'Сохранить документ',exact:true}).click();
+ await expect(page.getByRole('status').filter({hasText:'Документ сохранён'})).toContainText('Документ сохранён');
+ await page.goto('/#/complexes/SQ-003?tab=verification',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('.risk-score strong')).toHaveText('10');
+ await page.getByRole('button',{name:'Начать расследование',exact:true}).click();
+ const manual=page.locator('details').filter({has:page.getByText('Выделить утверждение вручную',{exact:true})});
+ await manual.locator('summary').click();
+ await manual.getByLabel('Первичный материал').selectOption({label:'Сверка гарантии'});
+ await manual.getByLabel('Фактор').selectOption('R1');
+ await manual.getByLabel('Точная цитата').fill(quote);
+ await manual.getByRole('button',{name:'Создать кандидата'}).click();
+ await verifyFact(page,'R1');
+ await expect(page.getByRole('alert')).toContainText('R1 требует');
+ await expect(page.locator('.risk-score strong')).toHaveText('0');
 });
-
-test('новая публикация → R2 → счёт растёт', async ({ page }) => {
-  const adText = 'Новая платная бронь 612 000 тенге для квартиры.';
-  await page.goto('/#/analyze/SQ-003');
-  await page.getByLabel('Текст объявления').fill(adText);
-  await page.getByRole('button', { name: 'Проанализировать', exact: true }).click();
-  await expect(page.getByText('R2 · гипотеза')).toBeVisible();
-  await page.getByRole('button', { name: 'Сохранить без подтверждения' }).click();
-  await expect(page.getByText('Публикация и решение сохранены.')).toBeVisible();
-  await page.goto('/#/detail/SQ-003');
-  const adSelect = page.getByRole('combobox', { name: 'Публикация этого ЖК' });
-  const newAdId = await adSelect.evaluate((sel: HTMLSelectElement, needle: string) => {
-    const opt = [...sel.options].find((o) => o.text.includes(needle));
-    return opt ? opt.value : '';
-  }, '612 000');
-  expect(newAdId).not.toBe('');
-  await page.getByRole('combobox', { name: /^Фактор/ }).selectOption('R2');
-  await page.getByLabel('Источник доказательства').fill('Ручная сверка публикации');
-  await adSelect.selectOption(newAdId);
-  await page.getByLabel(/Дословная цитата/).fill(adText);
-  await page.getByLabel(/Комментарий аналитика/).fill('Платёжная формулировка дословно из новой публикации');
-  await page.getByRole('button', { name: 'Сохранить решение' }).click();
-  await expect(page.locator('.risk-score strong')).toHaveText('35');
+test('new publication and verified R2 add 25 only within the active case',async({page})=>{
+ await manualCase(page);await expect(page.locator('.risk-score strong')).toHaveText('0');
+ await verifyFact(page);await expect(page.locator('.risk-score strong')).toHaveText('25');
 });
-
-test('снятие фактора → счёт падает', async ({ page }) => {
-  await page.goto('/#/detail/SQ-001');
-  await expect(page.locator('.risk-score strong')).toHaveText('35');
-  await page.getByRole('combobox', { name: /^Фактор/ }).selectOption('R2');
-  await page.getByRole('combobox', { name: 'Решение' }).selectOption('rejected');
-  await page.getByLabel('Источник доказательства').fill('Ручная проверка');
-  await page.getByRole('combobox', { name: 'Публикация этого ЖК' }).selectOption({ index: 1 });
-  await page.getByLabel(/Дословная цитата/).fill('повторная сверка не подтвердила');
-  await page.getByLabel(/Комментарий аналитика/).fill('Повторная сверка: платёжная формулировка не подтвердилась');
-  await page.getByRole('button', { name: 'Сохранить решение' }).click();
-  await expect(page.locator('.risk-score strong')).toHaveText('10');
-  await expect(page.locator('.factor-row').filter({ hasText: 'R2' })).toContainText('Отклонён');
+test('withdrawing a case fact reduces its score and keeps the review history',async({page})=>{
+ await manualCase(page);await verifyFact(page);
+ await expect(page.locator('.risk-score strong')).toHaveText('25');
+ await page.getByLabel('Обоснование проверки факта',{exact:true}).fill('Повторная сверка: применимость не подтверждена');
+ await page.getByRole('button',{name:'Отклонить факт',exact:true}).click();
+ await expect(page.locator('.risk-score strong')).toHaveText('0');
+ await page.reload({waitUntil:'domcontentloaded'});await expect(page.locator('.hypothesis')).toContainText('Факт отклонён');
+ const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('sq_svelte_demo_v2')!).state);
+ expect(state.assertions.map((a:any)=>a.status)).toEqual(['verified','rejected']);
 });
-
-test('объяснение ошибки у поля: выдуманная цитата отклонена', async ({ page }) => {
-  await page.goto('/#/detail/SQ-001');
-  await expect(page.locator('.risk-score strong')).toHaveText('35');
-  await page.getByRole('combobox', { name: /^Фактор/ }).selectOption('R2');
-  await page.getByLabel('Источник доказательства').fill('Ручная проверка');
-  await page.getByRole('combobox', { name: 'Публикация этого ЖК' }).selectOption({ index: 1 });
-  await page.getByLabel(/Дословная цитата/).fill('выдуманная цитата не из текста');
-  await page.getByLabel(/Комментарий аналитика/).fill('Проверка подсказки у поля');
-  await page.getByRole('button', { name: 'Сохранить решение' }).click();
-  await expect(page.getByRole('alert')).toContainText('Цитата отсутствует в исходном тексте');
-  await expect(page.locator('.risk-score strong')).toHaveText('35');
+test('invented quote is rejected and remains editable',async({page})=>{
+ await manualCase(page);
+ const field=page.getByLabel('Точная цитата',{exact:true});
+ await field.fill('выдуманная цитата не из текста');
+ await page.getByRole('button',{name:'Создать кандидата',exact:true}).click();
+ await expect(page.getByRole('alert')).toContainText('Цитата должна дословно присутствовать');
+ await expect(field).toHaveValue('выдуманная цитата не из текста');
+ await expect(page.locator('.risk-score strong')).toHaveText('0');
 });

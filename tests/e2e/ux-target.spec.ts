@@ -1,9 +1,10 @@
 import { expect, test } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
+test.use({trace:'on'});
 
 test('target map: one X-Ray theme, preview, dossier and retained view', async ({ page }, info) => {
   const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
-  await page.goto('/#/map');
+  await page.goto('/#/map',{waitUntil:'domcontentloaded'});
   const map = page.getByRole('region', { name: 'Карта объектов', exact: true });
   await expect(map).toBeVisible();
   await map.getByLabel('Поиск ЖК, БИН или адреса на карте').fill('Ертіс');
@@ -24,20 +25,22 @@ test('target map: one X-Ray theme, preview, dossier and retained view', async ({
   await expect(preview).toContainText('Ертіс Толқыны');
   await expect(preview).toContainText('требует проверки');
   await expect(map.getByText('Загрузка карты…', { exact: true })).toHaveCount(0, { timeout: 15000 });
-  await mkdir('docs/acceptance/ux/screenshots', { recursive: true });
-  if (info.project.name === 'chromium') await page.screenshot({ path: 'docs/acceptance/ux/screenshots/desktop-map.png', fullPage: true });
+  await mkdir('test-results/score-maxxing/artifacts/ux/screenshots', { recursive: true });
+  if (info.project.name === 'chromium') await page.screenshot({ path: 'test-results/score-maxxing/artifacts/ux/screenshots/desktop-map.png', fullPage: true });
   await preview.getByRole('button', { name: 'Открыть досье', exact: true }).click();
   await expect(page).toHaveURL(/#\/complexes\/SQ-001/);
   await expect(page.getByRole('heading', { name: 'Ертіс Толқыны', exact: true })).toBeVisible();
-  await page.screenshot({ path: `docs/acceptance/ux/screenshots/${info.project.name === 'mobile' ? 'mobile' : 'desktop'}-dossier.png`, fullPage: true });
-  await page.goto('/#/map');
+  await page.screenshot({ path: `test-results/score-maxxing/artifacts/ux/screenshots/${info.project.name === 'mobile' ? 'mobile' : 'desktop'}-dossier.png`, fullPage: true });
+  await page.goto('/#/map',{waitUntil:'domcontentloaded'});
   await expect(map.getByLabel('Поиск ЖК, БИН или адреса на карте')).toHaveValue('Ертіс');
   await expect(map.getByRole('button', { name: 'Правовой', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await info.attach('map-interaction-sanity', { body: JSON.stringify({ browser: info.project.name, elapsedMs: Date.now() - started, note: 'End-to-end elapsed including route changes; not p95 or FPS' }), contentType: 'application/json' });
   expect(errors).toEqual([]);
 });
 
-test('target map: disabled WebGL retains a usable 2D map, markers and zoom', async ({ page }) => {
+test.describe('fallback acceptance',()=>{
+ test('target map: disabled WebGL retains a usable 2D map, markers and zoom', async ({ page },info) => {
+  await page.setViewportSize(info.project.name==='mobile'?{width:390,height:664}:{width:1280,height:720});
   await page.addInitScript(() => {
     const original = HTMLCanvasElement.prototype.getContext;
     HTMLCanvasElement.prototype.getContext = function(this: HTMLCanvasElement, type: string, ...args: unknown[]) {
@@ -45,20 +48,26 @@ test('target map: disabled WebGL retains a usable 2D map, markers and zoom', asy
       return original.apply(this, [type, ...args] as any);
     } as any;
   });
-  await page.goto('/#/map');
+  await page.goto('/#/map',{waitUntil:'domcontentloaded'});
   const map = page.getByRole('region', { name: 'Карта объектов', exact: true });
   await expect(map.getByLabel('Двумерная карта без WebGL')).toBeVisible();
   await expect(map.getByRole('button', { name: '2.5D', exact: true })).toBeDisabled();
-  await map.getByRole('button', { name: 'Приблизить', exact: true }).click();
+  const zoom=map.getByRole('button',{name:'Приблизить',exact:true});
+  const toolbar=await map.locator('.map-tools').boundingBox();const controls=await zoom.boundingBox();
+  expect(toolbar!.y+toolbar!.height).toBeLessThanOrEqual(controls!.y);
+  expect(await zoom.evaluate(button=>{const r=button.getBoundingClientRect();return document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)===button;})).toBe(true);
+  await zoom.click();
   await map.getByRole('button', { name: 'Отдалить', exact: true }).click();
   await map.getByRole('button', { name: 'Реклама', exact: true }).click();
   await map.locator('.fallback-point').first().click();
   await expect(map.getByRole('complementary', { name: 'Предпросмотр ЖК' })).toBeVisible();
+  await page.screenshot({path:info.outputPath('fallback-map.png'),fullPage:true});
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+ });
 });
 
 test('target navigation: three top-level sections and publications original stays separate from score', async ({ page }) => {
-  await page.goto('/#/publications');
+  await page.goto('/#/publications',{waitUntil:'domcontentloaded'});
   await expect(page.getByRole('heading', { name: 'Публикации', exact: true })).toBeVisible();
   const menu = page.getByRole('button', { name: 'Меню', exact: true });
   if (await menu.isVisible()) await menu.click();
@@ -73,7 +82,7 @@ test('target navigation: three top-level sections and publications original stay
 });
 
 test('target cases: isolated draft cannot confirm inherited facts and returned snapshot survives reload', async ({ page }) => {
-  await page.goto('/#/complexes/SQ-001');
+  await page.goto('/#/complexes/SQ-001',{waitUntil:'domcontentloaded'});
   await page.getByRole('button', { name: 'Начать расследование', exact: true }).click();
   await expect(page).toHaveURL(/#\/cases\/CASE-/);
   await expect(page.locator('.case-toolbar')).toContainText('В работе');
@@ -85,7 +94,7 @@ test('target cases: isolated draft cannot confirm inherited facts and returned s
   await page.getByRole('button', { name: 'Вернуть на проверку', exact: true }).click();
   await expect(page.locator('.case-signal-sheet')).toContainText('Версия 1');
   await expect(page.locator('.case-signal-sheet')).toContainText('Возвращён');
-  await page.reload();
+  await page.reload({waitUntil:'domcontentloaded'});
   await page.getByRole('button', { name: 'Предпросмотр сигнала', exact: true }).click();
   await expect(page.locator('.case-signal-sheet')).toContainText('Нужна ручная проверка первичных материалов.');
   await page.getByLabel('Обоснование решения', { exact: true }).fill('Начать повторную сверку.');
@@ -95,13 +104,13 @@ test('target cases: isolated draft cannot confirm inherited facts and returned s
 
 test('target vertical flow: manual publication becomes evidence and verified R2 in a versioned case', async ({ page }) => {
   const quote = 'Платная бронь квартиры 987 650 тенге до сдачи дома.';
-  await page.goto('/#/publications?add=1&complex=SQ-001');
+  await page.goto('/#/publications?add=1&complex=SQ-001',{waitUntil:'domcontentloaded'});
   await page.getByLabel('Текст объявления', { exact: true }).fill(quote);
   await page.getByLabel('Площадка', { exact: true }).fill('Ручной источник E2E');
   await page.getByLabel('Дата публикации (пусто — не указана)', { exact: true }).fill('2026-10-19');
   await page.getByRole('button', { name: 'Сохранить материал без AI', exact: true }).click();
   await expect(page.getByText(/Материал сохранён|Публикация сохранена/).first()).toBeVisible();
-  await page.goto('/#/complexes/SQ-001?tab=verification');
+  await page.goto('/#/complexes/SQ-001?tab=verification',{waitUntil:'domcontentloaded'});
   await page.getByRole('button', { name: 'Начать расследование', exact: true }).click();
   await expect(page).toHaveURL(/#\/cases\/CASE-/);
   await expect(page.locator('.case-toolbar')).toContainText('В работе');
@@ -123,7 +132,7 @@ test('target vertical flow: manual publication becomes evidence and verified R2 
   await page.getByRole('button', { name: 'Подтвердить сигнал', exact: true }).click();
   await expect(page.locator('.case-signal-sheet')).toContainText('Версия 1');
   await expect(page.locator('.case-signal-sheet')).toContainText('Подтверждён');
-  await page.reload();
+  await page.reload({waitUntil:'domcontentloaded'});
   await page.getByRole('button', { name: 'Предпросмотр сигнала', exact: true }).click();
   await expect(page.locator('.case-signal-sheet .risk-score strong')).toHaveText('25');
 });

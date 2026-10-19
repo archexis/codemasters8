@@ -1,0 +1,32 @@
+
+> saq-qurylys@2.0.0 test:local
+> node tools/local-smoke.mjs
+
+PASS actual Auth and seed migrations
+PASS actual PostgreSQL RLS and direct-write denial
+PASS actual transactional commands and stale-version guard
+PASS actual Storage upload, signed URL and cross-user denial
+PASS actual FastAPI → Supabase JWT validation → RLS data
+PASS actual Edge runtime rejects unauthenticated requests; external LLM tests run separately
+
+> saq-qurylys@2.0.0 test:live
+> playwright test --config playwright.live.config.ts --grep-invert real external LLM
+
+[WebServer] (node:46228) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:49896) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\live\backup-isolation.spec.ts:73:3 › S2.6 backup/restore изоляция (connected) › B не читает workspace/media A; anonymous denied (22ms)
+  ok 2 tests\live\backup-isolation.spec.ts:83:3 › S2.6 backup/restore изоляция (connected) › expiry: короткий TTL истекает, новая own URL работает; чужая подпись — отказ (4.6s)
+  ok 3 tests\live\backup-isolation.spec.ts:101:3 › S2.6 backup/restore изоляция (connected) › backup A → restore в чистое C → сверка SHA256; поддельный confirmed даёт 0 (140ms)
+  ok 4 tests\live\case-scenarios.spec.ts:9:1 › real case A/B/C scores, scope rejection and immutable historical PDF (3.2s)
+  ok 5 tests\live\security.spec.ts:6:1 › S6 actual Auth/RPC/Storage/API/Edge negative matrix (2.1s)
+  ok 6 tests\live\security.spec.ts:99:1 › S6 browser offline/expired save preserves form; no server secrets in storage/network (6.2s)
+  ok 7 tests\live\security.spec.ts:123:1 › S6 real A logout/B login discards an in-flight A workspace response (1.8s)
+  ok 8 tests\live\supabase.spec.ts:6:1 › real local Supabase Auth, case RPC decisions, Storage and reload (7.1s)
+
+  8 passed (38.5s)
+PASS actual browser login, Storage, RPC and reload

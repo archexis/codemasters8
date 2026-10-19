@@ -54,8 +54,8 @@ test('D1 browser cached UI timing and five-cycle heap sanity', async ({ page, co
   const environment = await page.evaluate(() => ({ userAgent: navigator.userAgent, logicalCPUs: navigator.hardwareConcurrency, viewport: { width: innerWidth, height: innerHeight }, devicePixelRatio }));
   const stats = (values: number[]) => { const sorted = [...values].sort((a, b) => a - b); return { p50Ms: sorted[Math.ceil(sorted.length * .5) - 1], p95Ms: sorted[Math.ceil(sorted.length * .95) - 1], samples: values }; };
   const result = { measuredAt: new Date().toISOString(), project: info.project.name, profile: { complexes: 100, publications: 1000, events: 10000, imageCacheMB: 0 }, environment, mapRendering, xrayCachedUI: stats(xray), dossierCachedShell: stats(shell), fiveFurtherTabCyclesHeap: { beforeUsedBytes: heapBefore.usedSize, afterUsedBytes: heapAfter.usedSize, deltaBytes: heapAfter.usedSize - heapBefore.usedSize, forcedGC: true }, errors, limitations: ['D1 entity/event counts; 5–10MB image cache is not included.', 'Headless Chromium on execution host; hardware is not asserted to match reference D1 PC.', 'Basemap tiles are stubbed with a tiny PNG to isolate cached UI controls.', 'Timings measure DOM control activation to two animation frames; map worker/GPU completion is not measured.', 'Cold-start timing, sustained FPS, WebGL draw calls, and actual device GPU memory are not measured.', 'Single browser process; 20 samples are a sanity check, not a production performance guarantee.'] };
-  await mkdir('docs/acceptance/ux', { recursive: true });
-  await writeFile(`docs/acceptance/ux/performance-${info.project.name}.json`, JSON.stringify(result, null, 2));
+  await mkdir('test-results/score-maxxing/artifacts/ux', { recursive: true });
+  await writeFile(`test-results/score-maxxing/artifacts/ux/performance-${info.project.name}.json`, JSON.stringify(result, null, 2));
   await info.attach('D1-performance-sanity', { body: JSON.stringify(result, null, 2), contentType: 'application/json' });
   expect(errors).toEqual([]);
 });

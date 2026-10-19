@@ -69,6 +69,11 @@ def test_snapshot_pdf_is_reproducible_unicode_and_independent_of_current_state(w
     assert before.headers["cache-control"] == "no-store"
     text = "\n".join(p.extract_text() for p in PdfReader(BytesIO(before.content)).pages)
     assert "Демонстрационный ЖК" in text and "DEMO" in text and "Платное бронирование" in text
+    assert 'Автор решения: Аналитик' in text and 'Зона риска: Жёлтая' in text
+    assert 'Версия весов: 1' in text and 'Тип основания: Не установлено' in text
+    assert 'Время решения (UTC)' in text
+    for internal in ('weightsVersion:', 'actor:', 'zone:', 'unknown / unknown'):
+        assert internal not in text
     workspace["data"]["complexes"][0]["name"] = "Нынешнее имя"
     assert client.get(path).content == before.content
     assert client.get("/api/cases/foreign/snapshots/snap1/pdf").status_code == 404
@@ -82,3 +87,34 @@ def test_pdf_import_rejects_wrong_type_and_corrupt_pdf(workspace):
     assert client.post("/api/import/pdf", content=b"%PDF-1.4").status_code == 415
     assert client.post("/api/import/pdf", content=b"not a pdf", headers={"content-type": "application/pdf"}).status_code == 422
     assert client.post("/api/import/pdf", content=b"%PDF-1.4\ncorrupt", headers={"content-type": "application/pdf"}).status_code == 422
+
+
+def test_pdf_null_phase_and_long_unicode_source(workspace):
+    snapshot = workspace['data']['caseSnapshots'][0]
+    snapshot['phase'] = None
+    snapshot['artifacts'][0]['text'] = 'Құрылыс жүріп жатыр. Проверка длинного материала. ' * 160
+    snapshot['artifacts'][0]['url'] = 'https://example.test/' + 'long-source-' * 80
+    result = client.get('/api/cases/c1/snapshots/snap1/pdf')
+    assert result.status_code == 200
+    pdf = PdfReader(BytesIO(result.content))
+    assert len(pdf.pages) > 1
+    text = '\n'.join(page.extract_text() for page in pdf.pages)
+    assert 'Құрылыс жүріп жатыр' in text and 'Весь объект' in text
+    assert ''.join(text.split()).count('Проверкадлинногоматериала.') == 160
+
+
+def test_pdf_only_assigns_weight_to_unique_verified_codes(workspace):
+    snapshot = workspace['data']['caseSnapshots'][0]
+    assertion = snapshot['assertions'][0]
+    snapshot['assertions'] = [
+        {**assertion, 'status': 'rejected'},
+        {**assertion, 'status': 'candidate'},
+        assertion,
+        {**assertion, 'id': 'same-code'},
+    ]
+    result = client.get('/api/cases/c1/snapshots/snap1/pdf')
+    assert result.status_code == 200
+    text = '\n'.join(page.extract_text() for page in PdfReader(BytesIO(result.content)).pages)
+    assert 'R2 +0 — Отклонено' in text
+    assert 'R2 +0 — Требует проверки' in text
+    assert text.count('R2 +25') == 1

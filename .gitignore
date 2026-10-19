@@ -13,3 +13,7 @@ __pycache__/
 supabase/.temp/
 .vitest/
 .temp/
+.vercel
+.env*.local
+
+.playwright-cli/

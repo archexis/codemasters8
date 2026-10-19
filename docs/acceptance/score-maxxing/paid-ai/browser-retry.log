@@ -1,0 +1,54 @@
+
+> saq-qurylys@2.0.0 test:live
+> playwright test --config playwright.live.config.ts --grep real external LLM --headed --trace on
+
+[WebServer] (node:19008) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:34508) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\live\investigation.spec.ts:6:1 › real external LLM current case review, immutable snapshot and PDF (2.0m)
+
+
+  1) tests\live\investigation.spec.ts:6:1 › real external LLM current case review, immutable snapshot and PDF 
+
+    Test timeout of 120000ms exceeded.
+
+    Error: locator.selectOption: Test timeout of 120000ms exceeded.
+    Call log:
+      - waiting for getByLabel('Версия', { exact: true })
+
+
+      62 |  await page.getByRole('button',{name:'Предпросмотр сигнала',exact:true}).click();await page.getByLabel('Обоснование решения',{exact:true}).fill('Нужна дополнительная проверка');await page.getByRole('button',{name:'Вернуть на проверку',exact:true}).click();
+      63 |  await page.reload({waitUntil:'domcontentloaded'});await page.getByRole('button',{name:'Предпросмотр сигнала',exact:true}).click();
+    > 64 |  await page.getByLabel('Версия',{exact:true}).selectOption('1');await expect(page.locator('.case-signal-sheet .risk-score strong')).toHaveText('25');
+         |                                               ^
+      65 |  await page.screenshot({path:info.outputPath('06-old-version-after-return.png'),fullPage:true});
+      66 |  const historicalDownload=page.waitForEvent('download');
+      67 |  await page.getByRole('button',{name:'Скачать PDF',exact:true}).click();
+        at C:\Users\BIGra\codemasters8\tests\live\investigation.spec.ts:64:47
+
+    Error Context: test-results\live\investigation-real-externa-bd738--immutable-snapshot-and-PDF\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\live\investigation-real-externa-bd738--immutable-snapshot-and-PDF\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\live\investigation-real-externa-bd738--immutable-snapshot-and-PDF\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests\live\investigation.spec.ts:6:1 › real external LLM current case review, immutable snapshot and PDF 
+file:///C:/Users/BIGra/codemasters8/test-results/paid-candidate/browser-retry.mjs:64
+    child.on('error',reject);child.on('exit',code=>code===0 ? resolve() : reject(new Error(`Browser failed: ${code}`)));
+                                                                                 ^
+
+Error: Browser failed: 1
+    at ChildProcess.<anonymous> (file:///C:/Users/BIGra/codemasters8/test-results/paid-candidate/browser-retry.mjs:64:82)
+    at ChildProcess.emit (node:events:509:28)
+    at ChildProcess._handle.onexit (node:internal/child_process:295:12)
+
+Node.js v24.18.0

@@ -9,33 +9,43 @@ async function stub(page:Page, delayed=false) {
       ${delayed ? 'await new Promise((resolve,reject)=>{(window.__tasks??=[]).push({resolve,reject});});' : ''}
       return {engine:'Fixture R2/R3',realAI:false,hypotheses:[{id:'h2',code:'R2',quote:'Депозит',reason:'Оплата'},{id:'h3',code:'R3',quote:'строящемся доме',reason:'Реклама'}]};
     }` }));
-  await page.goto('/#/analyze/SQ-001');
+  await page.goto('/#/analyze/SQ-001',{waitUntil:'domcontentloaded'});
   await page.getByLabel('Текст объявления').fill('Депозит обязателен. Квартира в строящемся доме.');
 }
 async function run(page:Page) {await page.getByRole('button',{name:'Проанализировать',exact:true}).click();}
 async function settle(page:Page,fail=false) {await page.evaluate(fail=>{const w=window as any; const task=w.__tasks.shift(); fail ? task.reject(new Error('late old error')) : task.resolve();},fail);}
-test('two independent reviews retain one publication, reasons and +25 after reload',async({page})=>{
+test('triage retains one publication; only a case fact adds +25 after reload',async({page})=>{
+  // Includes two full reloads of the development module graph, plus case verification.
+  test.setTimeout(120000);
   await stub(page); await run(page);
   const h2=page.locator('.hypothesis').filter({hasText:'R2 · гипотеза'}),h3=page.locator('.hypothesis').filter({hasText:'R3 · гипотеза'});
   await h2.getByLabel('Обоснование аналитика').fill('Подтверждена просьба внести деньги');
-  await h2.getByRole('button',{name:'Подтвердить R2'}).click();
-  await expect(page.getByText('Публикация и решение сохранены.')).toBeVisible();
+  await h2.getByRole('button',{name:'Принять гипотезу R2'}).click();
+  await expect(page.getByText('Публикация сохранена. Триаж гипотезы не начисляет баллы.')).toBeVisible();
   await expect(h3.getByRole('button',{name:'Отклонить гипотезу'})).toBeEnabled();
   await h3.getByLabel('Обоснование аналитика').fill('Не хватает материала о вводе');
-  await h3.getByRole('button',{name:'Подтвердить R3'}).click();
-  await expect(page.getByRole('alert')).toContainText('R3');
   await h3.getByRole('button',{name:'Отклонить гипотезу'}).click();
   await expect(page.locator('.ai-review-history')).toContainText('Не хватает материала о вводе');
-  await page.reload();
+  await page.unroute('**/src/lib/analysis.ts');
+  await page.reload({waitUntil:'domcontentloaded'});
   await expect(page.locator('.ai-review-history')).toContainText('Подтверждена просьба внести деньги');
   await expect(page.locator('.ai-review-history')).toContainText('Не хватает материала о вводе');
   const env=await page.evaluate(()=>JSON.parse(localStorage.getItem('sq_svelte_demo_v2')!));
   expect(env.state.ads.filter((a:any)=>a.text==='Депозит обязателен. Квартира в строящемся доме.')).toHaveLength(1);
-  const z=env.state.complexes.find((z:any)=>z.id==='SQ-001');
-  expect(z.factors.find((f:any)=>f.code==='R2').status).toBe('confirmed');
-  expect(z.factors.find((f:any)=>f.code==='R3').status).toBe('rejected');
-  // SQ-001 starts at 35 (R2+R3); the independent rejection removes only R3.
-  expect(z.factors.filter((f:any)=>f.status==='confirmed').map((f:any)=>f.code)).toEqual(['R2']);
+  const artifact=env.state.artifacts.find((a:any)=>a.adId===env.state.ads.find((a:any)=>a.text==='Депозит обязателен. Квартира в строящемся доме.').id);
+  const claims=env.state.claims.filter((c:any)=>c.artifactId===artifact.id);
+  expect(claims.find((c:any)=>c.code==='R2').triage).toBe('accepted');
+  expect(claims.find((c:any)=>c.code==='R3').triage).toBe('rejected');
+  expect(env.state.assertions??[]).toHaveLength(0);
+  await page.goto('/#/complexes/SQ-001?tab=verification',{waitUntil:'domcontentloaded'});
+  await page.getByRole('button',{name:'Начать расследование',exact:true}).click();
+  await expect(page.locator('.risk-score strong')).toHaveText('0');
+  await page.getByLabel('Дата доказательства',{exact:true}).fill('2026-10-19');
+  await page.getByLabel('Обоснование проверки факта',{exact:true}).fill('Проверена дословная просьба оплаты');
+  await page.getByRole('button',{name:'Подтвердить факт R2',exact:true}).click();
+  await expect(page.locator('.risk-score strong')).toHaveText('25');
+  await page.reload({waitUntil:'domcontentloaded'});
+  await expect(page.locator('.risk-score strong')).toHaveText('25');
 });
 for(const field of ['Текст объявления','Ссылка на источник','Аккаунт','Дата публикации (пусто — не указана)','Площадка','Объект','Скриншот / документ']) {
   test(`stale snapshot blocks save after ${field} change during request`,async({page})=>{
@@ -46,7 +56,7 @@ for(const field of ['Текст объявления','Ссылка на ист�
     else if(field==='Скриншот / документ') await target.setInputFiles({name:'changed.pdf',mimeType:'application/pdf',buffer:Buffer.from('changed')});
     else await target.fill(field.startsWith('Дата') ? '2026-10-17' : field.startsWith('Ссылка') ? 'https://changed.test' : 'Изменённый ввод');
     await settle(page); await expect(page.getByText('Ввод изменён — повторите анализ перед сохранением.')).toBeVisible();
-    await expect(page.getByRole('button',{name:'Подтвердить R2'})).toBeDisabled();
+    await expect(page.getByRole('button',{name:'Принять гипотезу R2'})).toBeDisabled();
     await expect(page.getByRole('button',{name:'Сохранить без подтверждения'})).toBeDisabled();
   });
 }
@@ -72,10 +82,10 @@ test('session change aborts pending run and discards late results/errors',async(
 });
 
 test('ordinary Analyze dedupe keeps the persisted ad ID for the next independent review',async({page})=>{
- await stub(page);await run(page);await page.getByRole('button',{name:'Сохранить без подтверждения',exact:true}).click();await expect(page.getByText('Публикация и решение сохранены.')).toBeVisible();
- await page.goto('/#/overview');await page.goto('/#/analyze/SQ-001');await page.getByLabel('Текст объявления').fill('Депозит обязателен. Квартира в строящемся доме.');await page.getByLabel('Ссылка на источник').fill('https://example.test/second-sighting');await run(page);
+ await stub(page);await run(page);await page.getByRole('button',{name:'Сохранить без подтверждения',exact:true}).click();await expect(page.getByText('Публикация сохранена. Триаж гипотезы не начисляет баллы.')).toBeVisible();
+ await page.goto('/#/overview',{waitUntil:'domcontentloaded'});await page.goto('/#/analyze/SQ-001',{waitUntil:'domcontentloaded'});await page.getByLabel('Текст объявления').fill('Депозит обязателен. Квартира в строящемся доме.');await page.getByLabel('Ссылка на источник').fill('https://example.test/second-sighting');await run(page);
  const h2=page.locator('.hypothesis').filter({hasText:'R2 · гипотеза'}),h3=page.locator('.hypothesis').filter({hasText:'R3 · гипотеза'});
- await h2.getByLabel('Обоснование аналитика').fill('Повтор: платёжное предложение');await h2.getByRole('button',{name:'Подтвердить R2'}).click();await expect(page.getByText('Публикация и решение сохранены.')).toBeVisible();
+ await h2.getByLabel('Обоснование аналитика').fill('Повтор: платёжное предложение');await h2.getByRole('button',{name:'Принять гипотезу R2'}).click();await expect(page.getByText('Публикация сохранена. Триаж гипотезы не начисляет баллы.')).toBeVisible();
  await h3.getByLabel('Обоснование аналитика').fill('Отказ: нет материала до ввода');await h3.getByRole('button',{name:'Отклонить гипотезу'}).click();await expect(page.locator('.ai-review-history')).toContainText('Отказ: нет материала до ввода');await expect(page.getByRole('alert')).toHaveCount(0);
- const env=await page.evaluate(()=>JSON.parse(localStorage.getItem('sq_svelte_demo_v2')!));const ads=env.state.ads.filter((a:any)=>a.text==='Депозит обязателен. Квартира в строящемся доме.');expect(ads).toHaveLength(1);const f=env.state.complexes.find((z:any)=>z.id==='SQ-001').factors.find((f:any)=>f.code==='R3');expect(f.evidence.adId).toBe(ads[0].id);
+ const env=await page.evaluate(()=>JSON.parse(localStorage.getItem('sq_svelte_demo_v2')!));const ads=env.state.ads.filter((a:any)=>a.text==='Депозит обязателен. Квартира в строящемся доме.');expect(ads).toHaveLength(1);const artifact=env.state.artifacts.find((a:any)=>a.adId===ads[0].id);expect(env.state.claims.filter((c:any)=>c.artifactId===artifact.id).map((c:any)=>c.triage).sort()).toEqual(['accepted','rejected']);expect(env.state.assertions??[]).toHaveLength(0);
 });

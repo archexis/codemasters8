@@ -86,3 +86,26 @@ describe('review: connected storage and network boundaries', () => {
     expect(client.invoke).not.toHaveBeenCalled();
   });
 });
+
+
+describe('current AI transport contract (offline)',()=>{
+  const input={text:'Депозит 500 000 тенге.',zkId:'SQ-001',url:'',account:'',date:null,platform:''};
+  for(const code of ['AUTH_REQUIRED','QUOTA_EXCEEDED','PROVIDER_TIMEOUT','INVALID_PROVIDER_RESPONSE']) {
+    it(`preserves ${code} without parser success`,async()=>{
+      client.invoke.mockResolvedValue({data:null,error:{message:'Edge failure',context:new Response(JSON.stringify({error_code:code}),{status:code==='QUOTA_EXCEEDED'?429:503})}});
+      await expect(analyze(input,{runId:'transport-run',signal:new AbortController().signal})).rejects.toThrow(code);
+    });
+  }
+  it('rejects a different run or a fabricated quote',async()=>{
+    const result={engine:'fixture',realAI:true,status:'succeeded',runId:'other-run',hypotheses:[{id:'h1',code:'R2',quote:'Депозит',reason:'Оплата'}]};
+    client.invoke.mockResolvedValue({data:result,error:null});
+    await expect(analyze(input,{runId:'transport-run',signal:new AbortController().signal})).rejects.toThrow('Некорректный доверенный результат');
+    client.invoke.mockResolvedValue({data:{...result,runId:'transport-run',hypotheses:[{...result.hypotheses[0],quote:'Вымышленная цитата'}]},error:null});
+    await expect(analyze(input,{runId:'transport-run',signal:new AbortController().signal})).rejects.toThrow('Некорректный доверенный результат');
+  });
+  it('does not call transport for an already cancelled run',async()=>{
+    const controller=new AbortController();controller.abort();
+    await expect(analyze(input,{runId:'cancelled-run',signal:controller.signal})).rejects.toMatchObject({name:'AbortError'});
+    expect(client.invoke).not.toHaveBeenCalled();
+  });
+});

@@ -120,9 +120,9 @@
 {#if selected&&(page!=='cases'||selectedCase)&&(!phaseId||workspace.phases?.some(p=>p.id===phaseId&&p.complexId===zkId))}
 {#key `${zkId}-${phaseId??''}-${selectedCase?.id??''}`}<ComplexDossier {workspace} complexId={zkId} {phaseId} caseId={selectedCase?.id} tab={activeTab} evidenceId={params.get('evidence')||''} {commit}/>{/key}
 {:else}<section class="panel"><h1>Досье не найдено</h1><p>Объект, очередь или дело недоступны в текущем рабочем пространстве.</p><a class="button mt-4" href="#/registries">К реестрам</a></section>{/if}
-{:else if page==='signal'}{#if selected}<Detail {workspace} complex={selected} {commit} signal/>{/if}
+{:else if page==='signal'}{#if selected}{#key route}<Detail {workspace} complex={selected} {commit} signal/>{/key}{:else}<section class="panel"><h1>Сигнал не найден</h1><p>Объект недоступен в текущем рабочем пространстве.</p><a class="button" href="#/registries">К реестрам</a></section>{/if}
 {:else if page==='backup'}<h1 class="mb-5">Резервная копия</h1><BackupPanel {workspace} onRestoreDone={s=>{workspace=s;notice='Данные восстановлены. Решения требуют повторной проверки.';}}/>
-{:else if page==='export'}{#if selected}<section class="panel"><h1>Экспорт исторического сигнала</h1>{#if exportRevisionError}<p role="alert">{exportRevisionError}</p>{:else}<button class="mt-5" onclick={downloadSignalExport}>Скачать JSON</button>{/if}</section>{/if}
+{:else if page==='export'}{#if selected}<section class="panel"><h1>Экспорт исторического сигнала</h1>{#if exportRevisionError}<p role="alert">{exportRevisionError}</p><a class="button" href={`#/signal/${zkId}`}>К текущему сигналу</a>{:else}<button class="mt-5" onclick={downloadSignalExport}>Скачать JSON</button>{/if}</section>{/if}
 {:else}<section class="panel"><h1>Страница не найдена</h1><a href="#/map">Открыть карту</a></section>{/if}
 {#if !loading&&!workspace.complexes.length}<section class="panel mt-5"><h2>Начните работу</h2><div class="actions"><button onclick={initialize}>Загрузить демоданные</button><button onclick={()=>creating=true}>Создать объект</button></div>{#if creating}<ComplexForm onsave={async complex=>{await commit({type:'complex',complex});creating=false;}} oncancel={()=>creating=false}/>{/if}</section>{/if}
 </main>

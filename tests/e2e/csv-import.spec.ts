@@ -17,7 +17,7 @@ const FOUR_ROWS = [
 ].join('\n');
 
 async function openCsv(page: Page) {
-  await page.goto('/#/analyze/SQ-001');
+  await page.goto('/#/analyze/SQ-001',{waitUntil:'domcontentloaded'});
   await page.getByText('Импорт из CSV').click();
   await page.getByTestId('csv-input').fill(FOUR_ROWS);
   await page.getByTestId('csv-preview').click();
@@ -63,15 +63,15 @@ test('valid сохраняется без анализа; saved не дубли�
   await page.getByTestId('csv-save').click();
   await expect(page.getByTestId('csv-save-note')).toContainText(/новая фиксация к AD-/);
   // Reload: обе публикации в списке, повтора нет.
-  await page.reload();
-  await page.goto('/#/ads');
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.goto('/#/ads',{waitUntil:'domcontentloaded'});
   await expect(page.getByText('Депозит 901 111 тенге за бронь квартиры.')).toHaveCount(1);
   await expect(page.getByText('Алғашқы жарна 901 333 теңге.')).toBeVisible();
   expect(errors).toEqual([]);
 });
 
 test('неизвестная дата → пусто, а не предыдущая/сегодня', async ({ page }) => {
-  await page.goto('/#/analyze/SQ-001');
+  await page.goto('/#/analyze/SQ-001',{waitUntil:'domcontentloaded'});
   await page.getByText('Импорт из CSV').click();
   await page.getByTestId('csv-input').fill(
     ['text,date,zk', '"Бронь 902 111 тенге.",2026-09-05,SQ-001', '"Бронь 902 222 тенге без даты.",,SQ-001'].join('\n'),
@@ -85,7 +85,7 @@ test('неизвестная дата → пусто, а не предыдуща
 });
 
 test('уникальное имя — предложение; save до выбора закрыт', async ({ page }) => {
-  await page.goto('/#/analyze/SQ-001');
+  await page.goto('/#/analyze/SQ-001',{waitUntil:'domcontentloaded'});
   await page.getByText('Импорт из CSV').click();
   await page.getByTestId('csv-input').fill(['text,zk', '"Бронь 903 111 тенге.",Сарыарқа'].join('\n'));
   await page.getByTestId('csv-preview').click();

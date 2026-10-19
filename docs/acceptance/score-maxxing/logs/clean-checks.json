@@ -1,0 +1,14 @@
+[
+  {
+    "exitCode": 0,
+    "command": "npm run check (clean source)"
+  },
+  {
+    "exitCode": 0,
+    "command": "npm run build (clean source)"
+  },
+  {
+    "exitCode": 0,
+    "command": "isolated locked Python -m pytest backend/tests -q"
+  }
+]
