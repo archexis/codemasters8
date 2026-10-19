@@ -32,3 +32,6 @@ Candidate создаётся только explicit path list; .agents/skills, sk
 
 Supplement: UX initial7/8 (navigation timeout), targeted WebGL1/1 PASS; stronger keyboard/tiles desktop+mobile4/4 PASS in clean-room. check-supplement0 diagnostics. Final source profile drift only this test, bound by SHA256 in reports. Staged secret pattern/JWT scan358 files PASS; exact current keys+history scan497 files PASS. Diff whitespace notes are historical log formatting/CRLF and pre-existing app.css trailing space; new S6 product/test lines pass cr-at-eol diff check.
 
+
+Candidate f1494e2a166b7a4f53fd35dffb749b011066fbbe создан локально. Anonymous GitHub repo200/candidate422; gate6 exit1 исключительно из-за publication blocker. После candidate изменены только source-head metadata/отчёты, product/test source manifest неизменен. Второй evidence-only commit сохраняет результаты проверки SHA, не заменяет tested candidate.
+

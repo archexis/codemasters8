@@ -1,5 +1,5 @@
 {
-  "status": "LOCAL_CANDIDATE_PENDING_COMMIT",
+  "status": "LOCAL_CANDIDATE",
   "baseHead": "d2d92a952c9184faad7941357494b16eb6274f79",
   "sourceByteManifest": {
     ".env.example": "ffd5af093dc86aac2aebde39b1ba8940623e62546b080a4b3d9223ffb10cb411",
@@ -141,8 +141,9 @@
   "cleanRoom": "docs/acceptance/s6/clean-runtime.json",
   "AI": "docs/acceptance/s6/ai-input-binding.json",
   "repository": "https://github.com/archexis/codemasters8",
-  "recipientAccess": "BLOCKED: candidate not published",
+  "recipientAccess": "BLOCKED",
   "submission": "NOT_SENT",
-  "publicationCommand": "git push origin <candidateSHA>:refs/heads/codex/s6-release-candidate",
-  "note": "Candidate SHA recorded in acceptance/s6/candidate.json after commit, avoiding a self-referential commit hash."
+  "publicationCommand": "git push origin f1494e2a166b7a4f53fd35dffb749b011066fbbe:refs/heads/codex/s6-release-candidate",
+  "note": "Candidate SHA recorded in acceptance/s6/candidate.json after commit, avoiding a self-referential commit hash.",
+  "candidateSHA": "f1494e2a166b7a4f53fd35dffb749b011066fbbe"
 }

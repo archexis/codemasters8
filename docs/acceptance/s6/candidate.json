@@ -1,0 +1,18 @@
+{
+  "candidateSHA": "f1494e2a166b7a4f53fd35dffb749b011066fbbe",
+  "repository": "https://github.com/archexis/codemasters8",
+  "anonymousCheck": {
+    "date": "2026-10-19T02:07:49.244Z",
+    "repositoryHTTP": 200,
+    "candidateHTTP": 422,
+    "credentials": "none"
+  },
+  "publication": "BLOCKED",
+  "requiredAction": "git push origin f1494e2a166b7a4f53fd35dffb749b011066fbbe:refs/heads/codex/s6-release-candidate",
+  "executed": false,
+  "productionDeploy": false,
+  "submission": "NOT_SENT",
+  "staging": "",
+  "dirty": " M skills-lock.json\n?? .agents/skills/supabase-server/\n?? docs/UI-UX-FRESH+NEW-FUNC/\n?? docs/acceptance/s6/commit.log\n",
+  "sourceBinding": "candidate commit + exact source manifest in RELEASE_MANIFEST.json; post-commit changes are evidence metadata only"
+}
