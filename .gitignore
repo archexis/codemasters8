@@ -17,3 +17,6 @@ supabase/.temp/
 .env*.local
 
 .playwright-cli/
+.worktrees/
+backend/.data/
+output/playwright/ui-polish-20261020/

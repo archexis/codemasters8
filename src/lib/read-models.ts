@@ -1,5 +1,5 @@
 import type { AppState } from './types';
-import { caseComplex, latestCaseAssertions, previewCaseSignal } from './investigation';
+import { caseComplex, hasCaseAssessment, latestCaseAssertions, previewCaseSignal } from './investigation';
 import { computeScore } from './scoring';
 export const phasesForComplex = (state: AppState, complexId: string) => (state.phases ?? []).filter(p => p.complexId === complexId);
 export const casesForComplex = (state: AppState, complexId: string, phaseId?: string) => (state.cases ?? []).filter(c => c.complexId === complexId && c.phaseId === phaseId);
@@ -15,7 +15,7 @@ export function dossierReadModel(state: AppState, complexId: string, phaseId?: s
   if(phaseId && !state.phases?.some(p => p.id === phaseId && p.complexId === complexId)) throw new Error('Очередь не найдена');
   const cases=casesForComplex(state,complexId,phaseId);
   const activeCase=cases.filter(c => c.status === 'draft').sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt))[0];
-  const latestCase=[...cases].sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt))[0];
+  const latestCase=cases.filter(c=>hasCaseAssessment(state,c)).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt))[0];
   const factors=latestCase ? caseComplex(state,latestCase).factors : phaseId ? [] : complex.factors;
-  return {complex,phase:state.phases?.find(p=>p.id===phaseId && p.complexId===complexId),phases:phasesForComplex(state,complexId),cases,activeCase,artifacts:(state.artifacts ?? []).filter(a=>a.complexId===complexId && a.phaseId===phaseId),claims:(state.claims ?? []).filter(c=>c.complexId===complexId && c.phaseId===phaseId),factors,...computeScore(factors)};
+  return {complex,phase:state.phases?.find(p=>p.id===phaseId && p.complexId===complexId),phases:phasesForComplex(state,complexId),cases,activeCase,assessmentCase:latestCase,artifacts:(state.artifacts ?? []).filter(a=>a.complexId===complexId && a.phaseId===phaseId),claims:(state.claims ?? []).filter(c=>c.complexId===complexId && c.phaseId===phaseId),factors,...computeScore(factors)};
 }

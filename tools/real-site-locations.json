@@ -1,0 +1,10 @@
+[
+  { "id": "SQ-001", "lat": 49.889851, "lng": 82.61502, "source": "https://2gis.kz/ust-kamenogorsk/firm/70000001059877798" },
+  { "id": "SQ-002", "lat": 49.918685, "lng": 82.618868, "source": "https://2gis.kz/ust-kamenogorsk/firm/70000001062587455" },
+  { "id": "SQ-003", "lat": 49.920922, "lng": 82.619326, "source": "https://2gis.kz/ust-kamenogorsk/firm/70000001090758304" },
+  { "id": "SQ-004", "lat": 49.896512, "lng": 82.61651, "source": "https://2gis.kz/ust-kamenogorsk/geo/70030076312915772" },
+  { "id": "SQ-005", "lat": 49.917758, "lng": 82.610959, "source": "https://2gis.kz/ust-kamenogorsk/firm/70000001110142373" },
+  { "id": "SQ-006", "lat": 49.945345, "lng": 82.622705, "source": "https://2gis.kz/ust-kamenogorsk/firm/70000001096100658" },
+  { "id": "SQ-007", "lat": 49.890632, "lng": 82.618475, "source": "https://2gis.kz/ust-kamenogorsk/firm/70000001094684176" },
+  { "id": "SQ-008", "lat": 49.924823, "lng": 82.619366, "source": "https://2gis.kz/ust-kamenogorsk/firm/70000001109656807" }
+]

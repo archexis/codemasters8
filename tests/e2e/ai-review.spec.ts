@@ -39,7 +39,7 @@ test('triage retains one publication; only a case fact adds +25 after reload',as
   expect(env.state.assertions??[]).toHaveLength(0);
   await page.goto('/#/complexes/SQ-001?tab=verification',{waitUntil:'domcontentloaded'});
   await page.getByRole('button',{name:'Начать расследование',exact:true}).click();
-  await expect(page.locator('.risk-score strong')).toHaveText('0');
+  await expect(page.locator('.risk-score strong')).toHaveText('35');
   await page.getByLabel('Дата доказательства',{exact:true}).fill('2026-10-19');
   await page.getByLabel('Обоснование проверки факта',{exact:true}).fill('Проверена дословная просьба оплаты');
   await page.getByRole('button',{name:'Подтвердить факт R2',exact:true}).click();

@@ -348,6 +348,7 @@ export function isDemoLockDegraded(): boolean {
  */
 export async function loadState(): Promise<AppState> {
   if (!supabase) {
+    await removeRetiredDemoDataset();
     const env = readDemoEnvelope(initialState());
     version = env.version;
     return env.state;
@@ -356,6 +357,7 @@ export async function loadState(): Promise<AppState> {
   const { data: { session } } = await supabase.auth.getSession();
   if (sessionGeneration !== startedGeneration) throw new SessionSupersededError();
   if (!session) {
+    await removeRetiredDemoDataset();
     // Регистрации нет: без сессии — DEMO-конверт по умолчанию, а не пустая заглушка.
     userId = '';
     trackAuthSession(null);
@@ -382,6 +384,27 @@ export async function loadState(): Promise<AppState> {
     if (e instanceof FutureVersionError) throw e;
     throw new Error(`Серверный workspace не прошёл проверку: ${e instanceof Error ? e.message : String(e)}`);
   }
+}
+
+/** One-time replacement of the retired demo, including its saved attachments.
+ * Match old seed identities, so subsequent edits to the new dataset persist.
+ */
+async function removeRetiredDemoDataset(): Promise<void> {
+  const raw = getItem(KEY);
+  if (!raw) return;
+  let value: unknown;
+  try { value = JSON.parse(raw); } catch { return; }
+  if (!value || typeof value !== 'object') return;
+  const saved = value as Record<string, unknown>;
+  const state = (saved.envelope === 1 ? saved.state : saved) as Record<string, unknown> | null;
+  if (!state || !Array.isArray(state.complexes)) return;
+  const retiredNames = new Set(['Ертіс Толқыны', 'Сарыарқа Парк', 'Достық Үйі', 'Altai Residence', 'Наурыз Квартал', 'Жастар Сити', 'Көктем Шаңырағы', 'Шығыс Жұлдызы']);
+  const retired = state.complexes.some((z: Record<string, unknown>) =>
+    z && ((typeof z.id === 'string' && /^SQ-R0[1-8]$/.test(z.id) && z.origin === 'public-snapshot') ||
+    (typeof z.id === 'string' && /^SQ-00[1-8]$/.test(z.id) && retiredNames.has(String(z.name)))));
+  if (!retired) return;
+  await resetDemo();
+  for (const key of [V1_STORAGE_KEY, RAW_BACKUP_KEY, V1_IMPORT_BACKUP_KEY]) removeItem(key);
 }
 export async function initializeWorkspace(): Promise<AppState> {
   if (!supabase) return resetDemo();

@@ -23,10 +23,10 @@ test('C: verified guarantee prevents R1 in a new case',async({page})=>{
  await manual.getByRole('button',{name:'Создать кандидата'}).click();
  await verifyFact(page,'R1');
  await expect(page.getByRole('alert')).toContainText('R1 требует');
- await expect(page.locator('.risk-score strong')).toHaveText('0');
+ await expect(page.locator('.risk-score strong')).toHaveText('10');
 });
 test('new publication and verified R2 add 25 only within the active case',async({page})=>{
- await manualCase(page);await expect(page.locator('.risk-score strong')).toHaveText('0');
+ await manualCase(page);await expect(page.locator('.risk-score strong')).toHaveText('10');
  await verifyFact(page);await expect(page.locator('.risk-score strong')).toHaveText('25');
 });
 test('withdrawing a case fact reduces its score and keeps the review history',async({page})=>{
@@ -46,5 +46,5 @@ test('invented quote is rejected and remains editable',async({page})=>{
  await page.getByRole('button',{name:'Создать кандидата',exact:true}).click();
  await expect(page.getByRole('alert')).toContainText('Цитата должна дословно присутствовать');
  await expect(field).toHaveValue('выдуманная цитата не из текста');
- await expect(page.locator('.risk-score strong')).toHaveText('0');
+ await expect(page.locator('.risk-score strong')).toHaveText('10');
 });

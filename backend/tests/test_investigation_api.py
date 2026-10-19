@@ -62,6 +62,30 @@ def test_bounded_projections_and_new_assertion_summary(workspace):
     assert phase_preview['readinessClaimed'] == 60 and phase_preview['readinessConfirmed'] == 30
 
 
+def test_untouched_draft_preserves_existing_assessment_in_map_registry_and_dossier(workspace):
+    data = workspace['data']
+    data['cases'].append({'id': 'empty', 'complexId': 'z1', 'status': 'draft', 'artifactIds': [], 'updatedAt': '2026-10-20'})
+    assert client.get('/api/map-summary').json()['items'][0]['score'] == 25
+    assert client.get('/api/registry').json()['items'][0]['score'] == 25
+    assert client.get('/api/complexes/z1/dossier').json()['complex']['score'] == 25
+    assert client.get('/api/summary').json()['zones'] == {'red': 0, 'yellow': 1, 'green': 0}
+    data['cases'] = [data['cases'][-1]]
+    data['assertions'] = []
+    data['caseSnapshots'] = []
+    assert client.get('/api/map-summary').json()['items'][0]['score'] == 35
+    data['phases'] = [{'id': 'p1', 'complexId': 'z1', 'name': 'Очередь'}]
+    data['cases'][0]['phaseId'] = 'p1'
+    assert client.get('/api/complexes/z1/dossier?phase_id=p1').json()['complex']['score'] == 0
+
+
+def test_zero_after_rejection_is_not_replaced_by_legacy_factors(workspace):
+    data = workspace['data']
+    data['cases'][0]['status'] = 'draft'
+    data['assertions'].append({**data['assertions'][0], 'id': 'rejected', 'status': 'rejected'})
+    assert client.get('/api/map-summary').json()['items'][0]['score'] == 0
+    assert client.get('/api/complexes/z1/dossier').json()['complex']['score'] == 0
+
+
 def test_snapshot_pdf_is_reproducible_unicode_and_independent_of_current_state(workspace):
     path = "/api/cases/c1/snapshots/snap1/pdf"
     before = client.get(path)

@@ -9,6 +9,7 @@ export async function manualCase(page:Page, complexId='SQ-003', quote='Плат�
   await expect(page.getByText(/Материал сохранён:/)).toBeVisible();
   await page.goto(`/#/complexes/${complexId}?tab=verification`,{waitUntil:'domcontentloaded'});
   await page.getByRole('button',{name:'Начать расследование',exact:true}).click();
+  await expect(page.getByRole('region',{name:'Автоматическая подготовка расследования'}).getByRole('status')).toContainText('Подготовка завершена');
   const manual=page.locator('details').filter({has:page.getByText('Выделить утверждение вручную',{exact:true})});
   await manual.locator('summary').click();
   await manual.getByLabel('Первичный материал').selectOption({label:'Источник проверки'});

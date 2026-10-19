@@ -1,13 +1,14 @@
 import { expect, test } from '@playwright/test';
 
-test('2.5D replaces seed points with clickable schematic boxes and restores points in 2D',async({page})=>{
+test('3D replaces seed points with clickable schematic boxes and restores points in 2D',async({page},info)=>{
   await page.route('**/src/components/RiskMap.svelte*',async route=>{
     const response=await route.fetch();const source=await response.text();
     await route.fulfill({response,body:source.replace('map = new ml.Map(', 'map = window.__uxGeometryMap = new ml.Map(')});
   });
   await page.goto('/#/map',{waitUntil:'domcontentloaded'});
   await expect(page.locator('.map-wrap')).toHaveAttribute('data-map-ready','true',{timeout:15000});
-  await page.getByRole('button',{name:'2.5D',exact:true}).click();
+  await page.getByRole('button',{name:'Слои и фильтры',exact:true}).click();
+  await page.getByRole('button',{name:'3D',exact:true}).click();
   await expect.poll(()=>page.evaluate(()=>{
     const map=(window as any).__uxGeometryMap;
     return {points:map.getLayoutProperty('points','visibility'),clusters:map.getLayoutProperty('clusters','visibility'),buildings:map.getLayoutProperty('buildings','visibility'),rendered:map.queryRenderedFeatures({layers:['buildings']}).length>0,zoom:map.getZoom()>=14.4};
@@ -16,12 +17,17 @@ test('2.5D replaces seed points with clickable schematic boxes and restores poin
   expect(box.properties).toMatchObject({height:36,approximateFootprint:true,approximateHeight:true});
   await page.evaluate(()=>{
     const map=(window as any).__uxGeometryMap;
-    map.jumpTo({center:[82.6132,49.9841],zoom:17,pitch:55});
+    const feature=map.getSource('footprints').serialize().data.features.find((f:any)=>f.properties.id==='SQ-001');
+    const ring=feature.geometry.coordinates[0].slice(0,-1);const center=ring.reduce((a:any,p:any)=>[a[0]+p[0]/ring.length,a[1]+p[1]/ring.length],[0,0]);
+    map.jumpTo({center,zoom:17,pitch:50,bearing:0});
   });
   await expect.poll(()=>page.evaluate(()=>(window as any).__uxGeometryMap.queryRenderedFeatures({layers:['buildings']}).some((f:any)=>f.properties.id==='SQ-001'))).toBe(true);
-  const canvas=page.locator('.maplibregl-canvas');const bounds=await canvas.boundingBox();
-  await canvas.click({position:{x:bounds!.width/2,y:bounds!.height/2-12}});
-  await expect(page.getByRole('complementary',{name:'Предпросмотр ЖК'})).toContainText('Условная 3D-коробка');
+  const canvas=page.locator('.maplibregl-canvas');
+  const target=await page.evaluate(()=>{const map=(window as any).__uxGeometryMap;const f=map.getSource('footprints').serialize().data.features.find((f:any)=>f.properties.id==='SQ-001');const ring=f.geometry.coordinates[0].slice(0,-1);const c=ring.reduce((a:any,p:any)=>[a[0]+p[0]/ring.length,a[1]+p[1]/ring.length],[0,0]);const s=map.project(c);return {x:s.x,y:s.y};});
+  const previewBox=page.getByRole('complementary',{name:'Предпросмотр ЖК'});
+  for (const dy of [0,-24,-48,-72,-100]) { await canvas.click({position:{x:target.x,y:target.y+dy}}); if (await previewBox.count()>0) break; }
+  await expect(page.getByRole('complementary',{name:'Предпросмотр ЖК'})).toContainText('Условная модель здания');
+  await page.screenshot({path:info.outputPath('map-preview.png'),fullPage:true});
   await page.getByRole('button',{name:'2D',exact:true}).click();
   await expect.poll(()=>page.evaluate(()=>{
     const map=(window as any).__uxGeometryMap;return [map.getLayoutProperty('points','visibility'),map.getLayoutProperty('clusters','visibility'),map.getLayoutProperty('buildings','visibility')];
@@ -36,7 +42,7 @@ test('manual GeoJSON import persists and feeds a real fill-extrusion layer', asy
   });
   await page.goto('/#/registries',{waitUntil:'domcontentloaded'});
   await page.getByRole('button', { name: 'Импорт GeoJSON', exact: true }).click();
-  const form = page.locator('form').filter({ has: page.getByRole('heading', { name: 'Контур для 2.5D-карты', exact: true }) });
+  const form = page.locator('form').filter({ has: page.getByRole('heading', { name: 'Контур для 3D-карты', exact: true }) });
   await form.getByLabel(/^ЖК/).selectOption('SQ-001');
   await form.getByLabel('Источник и дата проверки контура', { exact: true }).fill('DEMO геодезический контур · 2026-10-19');
   await form.getByLabel('Высота в метрах, если установлена', { exact: true }).fill('48');
@@ -49,8 +55,9 @@ test('manual GeoJSON import persists and feeds a real fill-extrusion layer', asy
   expect(saved).toHaveLength(1); expect(saved[0]).toMatchObject({ complexId: 'SQ-001', heightMeters: 48, verified: true });
   await page.goto('/#/map',{waitUntil:'domcontentloaded'});
   await expect(page.locator('.map-wrap')).toHaveAttribute('data-map-ready', 'true', { timeout: 15000 });
-  await expect(page.getByRole('button', { name: '2.5D', exact: true })).toBeEnabled();
-  await page.getByRole('button', { name: '2.5D', exact: true }).click();
+  await page.getByRole('button', { name: 'Слои и фильтры', exact: true }).click();
+  await expect(page.getByRole('button', { name: '3D', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: '3D', exact: true }).click();
   await page.evaluate(() => (window as any).__uxGeometryMap.jumpTo({ center: [82.6132, 49.9842], zoom: 16, pitch: 55 }));
   await expect.poll(() => page.evaluate(() => {
     const map = (window as any).__uxGeometryMap;

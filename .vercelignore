@@ -3,6 +3,7 @@
 !.env.example
 test-results/
 output/
+images/
 graphify-out/
 .playwright-cli/
 docs/

@@ -131,6 +131,12 @@ td small { display: block; font-size: 11px; color: #83907b; margin-top: 5px; }td
 .risk-score { display: flex; align-items: center; flex-direction: column; padding: 20px 26px; border-radius: 14px; border: 1px solid transparent; }
 .risk-score strong { font-size: 44px; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
 .risk-score span { font-size: 10.5px; margin-top: 8px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.score-link small { margin-top: 10px; font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
+.factor-link { border-radius: 6px; transition: background 160ms ease; }
+.factor-link:hover { background: #f2f5ed; color: var(--forest); }
+.factor-link .factor-points { flex-shrink: 0; text-align: right; }
+.factor-link .factor-points b { margin-right: 0; color: inherit; }
+.factor-link .factor-points small { color: var(--forest); white-space: nowrap; }
 dl { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; font-size: 13px; }dt { color: #86917d; }dd { margin: 0; overflow-wrap: anywhere; }
 .hypothesis { padding: 18px; border: 1px solid #e8dcae; background: #fffdf4; border-radius: 12px; box-shadow: var(--shadow-sm); }.hypothesis p { font-size: 12.5px; margin: 10px 0; line-height: 1.6; }blockquote { margin: 12px 0; border-left: 3px solid #c8a346; padding-left: 14px; font-size: 13.5px; line-height: 1.65; background: rgba(200,163,70,0.06); padding-top: 8px; padding-bottom: 8px; border-radius: 0 8px 8px 0; }
 .error { padding: 14px 16px; background: #f9e8e4; color: #a23930; border: 1px solid #edc4bb; border-radius: 10px; font-size: 13px; overflow-wrap: anywhere; }
@@ -224,7 +230,7 @@ button[aria-pressed=true] {background:#e8eedf;border-color:#6a8860;}
 #app:has(.map-page) .topbar { padding-top: 10px; padding-bottom: 10px; gap: 16px; }
 .map-page .map-shell { min-width: 0; flex: 1; display: flex; flex-direction: column; min-height: 0; }
 .map-page .map-wrap { border: 0; border-radius: 0; box-shadow: none; margin-bottom: 0; flex: 1; min-height: 0; }
-.map-page .map { position: absolute; inset: 0; height: 100%; min-height: 0; background: linear-gradient(100deg,#dde3d1 40%,#eef2e4 50%,#dde3d1 60%); background-size: 200% 100%; animation: mapShimmer 1.6s linear infinite; }
+.map-page .map-wrap > .map { position: absolute; inset: 0; height: 100%; min-height: 0; background: linear-gradient(100deg,#dde3d1 40%,#eef2e4 50%,#dde3d1 60%); background-size: 200% 100%; animation: mapShimmer 1.6s linear infinite; }
 .map-page .map-wrap[data-map-ready=true] .map { animation: none; background: transparent; }
 @keyframes mapShimmer { to { background-position: -200% 0; } }
 .map-float-top {
@@ -325,3 +331,47 @@ button[aria-pressed=true] {background:#e8eedf;border-color:#6a8860;}
   .map-about-float { bottom: 150px; max-height: 40%; }
 }
 @media(prefers-reduced-motion:reduce){.map-page .map-preview,.map-page .map,.map-list-panel,.map-about-float{animation:none;}}
+
+/* Compact appbar and controls floating over the map. */
+#app:has(.map-page) .topbar { min-height:56px; padding:6px 20px; gap:12px; }
+#app:has(.map-page) .brand-symbol { width:34px; height:36px; font-size:26px; }
+#app:has(.map-page) .topbar nav a { padding:8px 14px; }
+.map-tools-toggle { white-space:nowrap; }
+.map-tools-toggle[aria-expanded=true] { background:#244c3f; color:white; }
+.map-wrap > .map-float-top { position:absolute; top:12px; left:12px; right:60px; margin:0; padding:8px; border-radius:12px; }
+.map-wrap > .map-float-top[hidden] { display:none; }
+.map-wrap > .map-float-top input, .map-wrap > .map-float-top select { min-height:36px; padding:7px 10px; }
+@media(max-width:640px) {
+ #app:has(.map-page) .topbar { padding:6px 10px; gap:8px; flex-wrap:wrap; }
+ #app:has(.map-page) .account { gap:6px; margin-left:auto; }
+ #app:has(.map-page) .account .mode-dot { display:none; }
+ #app:has(.map-page) .account button { padding:7px 8px; font-size:11px; }
+ .map-wrap > .map-float-top { top:8px; left:8px; right:52px; flex-wrap:wrap; max-height:calc(100% - 150px); overflow-y:auto; }
+ .map-wrap > .map-float-top .map-search { flex:1 1 100%; min-width:0; }
+ .map-wrap > .map-float-top select { flex:1; max-width:none; }
+}
+/* Compact risk indicators and readable map cards. */
+.registry-risk { display:inline-flex;align-items:center;gap:9px;white-space:nowrap;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1; }
+.registry-risk-dot { display:block;width:11px;height:11px;border-radius:50%;flex:none; }
+.registry-risk-dot.green { background:#388068; }.registry-risk-dot.yellow { background:#b47b11; }.registry-risk-dot.red { background:#bf453e; }
+.publication-excerpt { display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden;overflow-wrap:anywhere; }
+.map-page .map-wrap .map-preview { display:flex;flex-direction:column;bottom:72px;background:rgba(255,255,255,.97);padding:18px;overflow:hidden; }
+.map-page .map-wrap:not(.map-tools-open) .map-preview { top:16px; }
+.map-page .map-preview .preview-top { flex:none;align-items:center;margin-bottom:6px; }
+.map-page .map-preview .preview-content { min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-right:4px; }
+.map-page .map-preview h3 { font-size:22px;line-height:1.3;margin:2px 0 6px; }
+.map-page .map-preview .preview-sub { font-size:13px;line-height:1.5;margin:0 0 12px; }
+.map-page .map-preview .preview-facts { font-size:13px;line-height:1.5; }
+.map-page .map-preview .preview-facts div { grid-template-columns:90px minmax(0,1fr);gap:12px;padding:8px 0; }
+.map-page .map-preview .preview-score { margin:12px 0 8px;padding:10px 12px; }
+.map-page .map-preview .preview-actions { display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--line-soft); }
+.map-page .map-preview .preview-actions button { padding:10px 8px;font-size:12px;line-height:1.4; }
+.map-page .map-preview .preview-model { margin-top:12px;padding-top:12px; }
+.map-page .map-preview .preview-model summary { font-size:12px;color:#5c6b60; }
+.map-page .map-preview .preview-meta { font-size:12px;line-height:1.5; }
+@media(max-width:640px) {
+ .map-page .map-wrap .map-preview { top:auto;left:8px;right:8px;bottom:72px;max-height:55dvh;padding:14px;width:auto; }
+ .map-page .map-wrap:not(.map-tools-open) .map-preview { top:auto; }
+ .map-page .map-preview h3 { font-size:20px; }
+ .map-page .map-preview .preview-image img { height:104px; }
+}

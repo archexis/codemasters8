@@ -24,6 +24,43 @@ function verify(state:AppState) {
   return applyCommand(state,{type:'fact.review',caseId:'case-flow',claimId:'claim-flow',status:'verified',evidence:{source:'Публикация',date:'2026-10-19'},comment:'Цитата сверена с оригиналом'},actor);
 }
 describe('investigation flow',()=>{
+  it('preserves dossier factors when opening an untouched case without adopting them into its signal',()=>{
+    let {state,complexId}=setup();
+    const before=dossierReadModel(state,complexId);
+    expect(before.score).toBeGreaterThan(0);
+    state=open(state,complexId);
+    expect(dossierReadModel(state,complexId)).toMatchObject({score:before.score,zone:before.zone,factors:before.factors});
+    expect(previewCaseSignal(state,'case-flow').score).toBe(0);
+    expect(()=>applyCommand(state,{type:'case.decide',caseId:'case-flow',status:'confirmed',comment:'Без проверки'},actor)).toThrow('Нет подтверждённых факторов');
+    state=verify(state);
+    expect(dossierReadModel(state,complexId).score).toBe(25);
+    state=applyCommand(state,{type:'case.create',id:'new-empty-case',complexId},actor);
+    state.cases!.find(c=>c.id==='new-empty-case')!.updatedAt='2099-01-01T00:00:00Z';
+    expect(dossierReadModel(state,complexId).score).toBe(25);
+    expect(previewCaseSignal(state,'new-empty-case').score).toBe(0);
+  });
+  it('keeps deliberate zero assessments and never restores baseline after a rejected fact or returned decision',()=>{
+    let {state,complexId}=setup();
+    state=open(state,complexId);
+    state=applyCommand(state,{type:'fact.review',caseId:'case-flow',claimId:'claim-flow',status:'rejected',evidence:{source:'Публикация'},comment:'Не подтверждено'},actor);
+    expect(dossierReadModel(state,complexId).score).toBe(0);
+    const other=state.complexes[1].id;
+    state=applyCommand(state,{type:'case.create',id:'empty-returned',complexId:other},actor);
+    state=applyCommand(state,{type:'case.decide',caseId:'empty-returned',status:'returned',comment:'Возврат без фактов'},actor);
+    state=applyCommand(state,{type:'case.reopen',caseId:'empty-returned',comment:'Пересмотр'},actor);
+    expect(dossierReadModel(state,other).score).toBe(0);
+  });
+  it('preserves a previous phase assessment when another phase case is opened and does not inherit whole-complex factors',()=>{
+    let {state,complexId}=setup('phase-two');
+    state=open(state,complexId,'phase-two');
+    expect(dossierReadModel(state,complexId,'phase-two').score).toBe(0);
+    state=verify(state);
+    state=applyCommand(state,{type:'case.create',id:'empty-phase-case',complexId,phaseId:'phase-two'},actor);
+    state.cases!.find(c=>c.id==='empty-phase-case')!.updatedAt='2099-01-01T00:00:00Z';
+    expect(dossierReadModel(state,complexId,'phase-two').score).toBe(25);
+    expect(previewCaseSignal(state,'empty-phase-case').score).toBe(0);
+    expect(dossierReadModel(state,complexId).score).toBe(35);
+  });
   it('keeps triage separate from fact verification and immutable decisions',()=>{
     let {state,complexId}=setup();
     const original=structuredClone(state.complexes[0].factors);
@@ -78,6 +115,7 @@ describe('investigation flow',()=>{
   it('invalidates case decisions by appending candidates after underlying observations change',()=>{
     let state=initialState();
     const complex=state.complexes[1];
+    state=applyCommand(state,{type:'readiness',zkId:complex.id,value:12,source:'Исходный акт измерения',date:'2026-10-19'},actor);
     state=applyCommand(state,{type:'case.create',id:'readiness-case',complexId:complex.id},actor);
     state=applyCommand(state,{type:'artifact.register',artifact:{id:'readiness-artifact',complexId:complex.id,kind:'observation',source:'Акт',text:'Готовность 12 процентов',date:'2026-10-19'}},actor);
     state=applyCommand(state,{type:'case.attach',caseId:'readiness-case',artifactId:'readiness-artifact'},actor);

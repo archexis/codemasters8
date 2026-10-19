@@ -1,6 +1,8 @@
 """Authenticated reporting API. Supabase validates JWTs; PostgREST enforces RLS."""
 from functools import lru_cache
-from typing import Annotated
+from typing import Annotated, Literal
+from contextlib import asynccontextmanager, suppress
+import asyncio
 
 import httpx
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
@@ -8,13 +10,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from starlette.concurrency import run_in_threadpool
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import BaseModel, Field
 from backend.app.projections import complex_factors, risk, preview, page, case_model, scope_model, timeline_items, latest_assertions
 
 
 class Settings(BaseSettings):
     supabase_url: str = ""
     supabase_anon_key: str = ""
+    supabase_service_role_key: str = ""
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+    tavily_api_key: str = ""
+    research_db_path: str = "backend/.data/research.sqlite3"
+    research_domains: str = "gov.kz,homeportal.kz,krisha.kz"
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
@@ -37,7 +44,19 @@ def zone_for(score: int, confirmed: set[str]) -> str:
     return "red" if score >= 60 and {"R1", "R2"} <= has else "yellow" if score >= 25 else "green"
 
 
-app = FastAPI(title="SAQ QURYLYS API", version="2.0.0")
+@asynccontextmanager
+async def lifespan(app):
+    from backend.app.research import research_worker
+    task = asyncio.create_task(research_worker(get_settings()))
+    try:
+        yield
+    finally:
+        task.cancel()
+        with suppress(asyncio.CancelledError):
+            await task
+
+
+app = FastAPI(title="SAQ QURYLYS API", version="2.0.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=get_settings().cors_origins.split(","),
@@ -166,6 +185,76 @@ async def case_state(case_id: str, workspace: dict = Depends(fetch_workspace)) -
     if model is None:
         raise HTTPException(404, "Case not found")
     return {"version": workspace["version"], **model}
+
+
+class ResearchOptions(BaseModel):
+    monitor_hours: Literal[0, 6, 24, 168] = 0
+    domains: list[str] | None = Field(default=None, max_length=10)
+
+
+def research_domains(options, settings):
+    allowed = [d.strip() for d in settings.research_domains.split(',') if d.strip()]
+    chosen = options.domains if options.domains is not None else allowed
+    if any(d not in allowed for d in chosen):
+        raise HTTPException(422, 'Выберите приоритетные источники из настроенных сервером доменов.')
+    return list(dict.fromkeys(chosen))
+
+
+def research_target(workspace, case_id):
+    data = workspace['data']
+    case = next((item for item in data.get('cases', []) if item['id'] == case_id), None)
+    if not case:
+        raise HTTPException(404, 'Дело не найдено')
+    building = next((item for item in data['complexes'] if item['id'] == case['complexId']), None)
+    if not building:
+        raise HTTPException(404, 'Объект не найден')
+    phase = next(({'id': p['id'], 'name': p['name']} for p in data.get('phases', []) if p['id'] == case.get('phaseId') and p['complexId'] == building['id']), None)
+    if case.get('phaseId') and not phase:
+        raise HTTPException(404, 'Очередь дела не найдена')
+    return {'complex': {key: building.get(key) for key in ('id', 'name', 'address', 'developer', 'bin', 'demo', 'origin')},
+            'phase': phase,
+            'period': case.get('period')}
+
+
+@app.get('/api/cases/{case_id}/research')
+async def research_status(case_id: str, request: Request, workspace: dict = Depends(fetch_workspace), settings: Settings = Depends(get_settings)):
+    from backend.app.research import ResearchStore
+    research_target(workspace, case_id)
+    return {'configured': bool(settings.tavily_api_key),
+            'monitorConfigured': bool(settings.tavily_api_key and settings.supabase_service_role_key and settings.supabase_url),
+            'domains': [d.strip() for d in settings.research_domains.split(',') if d.strip()],
+            **ResearchStore(settings.research_db_path).latest(request.state.user_id, case_id)}
+
+
+@app.post('/api/cases/{case_id}/research', status_code=202)
+async def start_research(case_id: str, request: Request, options: ResearchOptions = ResearchOptions(), workspace: dict = Depends(fetch_workspace), settings: Settings = Depends(get_settings)):
+    from backend.app.research import ResearchStore
+    target = research_target(workspace, case_id)
+    target['domains'] = research_domains(options, settings)
+    if not settings.tavily_api_key:
+        raise HTTPException(503, 'Внешний поиск не подключён. Настройте TAVILY_API_KEY на сервере.')
+    if target['complex'].get('demo') or target['complex'].get('origin') == 'demo':
+        raise HTTPException(422, 'Для вымышленного DEMO-объекта обрабатываются только сохранённые материалы.')
+    try:
+        store = ResearchStore(settings.research_db_path)
+        job_id = store.enqueue(request.state.user_id, case_id, target)
+    except ValueError as exc:
+        raise HTTPException(429, str(exc)) from exc
+    return {'id': job_id, 'status': store.latest(request.state.user_id, case_id)['job']['status']}
+
+
+@app.post('/api/cases/{case_id}/research/monitor')
+async def set_research_monitor(case_id: str, options: ResearchOptions, request: Request, workspace: dict = Depends(fetch_workspace), settings: Settings = Depends(get_settings)):
+    from backend.app.research import ResearchStore
+    target = research_target(workspace, case_id)
+    target['domains'] = research_domains(options, settings) if options.monitor_hours else []
+    if options.monitor_hours and not (settings.tavily_api_key and settings.supabase_service_role_key and settings.supabase_url):
+        raise HTTPException(503, 'Мониторинг недоступен: нужны внешний поиск и серверный доступ для сверки актуального дела.')
+    if options.monitor_hours and (target['complex'].get('demo') or target['complex'].get('origin') == 'demo'):
+        raise HTTPException(422, 'Мониторинг вымышленных объектов недоступен.')
+    store = ResearchStore(settings.research_db_path)
+    store.monitor(request.state.user_id, case_id, target, options.monitor_hours)
+    return store.latest(request.state.user_id, case_id)
 
 
 @app.get("/api/complexes/{complex_id}/dossier")

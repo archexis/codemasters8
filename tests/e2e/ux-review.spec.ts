@@ -15,7 +15,7 @@ test('AI triage accepts a verbatim candidate without adding risk points',async({
  await expect(page.locator('.hypothesis')).toContainText('Гипотеза принята');
  await expect(page.getByRole('button',{name:'Подтвердить факт R2',exact:true})).toHaveCount(0);
  await page.getByRole('button',{name:'Начать расследование',exact:true}).click();
- await expect(page.locator('.risk-score strong')).toHaveText('0');
+ await expect(page.locator('.risk-score strong')).toHaveText('10');
  await expect(page.getByRole('button',{name:'Подтвердить факт R2',exact:true})).toBeVisible();
 });
 

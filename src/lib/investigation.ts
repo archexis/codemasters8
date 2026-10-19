@@ -10,6 +10,12 @@ export function latestCaseAssertions(state: AppState, caseId: string): FactAsser
   for (const assertion of state.assertions ?? []) if (assertion.caseId === caseId) latest.set(assertion.claimId, assertion);
   return [...latest.values()];
 }
+/** An untouched draft has no assessment to replace the existing dossier score. */
+export function hasCaseAssessment(state: AppState, item: InvestigationCase): boolean {
+  return item.status !== 'draft'
+    || (state.assertions ?? []).some(a => a.caseId === item.id)
+    || (state.caseSnapshots ?? []).some(s => s.caseId === item.id);
+}
 /** Append a review requirement when the underlying legal/readiness record changes. */
 export function invalidateCaseAssertions(next: AppState, previous: AppState, complexId: string, actor: string, at: string): void {
   const before=previous.complexes.find(z => z.id === complexId);

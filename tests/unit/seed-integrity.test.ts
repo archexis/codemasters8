@@ -12,6 +12,7 @@
 import { buildSeedEnvelope } from '../../tools/generate-seed.mjs';
 import { afterEach, describe, expect, it } from 'vitest';
 import { PGlite } from '@electric-sql/pglite';
+import { readFileSync } from 'node:fs';
 import { createTestDatabase, login } from '../helpers/database';
 import { validateFactor } from '../../src/lib/domain';
 import { computeScore } from '../../src/lib/scoring';
@@ -89,22 +90,40 @@ describe('S1.4 seed integrity (TS)', () => {
     check('SQ-003', 10, 'green');
   });
 
-  it('пользовательские объекты не заменяются seed: 16 комплексов, 13 ads, 8 снимков без факторов', () => {
+  it('новый набор содержит только вымышленные досье на восьми реальных точках', () => {
     const env = envelope();
-    expect(env.complexes).toHaveLength(16);
+    expect(env.complexes).toHaveLength(8);
     expect(env.ads).toHaveLength(13);
     const snaps = env.complexes.filter((z) => z.origin === 'public-snapshot');
-    expect(snaps).toHaveLength(8);
-    for (const s of snaps) {
-      expect(s.factors).toEqual([]);
-      // Provenance снимка, не live-проверка.
-      expect(String(s.legalBasis.source)).toMatch(/Ashyq Data/);
-      expect(String(s.legalBasis.checkedAt)).toBe('2026-10-15');
+    expect(snaps).toHaveLength(0);
+    for (const s of env.complexes) {
+      expect(s.demo).toBe(true);
+      expect(s.note).toContain('Реальны только координаты');
+      expect(s.bin).toBeNull();
+      expect(s.sources.every((source: { url?: string }) => !source.url)).toBe(true);
     }
   });
 });
 
 describe('S1.4 seed integrity (SQL)', () => {
+  it('замена удаляет старое досье и версии сигналов из существующего workspace', async () => {
+    const tdb = await createTestDatabase();
+    db = tdb.db;
+    const retired = { ...envelope(), audit: [{ id: 'old-event' }], signals: { old: {} },
+      signalVersions: { old: [{}] }, geometries: [{ complexId: 'SQ-R01' }] };
+    await db.query('insert into public.workspaces(owner_id, data, version) values ($1, $2::jsonb, 7)',
+      [userA, JSON.stringify(retired)]);
+    await db.exec(readFileSync('supabase/migrations/20261019194027_real_site_demo_reset.sql', 'utf8'));
+    const result = await db.query<{ data: unknown; version: number }>('select data, version from public.workspaces');
+    expect(result.rows[0].data).toEqual(envelope());
+    expect(result.rows[0].version).toBe(8);
+    const guard = await db.query<{ tgenabled: string }>("select tgenabled from pg_trigger where tgname = 'workspaces_history_append_only'");
+    expect(guard.rows[0].tgenabled).toBe('O');
+    const counts = await db.query<{ receipts: number; runs: number; jobs: number }>(
+      'select (select count(*)::int from public.command_receipts) as receipts, (select count(*)::int from public.analysis_runs) as runs, (select count(*)::int from public.document_jobs) as jobs');
+    expect(counts.rows[0]).toEqual({ receipts: 0, runs: 0, jobs: 0 });
+  });
+
   async function setupSql() {
     const tdb = await createTestDatabase();
     db = tdb.db;
