@@ -1,6 +1,8 @@
+> Исторический документ. Описывает прежнюю версию или план; для текущей работы используйте [актуальную документацию](../../README.md).
+
 # UX architecture transition — implementation record
 
-Historical UX implementation record; its checks describe the earlier snapshot. Current acceptance: [score-maxxing REPORT](acceptance/score-maxxing/REPORT.md).
+Historical UX implementation record; its checks describe the earlier snapshot. Current acceptance: [score-maxxing REPORT](../../acceptance/score-maxxing/REPORT.md).
 
 Date: 19 October 2026. Historical baseline commit: `29c4e754eaeeee949b73cf711abf7dddea585bb5`.
 
@@ -53,4 +55,4 @@ The historical E2E suite contains assertions about replaced screens and direct f
 No production database migration, deployment, push, submission or external message is part of these local changes.
 
 
-Текущие исправления и новые доказательства см. [score-maxxing REPORT](acceptance/score-maxxing/REPORT.md): toolbar карты занимает отдельную строку; прежние изменения размеров карты сохранены; статусы печатного snapshot локализованы. Предыдущие результаты этого документа являются архивом.
+Текущие исправления и новые доказательства см. [score-maxxing REPORT](../../acceptance/score-maxxing/REPORT.md): toolbar карты занимает отдельную строку; прежние изменения размеров карты сохранены; статусы печатного snapshot локализованы. Предыдущие результаты этого документа являются архивом.
