@@ -1,5 +1,6 @@
 import {supabase} from './supabase';
 import {z} from 'zod';
+import {importRecordSchema,type ImportSourceId,type ImportPreview} from './registry-import';
 async function apiFetch(path:string,init:RequestInit={}) {
   if(!supabase)throw new Error('Серверная обработка доступна после входа оператора. В DEMO используйте ручной текст и печать.');
   const {data,error}=await supabase.auth.getSession();
@@ -38,4 +39,12 @@ export async function startResearch(caseId:string,domains?:string[]) {
 }
 export async function setResearchMonitor(caseId:string,hours:number,domains?:string[]) {
   await apiFetch(`/api/cases/${encodeURIComponent(caseId)}/research/monitor`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({monitor_hours:hours,domains})});
+}
+
+const registryPreviewSchema=z.object({id:z.string(),status:z.string(),created_at:z.string(),expires_at:z.string().nullable(),errors:z.array(z.string()),sources:z.array(z.object({id:z.string(),status:z.string(),message:z.string(),count:z.number()})),candidates:z.array(z.object({id:z.string(),record:importRecordSchema,sources:z.array(importRecordSchema),existing_id:z.string().nullable(),action:z.enum(['create','enrich','duplicate','review']),warnings:z.array(z.string())})),geocoding:z.object({configured:z.boolean(),attempted:z.number(),matched:z.number(),limit:z.number()}).optional()});
+export async function previewRegistryImport(sources:ImportSourceId[],records:unknown[]):Promise<ImportPreview>{
+  return registryPreviewSchema.parse(await (await apiFetch('/api/imports/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sources,records})})).json());
+}
+export async function commitRegistryImport(jobId:string,selectedIds:string[]){
+  return z.object({job_id:z.string(),status:z.literal('committed'),selected:z.number(),created:z.number(),sources_added:z.number(),version:z.number()}).parse(await (await apiFetch('/api/imports/commit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({job_id:jobId,selected_ids:selectedIds})})).json());
 }

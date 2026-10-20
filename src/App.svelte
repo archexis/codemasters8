@@ -43,6 +43,7 @@
   $effect(() => { document.title = `${titles[page] || 'Страница не найдена'} · SAQ QURYLYS`; });
   let reloadGeneration = 0;
   async function reload() { const generation = ++reloadGeneration; loading = true; error = ''; try { const state = await loadState(); if (generation === reloadGeneration) workspace = state; } catch (e) { if (generation === reloadGeneration) error = e instanceof Error ? e.message : String(e); } finally { if (generation === reloadGeneration) loading = false; } }
+  async function refreshImportedWorkspace() { const generation=++reloadGeneration;const state=await loadState();if(generation!==reloadGeneration)throw new Error('Рабочее пространство сменилось. Откройте реестры заново.');workspace=state; }
   onMount(() => {
     const update = () => { route = readRoute(); menu = false; creating = false; window.scrollTo(0,0); };
     window.addEventListener('hashchange', update);
@@ -95,7 +96,7 @@
 <div class="map-page"><RiskMap toolsOpen={mapToolsOpen} complexes={shown} ads={workspace.ads} geometry={workspace.geometries??[]} relations={(workspace.relations??[]).filter(r=>r.fromId.startsWith('complex:')&&r.toId.startsWith('complex:')).map(r=>({fromId:r.fromId.slice(8),toId:r.toId.slice(8),verified:r.verificationStatus==='verified'}))}/></div>
 {:else if page==='publications'||page==='analyze'}
 <div class="pub-page"><Publications {workspace} {commit} adding={page==='analyze'||params.has('add')} initialText={params.get('text')||''} complexId={page==='analyze'?zkId:params.get('complex')||''}/></div>
-{:else if page==='registries'}<RegistryCatalog workspace={scopedWorkspace} {commit}/>
+{:else if page==='registries'}<RegistryCatalog workspace={scopedWorkspace} {commit} onImported={refreshImportedWorkspace}/>
 {:else if page==='complexes'||page==='cases'}
 {#if selected&&(page!=='cases'||selectedCase)&&(!phaseId||workspace.phases?.some(p=>p.id===phaseId&&p.complexId===zkId))}
 {#key `${zkId}-${phaseId??''}-${selectedCase?.id??''}`}<ComplexDossier {workspace} getWorkspace={()=> $state.snapshot(workspace)} complexId={zkId} {phaseId} caseId={selectedCase?.id} tab={activeTab} evidenceId={params.get('evidence')||''} scoreDetail={params.get('score')||''} {commit}/>{/key}

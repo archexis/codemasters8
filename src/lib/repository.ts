@@ -572,6 +572,11 @@ async function commitDemo(base: AppState, payload: Command, commandId: string, r
       standaloneFull = sanitizeMediaForStore(cleanPayload.media);
       localPayload = { type: 'media', media: stripIntegrity(cleanPayload.media) };
     }
+    // A different tab may have imported the same preview after it was prepared.
+    // Creation intents must never turn into updates of an analyst's existing card.
+    if (localPayload.type==='complex' && commandId.startsWith('registry-create-') && env.state.complexes.some(z=>z.id===localPayload.complex.id)) {
+      throw new Error('Объект уже создан в другой вкладке. Получите новый предпросмотр импорта.');
+    }
     const next = applyCommand(env.state, localPayload, reviewer, { commandId, sourceVersion: env.version });
     if (cleanPayload.type === 'artifact.register') {
       const artifact = next.artifacts?.find(a => a.id === cleanPayload.artifact.id);

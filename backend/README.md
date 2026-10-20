@@ -26,8 +26,11 @@ python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
 | PDF версии | `GET /api/cases/{caseId}/snapshots/{snapshotId}/pdf` |
 | Извлечение текста | `POST /api/import/pdf`, `/api/import/image` |
 | Фоновые задания | `POST /api/document-jobs`, `GET /api/document-jobs/{id}`, `POST /api/document-jobs/{id}/retry` |
+| Реестры: импорт | `POST /api/imports/preview`, `POST /api/imports/commit`, `GET /api/imports/{job_id}` |
 
 `phase_id` ограничивает область досье; списки используют `limit` и `cursor`. Сервер читает owner-scoped JSONB workspace целиком. `/api/export` возвращает JSON и не включает байты вложений.
+
+Настройка API data.egov.kz, CSV/JSON, геокодирования, транзакционной записи и ограничений: [импорт реальных данных](../docs/REGISTRY_IMPORT.md).
 
 PDF renderer читает сохранённый snapshot. Для кириллицы нужен `PDF_FONT_PATH` или системный DejaVu Sans/Arial. Dockerfile устанавливает DejaVu.
 

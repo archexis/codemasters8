@@ -9,8 +9,9 @@
  import {extractPdf,type PdfExtraction} from '../lib/workspace-api';
  import GeometryImport from './GeometryImport.svelte';
  import {sourceOriginLabel,sourceAvailabilityLabel} from '../lib/presentation';
- let {workspace,commit}:{workspace:AppState;commit:(c:Command)=>Promise<void>}=$props();
- let category=$state('complexes');let search=$state('');let page=$state(0);let creating=$state(false);let importing=$state(false);let importingGeometry=$state(false);
+ import RegistryImport from './RegistryImport.svelte';
+ let {workspace,commit,onImported}:{workspace:AppState;commit:(c:Command)=>Promise<void>;onImported:()=>Promise<void>}=$props();
+ let category=$state('complexes');let search=$state('');let page=$state(0);let creating=$state(false);let importing=$state(false);let importingGeometry=$state(false);let importingExternal=$state(false);
  let documentKind=$state<EvidenceArtifact['kind']>('document');let complexId=$state('');let phaseId=$state('');let source=$state('');let text=$state('');let date=$state('');let url=$state('');let files=$state<FileList>();let busy=$state(false);let error=$state('');let notice=$state('');
  const matches=(s:string)=>s.toLowerCase().includes(search.toLowerCase());
  const complexes=$derived(workspace.complexes.filter(z=>matches(`${z.name} ${z.address} ${z.developer} ${z.bin ?? ''}`)));
@@ -32,7 +33,8 @@
  await commit(withCommandId(pending.artifactCommand,pending.artifactCommandId));checkSession();notice='Документ сохранён. Применимость проверяется в досье.';importIntent=undefined;importing=false;source='';text='';files=undefined;extraction=null;
  }catch(e){if(session===getSessionGeneration())error=e instanceof Error?e.message:String(e);}finally{busy=false;}}
 </script>
-<div class="page-heading"><div><p class="eyebrow mt-4">Внутренний каталог</p><h1>Реестры</h1></div><div class="actions"><button onclick={()=>importingGeometry=!importingGeometry}>Импорт GeoJSON</button><button onclick={()=>creating=!creating}>Добавить ЖК</button><button class="primary" onclick={()=>importing=!importing}>Добавить документ</button></div></div>
+<div class="page-heading"><div><p class="eyebrow mt-4">Внутренний каталог</p><h1>Реестры</h1></div><div class="actions"><button aria-expanded={importingExternal} aria-controls="external-import-panel" title="Импорт из внешних источников" onclick={()=>importingExternal=!importingExternal}>Импорт данных <span aria-hidden="true">{importingExternal?'▴':'▾'}</span></button><button onclick={()=>importingGeometry=!importingGeometry}>Импорт GeoJSON</button><button onclick={()=>creating=!creating}>Добавить ЖК</button><button class="primary" onclick={()=>importing=!importing}>Добавить документ</button></div></div>
+<div id="external-import-panel" hidden={!importingExternal}><RegistryImport {workspace} {commit} {onImported}/></div>
 {#if importingGeometry}<GeometryImport {workspace} {commit}/>{/if}
 {#if creating}<ComplexForm onsave={async complex=>{await commit({type:'complex',complex});creating=false;}} oncancel={()=>creating=false}/>{/if}
 {#if notice}<p class="notice mb-4" role="status">{notice}</p>{/if}{#if error}<p class="error mb-4" role="alert">{error}</p>{/if}
@@ -42,4 +44,4 @@
 {:else if category==='organizations'}<div class="ledger">{#each organizations.slice(page*25,(page+1)*25) as o}<article class="ledger-row"><h3>{o.name}</h3><p>БИН: {o.bin||'неизвестен'} · роль из карточек: застройщик</p><p class="muted">Роль требует документального подтверждения. Совпадение названия не доказывает идентичность.</p><div class="actions mt-4">{#each o.complexes as z}<a href={dossierUrl(z.id,undefined,'relations')}>{z.name} ↗</a>{/each}</div></article>{:else}<div class="ledger-empty"><h2>Организации не найдены</h2><p>Измените поиск.</p></div>{/each}</div>
 {:else}<div class="ledger">{#each documents.slice(page*25,(page+1)*25) as a}<article class="ledger-row"><h3>{a.source}</h3><p>{a.date||'Дата неизвестна'} · фиксация: {a.capturedAt}</p><p class="my-3">{a.text.slice(0,250)}</p><p class="ledger-note">{sourceOriginLabel(a.origin)} · {sourceAvailabilityLabel(a.availability)} · применимость не проверена</p><div class="actions mt-4"><a class="button small" href={dossierUrl(a.complexId,a.phaseId,'verification',a.id)}>Открыть в досье</a>{#if safeUrl(a.url)}<a class="button small" href={safeUrl(a.url)} target="_blank" rel="noopener noreferrer">Источник ↗</a>{/if}</div></article>{:else}<div class="ledger-empty"><h2>Документов пока нет</h2><p>Добавьте ручной материал или оригинал PDF.</p></div>{/each}</div>{/if}
 <div class="actions mt-5"><button disabled={page===0} onclick={()=>page--}>Назад</button><button disabled={(page+1)*25>=(category==='complexes'?complexes.length:category==='organizations'?organizations.length:documents.length)} onclick={()=>page++}>Далее</button></div>
-<details class="panel mt-6"><summary>Внешние реестры</summary><p class="muted mt-3">Автоматические адаптеры не подключены. Отказ внешнего сайта не означает отсутствие правового основания.</p></details>
+<details class="panel mt-6"><summary>Внешние реестры</summary><p class="muted mt-3">Импорт доступен выше: настроенный API data.egov.kz или подготовленные выгрузки. Проверка правового основания остаётся отдельным решением. Отказ внешнего сайта не означает отсутствие правового основания.</p></details>

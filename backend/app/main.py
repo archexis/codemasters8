@@ -12,6 +12,7 @@ from starlette.concurrency import run_in_threadpool
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import BaseModel, Field
 from backend.app.projections import complex_factors, risk, preview, page, case_model, scope_model, timeline_items, latest_assertions
+from backend.app import registry_import
 
 
 class Settings(BaseSettings):
@@ -22,6 +23,12 @@ class Settings(BaseSettings):
     tavily_api_key: str = ""
     research_db_path: str = "backend/.data/research.sqlite3"
     research_domains: str = "gov.kz,homeportal.kz,krisha.kz"
+    import_db_path: str = "backend/.data/imports.sqlite3"
+    egov_api_key: str = ""
+    egov_dataset: str = ""
+    egov_field_map: str = ""
+    egov_city_query: str = "Усть-Каменогорск"
+    geoapify_api_key: str = ""
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
@@ -101,6 +108,23 @@ async def fetch_workspace(
 @app.get("/health")
 async def health(settings: Settings = Depends(get_settings)) -> dict:
     return {"status": "ok", "supabase_configured": bool(settings.supabase_url and settings.supabase_anon_key)}
+
+
+@app.post('/api/imports/preview')
+async def import_preview(options: registry_import.PreviewOptions, request: Request, workspace: dict = Depends(fetch_workspace), settings: Settings = Depends(get_settings)):
+    if len(registry_import.encoded(options.records).encode()) > 2 * 1024 * 1024:
+        raise HTTPException(413, 'Выгрузка превышает 2 МБ.')
+    return await registry_import.create_preview(options, workspace, request.state.user_id, settings)
+
+
+@app.post('/api/imports/commit')
+async def import_commit(options: registry_import.CommitOptions, request: Request, workspace: dict = Depends(fetch_workspace), settings: Settings = Depends(get_settings)):
+    return await registry_import.commit_import(options, workspace, request.state.user_id, request.headers.get('authorization'), settings)
+
+
+@app.get('/api/imports/{job_id}')
+async def import_status(job_id: str, request: Request, workspace: dict = Depends(fetch_workspace), settings: Settings = Depends(get_settings)):
+    return registry_import.job_status(job_id, request.state.user_id, settings)
 
 
 @app.get("/api/summary")
