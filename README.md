@@ -2,11 +2,11 @@
 
 # SAQ QURYLYS
 
-**От публикации о строящемся жилье — к проверяемому решению аналитика.**
+**Долевое строительство, разобранное по фактам: от рекламы — к решению, которое можно проверить.**
 
 Карта объектов · анализ материалов · объяснимый риск · история решений
 
-[Открыть DEMO](https://saq-qurylys-pi.vercel.app) · [Быстрый старт](#быстрый-старт) · [Документация](docs/README.md) · [Сообщить об ошибке](https://github.com/archexis/codemasters8/issues/new/choose)
+[Живое DEMO](https://saq-qurylys-pi.vercel.app) · [Быстрый старт](#быстрый-старт) · [Документация](docs/README.md) · [Сообщить об ошибке](https://github.com/archexis/codemasters8/issues/new/choose)
 
 [![CI](https://github.com/archexis/codemasters8/actions/workflows/ci.yml/badge.svg)](https://github.com/archexis/codemasters8/actions/workflows/ci.yml)
 ![Svelte 5](https://img.shields.io/badge/Svelte-5-FF3E00?logo=svelte&logoColor=white)
@@ -21,7 +21,7 @@
 
 ## Что делает проект
 
-SAQ QURYLYS помогает аналитику сопоставить рекламу, документы и наблюдения по объектам долевого строительства в Казахстане. Материал проходит последовательную проверку: извлечённое утверждение, решение человека, расчёт риска и сохранённая версия заключения с источниками.
+Реклама обещает, документы молчат, наблюдения разрознены. SAQ QURYLYS сводит их в одно досье по объектам долевого строительства в Казахстане — и ведёт материал через честную цепочку: извлечённое утверждение, решение человека, расчёт риска, сохранённая версия заключения с источниками. Ничего не подтверждается само: каждый балл надо заслужить первичным материалом.
 
 | Возможность | Как используется |
 | --- | --- |
@@ -117,7 +117,7 @@ docs/                    Руководства и указатель архив
 .github/                 CI и шаблоны задач и pull request
 ```
 
-Стек: **Svelte 5 · TypeScript · Vite · Tailwind CSS · MapLibre · Supabase · FastAPI**. Точные зависимости зафиксированы в `package-lock.json` и `backend/requirements.lock.txt`. `js/` и `css/` сохраняют ранний прототип; рабочая точка входа — `src/main.ts`.
+Стек: **Svelte 5 · TypeScript · Vite · Tailwind CSS · MapLibre · Supabase · FastAPI**. Точные зависимости зафиксированы в `package-lock.json` и `backend/requirements.lock.txt`. Рабочая точка входа — `src/main.ts`.
 
 ## Ограничения
 

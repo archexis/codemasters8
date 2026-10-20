@@ -27,7 +27,7 @@ flowchart LR
 | API | `backend/app/main.py`, `projections.py` | Авторизованные проекции и операции с документами |
 | PDF и OCR | `backend/app/pdf.py`, `ocr.py`, `document_jobs.py` | PDF по snapshot, извлечение текста и очередь обработки |
 
-Точки входа: `index.html` → `src/main.ts` → `src/App.svelte`. `js/` и `css/` относятся к раннему прототипу и сохраняются в том числе для регрессионных фикстур.
+Точки входа: `index.html` → `src/main.ts` → `src/App.svelte`.
 
 ## Хранение и команды
 
