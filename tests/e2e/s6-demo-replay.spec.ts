@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 import {readFileSync,mkdirSync} from 'node:fs';
 test('S6 reserve screens replay the exact archived synthetic connected case',async({page},info)=>{
- const r=JSON.parse(readFileSync('docs/acceptance/s5/connected.json','utf8'));
+ const r=JSON.parse(readFileSync('tests/fixtures/replay/s5-connected.json','utf8'));
  mkdirSync('test-results/score-maxxing/artifacts/s6/demo',{recursive:true});
  const z=r.returned.snapshot;
  const signal={status:r.returned.status,at:r.returned.at,reviewer:r.returned.reviewer,comment:r.returned.comment,snapshot:z,basedOnRevision:r.returned.basedOnRevision};
