@@ -1,4 +1,4 @@
-import {describe,it,expect} from 'vitest';
+import {it,expect} from 'vitest';
 import {initialState,applyCommand} from '../../src/lib/domain';
 import {buildSignalSnapshot} from '../../src/lib/signal-snapshot';
 import {buildExport} from '../../src/lib/export';
@@ -7,7 +7,7 @@ const sig=(status:string)=>({type:'signal',zkId:'SQ-002',status,comment:'Про�
 it('S5 captures full publications',()=>{const b=buildSignalSnapshot(initialState(),'SQ-002');expect(b.ads[0].text).toBeTruthy();});
 it('S5 requires reopening decided signal',()=>{const s=applyCommand(initialState(),sig('confirmed'),'test');expect(()=>applyCommand(s,sig('returned'),'test')).toThrow(/пересмотр/);});
 it('history export never resolves live object, ads or audit',()=>{
- let s=applyCommand(initialState(),sig('confirmed'),'test');const v1=JSON.stringify(s.signalVersions?.['SQ-002'][0]);const exp=buildExport(s,'SQ-002',1);expect(exp.version?.ads?.[0].text).toBeTruthy();expect(exp.version?.revision).toBe(1);
+ const s=applyCommand(initialState(),sig('confirmed'),'test');const v1=JSON.stringify(s.signalVersions?.['SQ-002'][0]);const exp=buildExport(s,'SQ-002',1);expect(exp.version?.ads?.[0].text).toBeTruthy();expect(exp.version?.revision).toBe(1);
  s.ads=[];s.audit=[];s.complexes.find(z=>z.id==='SQ-002')!.name='NEW NAME';
  const after=buildExport(s,'SQ-002',1);expect({...after,exportedAt:''}).toEqual({...exp,exportedAt:''});expect(JSON.stringify(s.signalVersions?.['SQ-002'][0])).toBe(v1);
 });

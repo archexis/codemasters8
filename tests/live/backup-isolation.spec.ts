@@ -9,7 +9,7 @@
 import { expect, test } from '@playwright/test';
 import { randomUUID, createHash } from 'node:crypto';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { buildBackup, sha256Hex, validateBackupPackage } from '../../src/lib/backup';
+import { buildBackup, sha256Hex } from '../../src/lib/backup';
 import { computeScore } from '../../src/lib/scoring';
 import type { AppState } from '../../src/lib/types';
 
@@ -58,7 +58,7 @@ test.describe('S2.6 backup/restore изоляция (connected)', () => {
   });
 
   test.afterAll(async () => {
-    for (const [client, user] of [[clientA, userA], [clientB, userB], [clientC, userC]] as const) {
+    for (const [client] of [[clientA, userA], [clientB, userB], [clientC, userC]] as const) {
       try {
         if (stagedPaths.length && client) await client.storage.from('evidence').remove(stagedPaths);
       } catch { /* cleanup best-effort */ }

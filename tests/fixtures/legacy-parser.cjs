@@ -5,7 +5,6 @@ const { parseAdText } = require("../js/parser.js");
 
 let n = 0;
 const ok = (cond, name) => { n++; assert.ok(cond, "FAIL: " + name); console.log("  ok " + n + " · " + name); };
-const types = (r) => Object.fromEntries(r.entities.map((e) => [e.type + ":" + e.value, e]));
 
 let r = parseAdText("Бронь квартиры — 500 000 тенге! Звоните +7 701 123 45 67. Сдача в 2027 году.");
 ok(r.payment.flagged, "payment flagged");

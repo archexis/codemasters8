@@ -13,7 +13,7 @@ async function stub(page:Page, delayed=false) {
   await page.getByLabel('Текст объявления').fill('Депозит обязателен. Квартира в строящемся доме.');
 }
 async function run(page:Page) {await page.getByRole('button',{name:'Проанализировать',exact:true}).click();}
-async function settle(page:Page,fail=false) {await page.evaluate(fail=>{const w=window as any; const task=w.__tasks.shift(); fail ? task.reject(new Error('late old error')) : task.resolve();},fail);}
+async function settle(page:Page,fail=false) {await page.evaluate(fail=>{const w=window as any; const task=w.__tasks.shift(); if(fail) task.reject(new Error('late old error')); else task.resolve();},fail);}
 test('triage retains one publication; only a case fact adds +25 after reload',async({page})=>{
   // Includes two full reloads of the development module graph, plus case verification.
   test.setTimeout(120000);

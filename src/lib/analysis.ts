@@ -124,7 +124,6 @@ function cyrb53(str: string, seed = 0): number {
  * Порядок ключей задан построением, а не порядком вхождения объекта.
  */
 export function canonicalRunInput(input: AiRunInput): string {
-  const q = (v: unknown): string => JSON.stringify(v ?? null);
   return JSON.stringify({text:input.text,zkId:input.zkId,url:input.url,account:input.account,date:input.date,platform:input.platform,...(input.attachments ? {attachments:input.attachments.map(a=>({name:a.name,size:a.size,type:a.type,lastModified:a.lastModified}))} : {})});
 }
 

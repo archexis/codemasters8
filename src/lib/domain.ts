@@ -1,5 +1,5 @@
 import seed from './seed.json' with { type: 'json' };
-import type { Ad, AppState, Code, Complex, Evidence, FactorStatus, Media, Signal, SignalVersion } from './types';
+import type { AppState, Code, Complex, Evidence, FactorStatus, SignalVersion } from './types';
 import { codes } from './scoring';
 import { adDedupeKey } from './parser';
 import { isDateLike, parseCommand, seedState } from './validation';

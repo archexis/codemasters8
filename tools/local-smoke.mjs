@@ -64,7 +64,7 @@ try {
   api=spawn(process.platform==='win32'?'backend/.venv/Scripts/python.exe':'backend/.venv/bin/python',['-m','uvicorn','backend.app.main:app','--host','127.0.0.1','--port','8005'],{env:{...process.env,SUPABASE_URL:url,SUPABASE_ANON_KEY:anon,CORS_ORIGINS:'http://127.0.0.1:5175'},stdio:'ignore',windowsHide:true});
   api.on('error',e=>console.error(e.message));
   let healthy=false;
-  for(let i=0;i<60;i++) { try { healthy=(await fetch('http://127.0.0.1:8005/health')).ok; if(healthy) break; } catch {} await new Promise(r=>setTimeout(r,100)); }
+  for(let i=0;i<60;i++) { try { healthy=(await fetch('http://127.0.0.1:8005/health')).ok; if(healthy) break; } catch { /* not up yet — retry */ } await new Promise(r=>setTimeout(r,100)); }
   assert(healthy,'API did not start');
   const session=await clientA.auth.getSession();
   const summary=await fetch('http://127.0.0.1:8005/api/summary',{headers:{Authorization:`Bearer ${session.data.session.access_token}`}});

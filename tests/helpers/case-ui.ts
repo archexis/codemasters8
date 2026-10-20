@@ -21,7 +21,9 @@ export async function manualCase(page:Page, complexId='SQ-003', quote='Плат�
 export function manualCandidate(page:Page,quote='Платная бронь квартиры 612 000 тенге.') {
   return page.locator('.hypothesis').filter({has:page.locator('blockquote').filter({hasText:quote})});
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- attachment зарезервирован под загрузку файла в live-сценариях.
 export async function verifyFact(page:Page, code='R2', attachment=false,quote='Платная бронь квартиры 612 000 тенге.') {
+  void attachment;
   const candidate=code==='R2'?manualCandidate(page,quote):page.locator('.hypothesis').filter({has:page.getByRole('button',{name:`Подтвердить факт ${code}`,exact:true})});
   await candidate.getByLabel('Обоснование проверки факта',{exact:true}).fill('Сверено с первоисточником');
   await candidate.getByRole('button',{name:`Подтвердить факт ${code}`,exact:true}).click();

@@ -48,6 +48,7 @@ describe('S1.1 command schema rejects (TS)', () => {
 
   it('rejects missing zkId', () => {
     const state = initialState();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- rest-sibling omission: проверяем отказ без zkId.
     const { zkId: _drop, ...noZk } = factorCmd();
     expectReject(state, noZk, /zkId/);
   });

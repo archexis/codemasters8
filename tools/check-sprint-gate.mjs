@@ -218,7 +218,7 @@ function main() {
       let prev;
       try {
         prev = JSON.parse(readFileSync(prevPath, 'utf8'));
-      } catch (e) {
+      } catch {
         fail(`predecessor report is not valid JSON: ${prevPath}`);
         prev = null;
       }

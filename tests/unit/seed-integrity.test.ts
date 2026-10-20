@@ -8,6 +8,7 @@
  * Доказательства в seed — только DEMO-материалы из seed.json (единственный
  * источник; SQL app_seed обновляется сгенерированной миграцией).
  */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment -- tsc не видит типов .mjs, а @ts-expect-error падает как unused: здесь нужен именно ignore.
 // @ts-ignore — tools/generate-seed.mjs без типов; runtime-импорт под vitest.
 import { buildSeedEnvelope } from '../../tools/generate-seed.mjs';
 import { afterEach, describe, expect, it } from 'vitest';

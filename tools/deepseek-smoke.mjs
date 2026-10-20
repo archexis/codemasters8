@@ -26,6 +26,7 @@ if(reuse>=0) {
 }
 const reportPath=`test-results/score-maxxing/ai-${Date.now()}.json`;
 let user,api;
+const cleanupErrors = [];
 async function save() {await mkdir('test-results/score-maxxing',{recursive:true});await writeFile(reportPath,JSON.stringify(report,null,2)+'\n');}
 try {
   const created=await admin.auth.admin.createUser({email,password,email_confirm:true}); if(created.error) throw created.error; user=created.data.user;
@@ -63,7 +64,7 @@ try {
     api=spawn(process.platform==='win32'?'backend/.venv/Scripts/python.exe':'backend/.venv/bin/python',['-m','uvicorn','backend.app.main:app','--host','127.0.0.1','--port','8007'],{env:{...process.env,SUPABASE_URL:config.API_URL,SUPABASE_ANON_KEY:config.ANON_KEY,CORS_ORIGINS:'http://127.0.0.1:5175'},stdio:'ignore',windowsHide:true});
     let healthy=false;
     const deadline=Date.now()+30000;
-    while(Date.now()<deadline){try{healthy=(await fetch('http://127.0.0.1:8007/health',{signal:AbortSignal.timeout(1000)})).ok;if(healthy)break;}catch{}await new Promise(r=>setTimeout(r,200));}
+    while(Date.now()<deadline){try{healthy=(await fetch('http://127.0.0.1:8007/health',{signal:AbortSignal.timeout(1000)})).ok;if(healthy)break;}catch{/* not up yet — retry */}await new Promise(r=>setTimeout(r,200));}
     assert(healthy,'Isolated acceptance API did not start');
   }
   await new Promise((resolve,reject)=>{
@@ -95,11 +96,15 @@ try {
 } catch(e) {report.status='FAIL';report.error=e.message;await save();throw e;}
 finally {
   api?.kill();
+  // Cleanup errors are collected, not thrown inline: a throw inside finally
+  // would mask the original try/catch error (no-unsafe-finally). The first
+  // one is rethrown after the block below.
   if(user) {
     const files=await admin.storage.from('evidence').list(`${user.id}/SQ-001`);
-    if(files.error)throw files.error;
-    if(files.data?.length){const cleanup=await admin.storage.from('evidence').remove(files.data.map(f=>`${user.id}/SQ-001/${f.name}`));if(cleanup.error)throw cleanup.error;}
+    if(files.error)cleanupErrors.push(files.error);
+    if(files.data?.length){const cleanup=await admin.storage.from('evidence').remove(files.data.map(f=>`${user.id}/SQ-001/${f.name}`));if(cleanup.error)cleanupErrors.push(cleanup.error);}
     await client.auth.signOut();
-    const removed=await admin.auth.admin.deleteUser(user.id);if(removed.error) throw new Error('Temporary AI user cleanup failed');
+    const removed=await admin.auth.admin.deleteUser(user.id);if(removed.error) cleanupErrors.push(new Error('Temporary AI user cleanup failed'));
   }
 }
+if(cleanupErrors.length)throw cleanupErrors[0];

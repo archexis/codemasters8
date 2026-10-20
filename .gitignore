@@ -24,3 +24,7 @@ screenshots-user-flow/
 screenshots-user-flow.zip
 test-audit*.log
 *.log
+coverage/
+.coverage
+lcov.info
+*.lcov

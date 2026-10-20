@@ -6,7 +6,7 @@ import {buildBackup} from '../../src/lib/backup';
 import {dossierRelations,dossierTimeline} from '../../src/lib/dossier-context';
 import {previewCaseSignal} from '../../src/lib/investigation';
 
-test('real case A/B/C scores, scope rejection and immutable historical PDF',async({},info)=>{
+test('real case A/B/C scores, scope rejection and immutable historical PDF',async(_fixtures,info)=>{
  const options={auth:{persistSession:false,autoRefreshToken:false}};
  const url=process.env.SAQ_LIVE_SUPABASE_URL!,key=process.env.SAQ_LIVE_SUPABASE_KEY!;
  const admin=createClient(url,process.env.SAQ_LIVE_SERVICE_KEY!,options),client=createClient(url,key,options);

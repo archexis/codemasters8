@@ -100,7 +100,7 @@ test('S6 actual Auth/RPC/Storage/API/Edge negative matrix', async () => {
 test('S6 browser offline/expired save preserves form; no server secrets in storage/network',async({page,context})=>{
  const cfg=JSON.parse(readFileSync('supabase/.temp/status.json','utf8').replace(/^\uFEFF/,''));
  const needles=[cfg.SERVICE_ROLE_KEY];
- for(const p of ['.env.edge','.temp/s4-repair/edge.env']) {try{const m=readFileSync(p,'utf8').match(/^LLM_API_KEY=(.+)$/m);if(m)needles.push(m[1].trim().replace(/^['"]|['"]$/g,''));}catch{}}
+ for(const p of ['.env.edge','.temp/s4-repair/edge.env']) {try{const m=readFileSync(p,'utf8').match(/^LLM_API_KEY=(.+)$/m);if(m)needles.push(m[1].trim().replace(/^['"]|['"]$/g,''));}catch{/* missing file — needle skipped */}}
  const findings:{type:string;present:boolean}[]=[];let requests=0;
  page.on('request',r=>{requests++; const text=JSON.stringify(r.headers())+(r.postData()??'')+r.url();if(needles.some(s=>s&&text.includes(s)))findings.push({type:'request/server secret',present:true});});
  await page.goto('/',{waitUntil:'domcontentloaded'}); await page.getByRole('button',{name:'Войти оператору',exact:true}).click();

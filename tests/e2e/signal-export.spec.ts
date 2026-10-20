@@ -1,6 +1,6 @@
 import {expect,test} from '@playwright/test';
 import {mkdirSync} from 'node:fs';
-for(const fixture of ['confirmed','long','returned']) test(`S5 print ${fixture}: immutable revision and full text`,async({page,browserName},info)=>{
+for(const fixture of ['confirmed','long','returned']) test(`S5 print ${fixture}: immutable revision and full text`,async({page},info)=>{
  await page.goto('/',{waitUntil:'domcontentloaded'});
  await page.evaluate(async(fixture)=>{
   const {initialState,applyCommand}=await import(/* @vite-ignore */ '/src/lib/'+'domain.ts');let s=initialState();

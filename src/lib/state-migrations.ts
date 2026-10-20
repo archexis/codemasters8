@@ -94,19 +94,6 @@ function stamp(): string {
   return new Date().toISOString();
 }
 
-function alreadyMigrated(raw: Record<string, unknown>): boolean {
-  const audit = (raw as { audit?: unknown }).audit;
-  return (
-    Array.isArray(audit) &&
-    audit.some(
-      (e) =>
-        typeof e === 'object' &&
-        e !== null &&
-        ((e as { details?: unknown }).details as { migration?: unknown } | undefined)?.migration === MIGRATION_MARKER,
-    )
-  );
-}
-
 /**
  * Минимальная проверка достаточности материала для confirmed — предикаты
  * из grounding.ts (общие с domain.validateFactor; модуль миграций по-прежнему

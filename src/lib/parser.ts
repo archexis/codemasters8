@@ -79,7 +79,7 @@ interface SourceInfo { url?: string; platform?: string; text?: string }
   const RE_ESCROW = /(эскроу)/gi;
   const RE_CONTRACT = new RegExp("(договор" + C() + "|шарт\\s+бойынша|ДДУ|долев" + C() + "\\s+участи" + C() + "|үлестік)", "gi");
   const RE_HANDLE = /(@[A-Za-z0-9_.]{3,}|t\.me\/[^\s,;]+)/g;
-  const RE_URL = /(https?:\/\/[^\s,;()«»\"']+)/g;
+  const RE_URL = /(https?:\/\/[^\s,;()«»"']+)/g;
   const RE_EMAIL = /([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g;
   const RE_RELATIVE = /через\s+\d+\s+(?:месяц[а-яё]*|год[а-яё]*|лет|недел[а-яё]*|д[её]н[а-яё]*|ай[а-яё]*|жыл[а-яё]*)/gi;
   const RE_SEASON = /(весной|летом|осенью|зимой)/gi;
@@ -100,7 +100,7 @@ interface SourceInfo { url?: string; platform?: string; text?: string }
   // NB: \b не видит границу слова в кириллице без флага u — используем явный разделитель.
   const ABBR_DOT = /(^|[\s(,;«"'“”\-–])(кв|тыс|млн|млрд|г|ул|пр|пер|д|стр|корп|им|т)\./giu;
   // Точки внутри ссылок и почты — тоже не границы предложений.
-  const URL_OR_EMAIL = /(https?:\/\/[^\s,;()«»\"']+|t\.me\/[^\s,;]+|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g;
+  const URL_OR_EMAIL = /(https?:\/\/[^\s,;()«»"']+|t\.me\/[^\s,;]+|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g;
   function splitSentences(text: string) {
     const masked = String(text)
       .replace(URL_OR_EMAIL, (m) => m.replace(/\./g, "⁠"))

@@ -475,7 +475,7 @@ export async function loadState(): Promise<AppState> {
     return loadStateFromText(typeof serverRaw === 'string' ? serverRaw : JSON.stringify(serverRaw)).state;
   } catch (e) {
     if (e instanceof FutureVersionError) throw e;
-    throw new Error(`Серверный workspace не прошёл проверку: ${e instanceof Error ? e.message : String(e)}`);
+    throw new Error(`Серверный workspace не прошёл проверку: ${e instanceof Error ? e.message : String(e)}`, { cause: e });
   }
 }
 
@@ -507,6 +507,7 @@ type TransportCommand = Command & { commandId?: string; mediaAttachment?: Media 
 function takeCommandId(payload: TransportCommand, opts?: { commandId?: string }): { commandId: string; command: Command } {
   const commandId = opts?.commandId ?? payload.commandId ?? newCommandId();
   if (!ID_RE.test(commandId)) throw new Error('commandId: неоднозначный идентификатор (допустимы латиница, цифры, дефис, 1–80 символов)');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- rest-sibling omission: commandId едет отдельным RPC-аргументом.
   const { commandId: _drop, ...rest } = payload;
   return { commandId, command: rest as Command };
 }
@@ -538,6 +539,7 @@ export function attachStagedMedia(command: Command, media: Media): Command {
 function splitAttachment(payload: Command): { command: Command; mediaAttachment?: Media } {
   const p = payload as TransportCommand;
   if (!p.mediaAttachment || typeof p.mediaAttachment !== 'object') return { command: payload };
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- rest-sibling omission: вложение уже извлечено выше.
   const { mediaAttachment: _drop, ...rest } = p;
   return { command: rest as Command, mediaAttachment: p.mediaAttachment };
 }
@@ -576,10 +578,12 @@ async function commitRemote(payload: Command, commandId: string): Promise<Commit
   } catch (e) {
     // Сеть/таймаут: commit мог примениться — исход НЕИЗВЕСТЕН. Файл не удалять,
     // повторить тем же commandId (квитанция защитит от дубля).
-    throw new UnknownCommitResultError(
+    const unknown = new UnknownCommitResultError(
       `Ответ сервера не получен (commandId ${commandId}); исход неизвестен — повторите отправку тем же ID, повтор безопасен.`,
       commandId,
     );
+    unknown.cause = e;
+    throw unknown;
   }
   const { data, error } = response;
   if (sessionGeneration !== generation) throw new SessionSupersededError();
@@ -713,6 +717,7 @@ function commandZk(command: Command): string {
 }
 
 function stripIntegrity(media: Media): Media {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- rest-sibling omission: поля целостности не храним.
   const { bytes: _b, sha256: _s, capturedAt: _c, ...rest } = media as Media & { bytes?: unknown; sha256?: unknown; capturedAt?: unknown };
   return rest as Media;
 }
@@ -747,22 +752,18 @@ export async function commitCommand(
   });
   return queue(async () => {
     if (sessionGeneration !== enqueuedSession) throw new SessionSupersededError();
-    try {
-      // Маршрут по владельцу, а не по наличию клиента: без сессии — DEMO-конверт.
-      const owner = await requireOwner();
-      const result = owner === DEMO_OWNER
-        ? await commitDemo(state, payload, commandId, reviewer)
-        : await commitRemote(payload, commandId);
-      if (sessionGeneration !== enqueuedSession) throw new SessionSupersededError();
-      if (result.commandId === commandId) clearPendingCommand(commandId);
-      return result;
-    } catch (e) {
-      // Неизвестный исход / stale-конфликт / смена сессии: pending остаётся —
-      // повтор тем же ID безопасен. Известный отказ валидации: pending тоже
-      // остаётся (квитанции нет, повтор тем же ID с исправленным содержимым
-      // допустим и не создаст дубль).
-      throw e;
-    }
+    // Маршрут по владельцу, а не по наличию клиента: без сессии — DEMO-конверт.
+    // Неизвестный исход / stale-конфликт / смена сессии: pending остаётся —
+    // повтор тем же ID безопасен. Известный отказ валидации: pending тоже
+    // остаётся (квитанции нет, повтор тем же ID с исправленным содержимым
+    // допустим и не создаст дубль).
+    const owner = await requireOwner();
+    const result = owner === DEMO_OWNER
+      ? await commitDemo(state, payload, commandId, reviewer)
+      : await commitRemote(payload, commandId);
+    if (sessionGeneration !== enqueuedSession) throw new SessionSupersededError();
+    if (result.commandId === commandId) clearPendingCommand(commandId);
+    return result;
   });
 }
 

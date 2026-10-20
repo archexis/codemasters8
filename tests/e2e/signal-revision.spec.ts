@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 for(const route of ['signal','export']) test(`${route}: invalid and missing revisions recover without live fallback`,async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/',{waitUntil:'domcontentloaded'});
- await page.evaluate(async()=>{const {initialState,applyCommand}=await import(/* @vite-ignore */ '/src/lib/'+'domain.ts');let s=applyCommand(initialState(),{type:'signal',zkId:'SQ-002',status:'confirmed',comment:'Frozen review'},'review');s.complexes.find((z:any)=>z.id==='SQ-002')!.name='LIVE MUTATION';localStorage.setItem('sq_svelte_demo_v2',JSON.stringify({envelope:1,state:s,version:1,receipts:{}}));});
+ await page.evaluate(async()=>{const {initialState,applyCommand}=await import(/* @vite-ignore */ '/src/lib/'+'domain.ts');const s=applyCommand(initialState(),{type:'signal',zkId:'SQ-002',status:'confirmed',comment:'Frozen review'},'review');s.complexes.find((z:any)=>z.id==='SQ-002')!.name='LIVE MUTATION';localStorage.setItem('sq_svelte_demo_v2',JSON.stringify({envelope:1,state:s,version:1,receipts:{}}));});
  for(const revision of ['999','0','-1','abc','','1.5','Infinity','1&revision=2']){
   await page.goto(`/#/${route}/SQ-002?revision=${revision}`,{waitUntil:'domcontentloaded'});await page.reload({waitUntil:'domcontentloaded'});
   await expect(page.getByRole('alert')).toHaveText(/Версия не найдена|Некорректная версия сигнала/);

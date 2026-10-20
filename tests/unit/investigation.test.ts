@@ -25,7 +25,7 @@ function verify(state:AppState) {
 }
 describe('investigation flow',()=>{
   it('preserves dossier factors when opening an untouched case without adopting them into its signal',()=>{
-    let {state,complexId}=setup();
+    const _s0=setup();let state=_s0.state;const {complexId}=_s0;
     const before=dossierReadModel(state,complexId);
     expect(before.score).toBeGreaterThan(0);
     state=open(state,complexId);
@@ -40,7 +40,7 @@ describe('investigation flow',()=>{
     expect(previewCaseSignal(state,'new-empty-case').score).toBe(0);
   });
   it('keeps deliberate zero assessments and never restores baseline after a rejected fact or returned decision',()=>{
-    let {state,complexId}=setup();
+    const _s0=setup();let state=_s0.state;const {complexId}=_s0;
     state=open(state,complexId);
     state=applyCommand(state,{type:'fact.review',caseId:'case-flow',claimId:'claim-flow',status:'rejected',evidence:{source:'Публикация'},comment:'Не подтверждено'},actor);
     expect(dossierReadModel(state,complexId).score).toBe(0);
@@ -51,7 +51,7 @@ describe('investigation flow',()=>{
     expect(dossierReadModel(state,other).score).toBe(0);
   });
   it('preserves a previous phase assessment when another phase case is opened and does not inherit whole-complex factors',()=>{
-    let {state,complexId}=setup('phase-two');
+    const _s0=setup('phase-two');let state=_s0.state;const {complexId}=_s0;
     state=open(state,complexId,'phase-two');
     expect(dossierReadModel(state,complexId,'phase-two').score).toBe(0);
     state=verify(state);
@@ -62,7 +62,7 @@ describe('investigation flow',()=>{
     expect(dossierReadModel(state,complexId).score).toBe(35);
   });
   it('keeps triage separate from fact verification and immutable decisions',()=>{
-    let {state,complexId}=setup();
+    const _s0=setup();let state=_s0.state;const {complexId}=_s0;
     const original=structuredClone(state.complexes[0].factors);
     state=applyCommand(state,{type:'ai.review',claimId:'claim-flow',decision:'accepted',comment:'Извлечение верное'},actor);
     expect(state.assertions ?? []).toHaveLength(0);
@@ -90,7 +90,7 @@ describe('investigation flow',()=>{
     expect(state.cases ?? []).toHaveLength(0);
   });
   it('isolates phases and never inherits legal basis or factors',()=>{
-    let {state,complexId}=setup('phase-two');
+    const _s0=setup('phase-two');let state=_s0.state;const {complexId}=_s0;
     state=open(state,complexId,'phase-two');
     state=verify(state);
     expect(dossierReadModel(state,complexId,'phase-two')).toMatchObject({score:25,zone:'yellow'});
@@ -104,7 +104,7 @@ describe('investigation flow',()=>{
     expect(()=>applyCommand(state,{type:'case.attach',caseId:'other-case',artifactId:'artifact-flow'},actor)).toThrow('очереди');
   });
   it('checks persisted scope links and requires imported facts to be reviewed again',()=>{
-    let {state,complexId}=setup();
+    const _s0=setup();let state=_s0.state;const {complexId}=_s0;
     state=verify(open(state,complexId));
     const imported=applyImportTransform(state,'importer');
     expect(previewCaseSignal(imported,'case-flow').score).toBe(0);
@@ -131,7 +131,7 @@ describe('investigation flow',()=>{
     expect(()=>dossierReadModel(state,complex.id,'unknown-phase')).toThrow('Очередь');
   });
   it('freezes publication bytes metadata and separates source origin from availability',()=>{
-    let {state,complexId}=setup();
+    const _s0=setup();let state=_s0.state;const {complexId}=_s0;
     state.media.push({id:'media-shot',zkId:complexId,name:'screenshot.png',kind:'image',date:'2026-10-19',note:'Оригинал',ready:null,path:'private/media-shot.png',sha256:'a'.repeat(64),bytes:123});
     const original=state.artifacts![0];
     state=applyCommand(state,{type:'artifact.register',artifact:{id:'artifact-shot',complexId,kind:'publication',source:original.source,text:original.text,adId:original.adId,mediaId:'media-shot',origin:'import',availability:'unavailable'}},actor);
@@ -180,7 +180,7 @@ describe('investigation flow',()=>{
     expect(()=>validateLoadedState(malformed)).toThrow('положение цитаты');
   });
   it('requires explicit assertion coverage for a dated case and freezes its period',()=>{
-    let {state,complexId}=setup();
+    const _s0=setup();let state=_s0.state;const {complexId}=_s0;
     const period={from:'2026-10-01',to:'2026-10-31'};
     state=applyCommand(state,{type:'case.create',id:'case-flow',complexId,period},actor);
     state=applyCommand(state,{type:'case.attach',caseId:'case-flow',artifactId:'artifact-flow'},actor);
@@ -211,7 +211,7 @@ describe('investigation flow',()=>{
     expect(()=>applyCommand(state,{type:'phase.update',phase:{...phase,period:{from:'2026-10-20',to:'2026-10-21'}}},actor)).toThrow('Период очереди');
   });
   it('does not use an advertisement outside the selected period as dated R3 evidence',()=>{
-    let {state,complexId}=setup();
+    const _s0=setup();let state=_s0.state;const {complexId}=_s0;
     const period={from:'2026-11-01',to:'2026-11-30'};
     state=applyCommand(state,{type:'case.create',id:'r3-dated-case',complexId,period},actor);
     state=applyCommand(state,{type:'case.attach',caseId:'r3-dated-case',artifactId:'artifact-flow'},actor);
@@ -242,7 +242,7 @@ describe('investigation flow',()=>{
     expect(validateLoadedState(state).phases![0].readinessConfirmed).toBe(55);
   });
   it('persists sourced typed relations with independent reviews and no automatic risk points',()=>{
-    let {state,complexId}=setup();
+    const _s0=setup();let state=_s0.state;const {complexId}=_s0;
     const relation={id:'typed-link',complexId,fromId:`complex:${complexId}`,toId:'publication:flow-ad',relationType:'advertises',sourceArtifactIds:['artifact-flow'],matchMethod:'manual'};
     const factors=structuredClone(state.complexes[0].factors);
     state=applyCommand(state,{type:'relation.register',relation},actor);
@@ -265,7 +265,7 @@ describe('investigation flow',()=>{
     expect(()=>applyCommand(state,{type:'relation.review',relationId:'unsourced-link',status:'verified',comment:'Нет документа'},actor)).toThrow('первичный материал');
   });
   it('closes legacy confirmation routes once the complex has an investigation case',()=>{
-    let {state,complexId}=setup();state=open(state,complexId);
+    const _s0=setup();let state=_s0.state;const {complexId}=_s0;state=open(state,complexId);
     const ad={...state.ads.find(a=>a.id==='flow-ad')!,id:'old-route-ad'};
     for(const command of [
       {type:'factor',zkId:complexId,code:'R2',status:'confirmed',evidence:{source:'Публикация',adId:'flow-ad',quote:'Бронь 300 000 тенге'},comment:'Нельзя обойти дело'},
