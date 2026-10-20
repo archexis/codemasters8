@@ -176,8 +176,12 @@ class ResearchStore:
             if target is None:
                 self.monitor(owner, case_id, {}, 0)
                 continue
-            if 'domains' in json.loads(previous):
-                target['domains'] = json.loads(previous)['domains']
+            try:
+                saved = json.loads(previous)
+            except (ValueError, TypeError):
+                saved = {}
+            if isinstance(saved.get('domains'), list):
+                target['domains'] = saved['domains']
             try:
                 self.enqueue(owner, case_id, target, now)
             except ValueError:

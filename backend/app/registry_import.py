@@ -328,6 +328,8 @@ def build_commands(preview, selected, workspace):
 
 
 async def commit_import(options, workspace, owner, authorization, settings):
+    # Auth enforced by fetch_workspace in main.py; coerce None -> '' to avoid httpx TypeError.
+    authorization = authorization or ''
     selected = sorted(set(options.selected_ids))
     with closing(connect(settings.import_db_path)) as db, db:
         db.execute('BEGIN IMMEDIATE')

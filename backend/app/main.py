@@ -66,10 +66,17 @@ async def lifespan(app):
 app = FastAPI(title="SAQ QURYLYS API", version="2.0.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=get_settings().cors_origins.split(","),
+    allow_origins=[o.strip() for o in get_settings().cors_origins.split(",") if o.strip()],
     allow_methods=["GET", "POST"],
     allow_headers=["Authorization", "Content-Type"],
 )
+
+
+def _supabase_headers(request: Request, settings: Settings) -> dict:
+    """User-scoped Supabase headers. Auth is enforced by fetch_workspace;
+    here we only avoid KeyError/None crashes (missing -> empty string)."""
+    authorization = request.headers.get("authorization") or ""
+    return {"Authorization": authorization, "apikey": settings.supabase_anon_key}
 
 
 async def fetch_workspace(
@@ -119,7 +126,8 @@ async def import_preview(options: registry_import.PreviewOptions, request: Reque
 
 @app.post('/api/imports/commit')
 async def import_commit(options: registry_import.CommitOptions, request: Request, workspace: dict = Depends(fetch_workspace), settings: Settings = Depends(get_settings)):
-    return await registry_import.commit_import(options, workspace, request.state.user_id, request.headers.get('authorization'), settings)
+    # Auth enforced by fetch_workspace; pass through (possibly empty in tests with overridden deps).
+    return await registry_import.commit_import(options, workspace, request.state.user_id, request.headers.get('authorization') or '', settings)
 
 
 @app.get('/api/imports/{job_id}')
@@ -435,7 +443,7 @@ async def create_document_job(request: Request, complex_id: str = Query(..., pat
     uid = request.state.user_id
     job_id = str(uuid4())
     path = f"{uid}/{complex_id}/{job_id}.pdf"
-    headers = {"Authorization": request.headers["authorization"], "apikey": settings.supabase_anon_key}
+    headers = _supabase_headers(request, settings)
     job = {"id": job_id, "owner_id": uid, "complex_id": complex_id, "kind": kind, "status": "queued", "input_path": path}
     try:
         async with httpx.AsyncClient(timeout=30) as client:
@@ -456,7 +464,7 @@ async def document_job(job_id: str, request: Request, workspace: dict = Depends(
         UUID(job_id)
     except ValueError as exc:
         raise HTTPException(404, "Job not found") from exc
-    headers = {"Authorization": request.headers["authorization"], "apikey": settings.supabase_anon_key}
+    headers = _supabase_headers(request, settings)
     try:
         async with httpx.AsyncClient(timeout=15) as client:
             response = await client.get(f"{settings.supabase_url.rstrip('/')}/rest/v1/document_jobs", headers=headers, params={"id": f"eq.{job_id}", "owner_id": f"eq.{request.state.user_id}", "select": "id,complex_id,kind,status,result,error,created_at,input_path"})
@@ -481,7 +489,7 @@ async def retry_document_job(job_id: str, request: Request, workspace: dict = De
     uid = request.state.user_id
     if job["input_path"] != f"{uid}/{job['complex_id']}/{job_id}.pdf" or not any(z['id'] == job['complex_id'] for z in workspace['data']['complexes']):
         raise HTTPException(409, "Job original is not available in this workspace")
-    headers = {"Authorization": request.headers["authorization"], "apikey": settings.supabase_anon_key}
+    headers = _supabase_headers(request, settings)
     try:
         async with httpx.AsyncClient(timeout=30) as client:
             original = await client.get(f"{settings.supabase_url.rstrip('/')}/storage/v1/object/authenticated/evidence/{job['input_path']}", headers=headers)

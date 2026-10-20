@@ -53,8 +53,9 @@ def case_model(data: dict, case_id: str) -> dict | None:
     scoped = scope_model(data, case['complexId'], case.get('phaseId'))
     if scoped:
         # A case response must explain its own facts, including historical cases.
+        # Keep rejected distinct from needs-verification, mirroring complex_factors.
         scoped['complex'].update(risk([
-            {"code": a["code"], "status": "confirmed" if a["status"] == "verified" else "needs-verification"}
+            {"code": a["code"], "status": "confirmed" if a["status"] == "verified" else "needs-verification" if a["status"] == "candidate" else "rejected"}
             for a in latest_assertions(data, case_id)
         ]))
     return {"investigation": deepcopy(case), "complex": scoped['complex'] if scoped else None,
@@ -84,7 +85,9 @@ def scope_model(data: dict, complex_id: str, phase_id: str | None = None) -> dic
 
 def timeline_items(data: dict, complex_id: str, phase_id: str | None) -> list:
     items = []
-    z = next(z for z in data["complexes"] if z["id"] == complex_id)
+    z = next((z for z in data.get("complexes", []) if z.get("id") == complex_id), None)
+    if z is None:
+        return []
     if phase_id is None:
         for i, event in enumerate(z.get("events", [])):
             items.append({"id": f"event-{i}", "date": event.get("date"), "kind": "event", "text": event.get("text"), "origin": z.get("origin")})
@@ -93,5 +96,6 @@ def timeline_items(data: dict, complex_id: str, phase_id: str | None) -> list:
             items.append({"id": f"artifact-{a['id']}", "artifactId": a["id"], "date": a.get("date"), "capturedAt": a.get("capturedAt"), "kind": a["kind"], "text": a.get("source"), "origin": a.get("origin", "manual")})
     for s in data.get("caseSnapshots", []):
         if s["complexId"] == complex_id and s.get("phaseId") == phase_id:
-            items.append({"id": f"decision-{s['id']}", "caseId": s["caseId"], "date": s["at"][:10], "at": s["at"], "kind": "decision", "text": s.get("comment"), "status": s["status"], "score": s["score"], "zone": s["zone"]})
+            at = s.get("at") if isinstance(s.get("at"), str) else None
+            items.append({"id": f"decision-{s['id']}", "caseId": s["caseId"], "date": at[:10] if at else None, "at": at, "kind": "decision", "text": s.get("comment"), "status": s["status"], "score": s["score"], "zone": s["zone"]})
     return items
