@@ -47,7 +47,7 @@ describe('automatic case preparation',()=>{
   expect(demoPreparationCommands(state,item,'DEMO-period')).toEqual([]);
  });
  it('proposes exact local-parser candidates, deduplicates and never scores or triages them',()=>{
-  let state=setup();const c=state.cases![0],a=state.artifacts![0];
+  let state=setup();const c=state.cases![0],a=state.artifacts!.find(x=>x.id==='prep-art')!;
   const run=demoRunFor({text:a.text,zkId:c.complexId,url:'',account:'',date:a.date!,platform:'web'});
   const commands=claimsForMaterial(state,c,a,{engine:run.engine,realAI:false,hypotheses:run.hypotheses});
   expect(commands.length).toBeGreaterThan(0);
@@ -67,7 +67,7 @@ describe('automatic case preparation',()=>{
   const commands=buildFactReview(state,c.id,['r2'],'verified','Сверено');
   for(const command of commands)state=applyCommand(state,command,'analyst');
   expect(previewCaseSignal(state,c.id).score).toBe(25);
-  state.artifacts![0].date=undefined;
+  state.artifacts!.find(x=>x.id==='prep-art')!.date=undefined;
   expect(()=>buildFactReview(state,c.id,['r2'],'verified','Сверено')).toThrow('дату');
  });
  it('does not assign another phase or undated material into a period',()=>{

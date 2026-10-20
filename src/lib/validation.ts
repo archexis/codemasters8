@@ -599,10 +599,12 @@ export function normalizeSeedAds(raw: unknown): Ad[] {
 }
 
 /** Начальное демо-состояние из seed через нормализацию (без `as`). */
-export function seedState(seed: { COMPLEXES: unknown; ADS: unknown }): Pick<AppState, 'complexes' | 'ads'> {
+export function seedState(seed: { COMPLEXES: unknown; ADS: unknown; ARTIFACTS?: unknown; RELATIONS?: unknown }): Pick<AppState, 'complexes' | 'ads' | 'artifacts' | 'relations'> {
   const ads = normalizeSeedAds(seed.ADS);
   if (!Array.isArray(seed.COMPLEXES)) throw new Error('Seed COMPLEXES должен быть массивом');
-  return { complexes: seed.COMPLEXES.map((c) => normalizeSeedComplex(c, ads)), ads };
+  const artifacts = Array.isArray(seed.ARTIFACTS) ? ArtifactStoredSchema.array().parse(seed.ARTIFACTS) : [];
+  const relations = Array.isArray(seed.RELATIONS) ? RelationStoredSchema.array().parse(seed.RELATIONS) : [];
+  return { complexes: seed.COMPLEXES.map((c) => normalizeSeedComplex(c, ads)), ads, artifacts, relations };
 }
 
 /* ------------------------------------------------------------------ */

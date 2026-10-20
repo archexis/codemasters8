@@ -43,8 +43,9 @@ button, .button {
 button:hover, .button:hover { background: rgba(0,0,0,0.09); text-decoration: none; }
 button:active, .button:active { transform: scale(0.96); }
 button:disabled { opacity: .4; cursor: default; transform: none; }
-button.primary, .button.primary { background: var(--accent); color: #fff; }
-button.primary:hover, .button.primary:hover { background: var(--accent-press); color: #fff; }
+/* Primary buttons: deep civic green (white text ≥ 6.5:1). Links and focus stay blue. */
+button.primary, .button.primary { background: #1e6b34; color: #fff; }
+button.primary:hover, .button.primary:hover { background: #175a2c; color: #fff; }
 button.secondary, .button.secondary { background: rgba(0,0,0,0.05); color: var(--ink); }
 .small { padding: 7px 13px; font-size: 13px; border-radius: 10px; }
 :focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(0,113,227,0.35); border-radius: 8px; }
@@ -55,18 +56,19 @@ h2 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.
 h3 { font-size: 15px; line-height: 1.35; font-weight: 650; letter-spacing: -0.005em; }
 p { line-height: 1.6; }
 
-/* Header: translucent chrome, content scrolls underneath. No rules, no boxes. */
+/* Header: one translucent chrome on every page — identical metrics, so route
+   switches never shift it. Content scrolls underneath. No rules, no boxes. */
 .topbar {
   position: sticky; top: 0; z-index: 50;
-  display: flex; align-items: center; gap: 26px;
-  padding: 12px max(24px,calc((100vw - 1200px)/2));
+  display: flex; align-items: center; gap: 16px;
+  min-height: 54px;
+  padding: 10px max(24px,calc((100vw - 1200px)/2));
   background: rgba(245,245,247,0.72);
   -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid rgba(0,0,0,0.06);
 }
 .brand { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; text-decoration: none; color: var(--ink); }
 .brand:hover { text-decoration: none; }
-.brand small { display: block; margin-top: 1px; font-size: 11px; color: var(--ink-2); font-weight: 500; }
 .brand-symbol {
   display: grid; place-items: center; width: 30px; height: 30px; flex: 0 0 auto;
   background: #1d1d1f; color: #fff;
@@ -77,12 +79,16 @@ nav a { padding: 8px 14px; font-size: 14px; font-weight: 500; border-radius: 10p
 nav a:hover { color: var(--ink); background: rgba(0,0,0,0.05); text-decoration: none; }
 nav a.active { background: none; color: var(--ink); font-weight: 700; }
 .account { display: flex; align-items: center; gap: 8px; }
-.mode-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; }
 .mobile-menu { display: none; }
 main { max-width: 1200px; padding: 32px 24px 64px; margin: auto; min-height: 75vh; }
 .skip-link { position: absolute; left: 12px; top: -48px; background: var(--accent); color: #fff; padding: 9px 14px; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 0 0 10px 10px; z-index: 100; }
 .skip-link:focus { top: 0; color: #fff; }
-.auth-panel { max-width: 520px; padding: 28px; margin: 20px auto; background: #fff; border-radius: 20px; box-shadow: var(--shadow-sheet); animation: sheet-in 320ms var(--spring); }
+/* Footer: disclaimer left, quiet maintenance actions right. */
+.footer-brand { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; min-width: 0; }
+.footer-actions { display: flex; gap: 4px 18px; align-items: center; flex-wrap: wrap; flex-shrink: 0; }
+.footer-link { background: transparent; border: 0; box-shadow: none; padding: 4px 2px; font-size: 12px; font-weight: 600; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(0,0,0,0.25); cursor: pointer; }
+a.footer-link:hover, button.footer-link:hover { background: transparent; color: var(--ink); text-decoration-color: currentColor; }
+.footer-link:active { transform: scale(0.97); }
 
 .eyebrow { font-size: 12.5px; font-weight: 600; color: var(--ink-2); margin-bottom: 8px; }
 .page-heading { display: flex; justify-content: space-between; gap: 20px; align-items: flex-end; margin-bottom: 22px; flex-wrap: wrap; }
@@ -178,7 +184,7 @@ footer { display: flex; gap: 24px; justify-content: space-between; padding: 22px
   .mobile-menu { display: inline-flex; margin-left: auto; }.topbar nav { display: none; flex-direction: column; background: none; padding: 0; align-items: flex-start; }.topbar nav.open { display: flex; }
   .form-grid { grid-template-columns: 1fr; }
   .page-heading h1 { font-size: 30px; }.panel { padding: 18px; border-radius: 14px; }.risk-score { min-width: 0; }.risk-score strong { font-size: 44px; }
-  footer { flex-direction: column; gap: 8px; }.timeline-row { gap: 10px; }.timeline-row>span { min-width: 85px; }.auth-panel { margin: 16px; border-radius: 18px; } dl { grid-template-columns: 1fr; gap: 2px; } dt { margin-top: 8px; }
+  footer { flex-direction: column; gap: 8px; }.timeline-row { gap: 10px; }.timeline-row>span { min-width: 85px; }.footer-actions { gap: 2px 14px; } dl { grid-template-columns: 1fr; gap: 2px; } dt { margin-top: 8px; }
 }
 @media(prefers-reduced-motion:reduce) {
   html { scroll-behavior: auto; }
@@ -236,13 +242,10 @@ button[aria-pressed=true] {background:#1d1d1f;color:#fff;}
 @media(max-width:800px){.dossier-layout,.publication-split{grid-template-columns:1fr;}.dossier-visual,.publication-inspector{position:static;}.dossier-context{flex-wrap:wrap;gap:12px;}.case-toolbar{align-items:start;gap:14px;flex-direction:column;}.graph-expanded,.compare-overlay{inset:8px;padding:16px;}}
 
 /* Fullscreen map: glass instruments float over the sheet. */
-.map-page { width: 100%; max-width: none; margin: 0; overflow: clip; flex: 1; display: flex; flex-direction: column; min-height: calc(100dvh - 57px); }
+.map-page { width: 100%; max-width: none; margin: 0; overflow: clip; flex: 1; display: flex; flex-direction: column; min-height: calc(100dvh - 55px); }
 #app:has(.map-page) { display: flex; flex-direction: column; min-height: 100dvh; }
 #app:has(.map-page) main { flex: 1; display: flex; flex-direction: column; width: 100%; max-width: none; padding: 0; min-height: 0; }
 #app:has(.map-page) footer { display: none; }
-#app:has(.pub-page) .status-strip { display: none; }
-#app:has(.map-page) .brand small { display: none; }
-#app:has(.map-page) .topbar { padding-top: 10px; padding-bottom: 10px; gap: 16px; }
 .map-page .map-shell { min-width: 0; flex: 1; display: flex; flex-direction: column; min-height: 0; }
 .map-page .map-wrap { border: 0; border-radius: 0; box-shadow: none; margin-bottom: 0; flex: 1; min-height: 0; }
 .map-page .map-wrap > .map { position: absolute; inset: 0; height: 100%; min-height: 0; background: linear-gradient(100deg,#dde3d1 40%,#eef2e4 50%,#dde3d1 60%); background-size: 200% 100%; animation: mapShimmer 1.6s linear infinite; }
@@ -314,6 +317,22 @@ button[aria-pressed=true] {background:#1d1d1f;color:#fff;}
   padding: 22px; overflow: auto;
   animation: sheet-in 360ms var(--spring);
 }
+/* About-data float: full-bleed rows with hairline separators fill the sheet edge
+   to edge; rows rise in a short spring cascade (Apple: critically damped,
+   reduced-motion falls back to a cross-fade via the global rule). */
+.map-about-float { width: min(380px, calc(100% - 28px)); text-align: left; }
+@media(min-width:641px) {
+  .map-about-float { left: 14px; top: 86px; max-height: calc(100% - 200px); }
+}
+.map-about-float .map-list-head { padding: 0 0 12px; }
+.map-about-float .map-list-head strong { font-size: 13.5px; letter-spacing: -0.005em; }
+.map-disclosure { display: grid; }
+.map-disclosure p { margin: 0 -22px; padding: 11px 22px; font-size: 13.5px; line-height: 1.6; letter-spacing: 0; color: var(--ink); text-align: left; text-wrap: pretty; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; border-top: 1px solid var(--line-soft); animation: rise 420ms var(--spring) backwards; }
+.map-disclosure p:last-child { padding-bottom: 12px; }
+.map-disclosure p:nth-child(2) { animation-delay: 45ms; }
+.map-disclosure p:nth-child(3) { animation-delay: 90ms; }
+.map-disclosure p:nth-child(4) { animation-delay: 135ms; }
+.map-disclosure p:nth-child(5) { animation-delay: 180ms; }
 .preview-score { display: flex; align-items: center; gap: 10px; margin: 12px 0 6px; }
 .preview-score strong { font-size: 44px; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; font-weight: 700; }
 .preview-score .legend-dot { width: 12px; height: 12px; }
@@ -383,13 +402,10 @@ button[aria-pressed=true] {background:#1d1d1f;color:#fff;}
   .map-about-float { bottom: 150px; max-height: 40%; }
 }
 @media print {.dossier-context,.dossier-tabs,.case-toolbar{display:none!important;}.case-signal-sheet{display:block!important;}}
-@media(prefers-reduced-motion:reduce){.map-page .map-preview,.map-list-panel,.map-about-float,.map-float-top,.map-legend-float{animation:none;}}
+@media(prefers-reduced-motion:reduce){.map-page .map-preview,.map-list-panel,.map-about-float,.map-float-top,.map-legend-float,.map-disclosure p{animation:none;}}
 @media(prefers-reduced-motion:reduce){.map-page .map-preview,.map-page .map,.map-list-panel,.map-about-float{animation:none;}}
 
-/* Compact appbar and controls floating over the map. */
-#app:has(.map-page) .topbar { min-height:56px; padding:6px 20px; gap:12px; }
-#app:has(.map-page) .brand-symbol { width:34px; height:36px; font-size:26px; }
-#app:has(.map-page) .topbar nav a { padding:8px 14px; }
+/* Tools button keeps the header metrics on the map page. */
 .map-tools-toggle { white-space:nowrap; }
 .map-tools-toggle[aria-expanded=true] { background:#244c3f; color:white; }
 .map-wrap > .map-float-top { position:absolute; top:12px; left:12px; right:60px; margin:0; padding:8px; border-radius:12px; }
@@ -398,7 +414,6 @@ button[aria-pressed=true] {background:#1d1d1f;color:#fff;}
 @media(max-width:640px) {
  #app:has(.map-page) .topbar { padding:6px 10px; gap:8px; flex-wrap:wrap; }
  #app:has(.map-page) .account { gap:6px; margin-left:auto; }
- #app:has(.map-page) .account .mode-dot { display:none; }
  #app:has(.map-page) .account button { padding:7px 8px; font-size:11px; }
  .map-wrap > .map-float-top { top:8px; left:8px; right:52px; flex-wrap:wrap; max-height:calc(100% - 150px); overflow-y:auto; }
  .map-wrap > .map-float-top .map-search { flex:1 1 100%; min-width:0; }

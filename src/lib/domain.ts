@@ -12,10 +12,10 @@ export type { Command } from './types';
 import type { ParsedCommand } from './types';
 
 export function initialState(): AppState {
-  const { complexes, ads } = seedState(seed);
+  const { complexes, ads, artifacts, relations } = seedState(seed);
   // Канон v3 (стык S1->S2): DEMO-состояние совпадает с SQL initialize_workspace()
   // после миграции S2.1 — schemaVersion/signalVersions здесь, а не только в SQL.
-  return { schemaVersion: 3, complexes, ads, media: [], signals: {}, signalVersions: {}, audit: [] };
+  return { schemaVersion: 3, complexes, ads, artifacts, relations, media: [], signals: {}, signalVersions: {}, audit: [] };
 }
 
 /**

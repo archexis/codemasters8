@@ -203,10 +203,11 @@ describe('investigation server command boundary', () => {
       await send({type:'artifact.register',artifact:{id:'relationship-document',complexId:z.id,kind:'relationship',source:'Договор',text:'Подрядчик и объект связаны договором',date:'2026-10-19'}});
       const relation={id:'relation1',complexId:z.id,fromId:`complex:${z.id}`,toId:`complex:${other.id}`,relationType:'contractor_of',sourceArtifactIds:['relationship-document'],matchMethod:'manual'};
       await send({type:'relation.register',relation});
-      expect(state.data.relations[0].verificationStatus).toBe('candidate');
+      const stored=()=>state.data.relations.find((r:any)=>r.id===relation.id);
+      expect(stored().verificationStatus).toBe('candidate');
       const factors=structuredClone(state.data.complexes.map((c:any)=>c.factors));
       await send({type:'relation.review',relationId:relation.id,status:'verified',comment:'Сверено с договором'});
-      expect(state.data.relations[0]).toMatchObject({verificationStatus:'verified',reviewedBy:'a@example.test'});
+      expect(stored()).toMatchObject({verificationStatus:'verified',reviewedBy:'a@example.test'});
       expect(state.data.complexes.map((c:any)=>c.factors)).toEqual(factors);
       await expect(send({type:'relation.register',relation:{...relation,id:'self-edge',toId:relation.fromId}})).rejects.toThrow('INVALID_RELATION_ENDPOINT');
       await expect(send({type:'relation.register',relation:{...relation,id:'foreign-node',toId:'organization:000000000000'}})).rejects.toThrow('RELATION_ENDPOINT_NOT_FOUND');

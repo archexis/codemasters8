@@ -5,7 +5,7 @@ import { buildRelationGraph, connectedRelations, workspaceRelations } from '../.
 
 describe('relationship graph', () => {
   it('retains all pairs sharing an account across three complexes and all supporting publications', () => {
-    const state = initialState();
+    const state = initialState();state.relations = [];
     state.ads = state.complexes.slice(0, 3).map((z, i) => ({ ...state.ads[0], id: `a${i}`, zkId: z.id, account: 'same', platform: 'Telegram' }));
     state.ads.push({ ...state.ads[0], id: 'a3' });
     const shared = workspaceRelations(state).filter(r => r.type === 'same_ad_account');
@@ -39,7 +39,7 @@ describe('relationship graph', () => {
   });
 
   it('merges repeated publications into a selectable relation while retaining both sources', () => {
-    const state = initialState(); const z = state.complexes[0];
+    const state = initialState();state.relations = [];const z = state.complexes[0];
     state.ads = [{ ...state.ads[0], id: 'a', zkId: z.id, platform: 'Telegram', account: 'Shared' },
       { ...state.ads[0], id: 'b', zkId: z.id, platform: ' telegram ', account: ' shared ' }];
     const graph = buildRelationGraph(state, dossierRelations(state, z.id), `complex:${z.id}`, z.name);
@@ -52,7 +52,7 @@ describe('relationship graph', () => {
   });
 
   it('uses stable identities, so equal display names do not collapse distinct complexes', () => {
-    const state = initialState(); const [a, b] = state.complexes;
+    const state = initialState();state.relations = [];const [a, b] = state.complexes;
     b.name = a.name;
     state.ads = [{ ...state.ads[0], id: 'a', zkId: a.id, account: 'same' }, { ...state.ads[0], id: 'b', zkId: b.id, account: 'same' }];
     const relations = connectedRelations(workspaceRelations(state), `complex:${a.id}`);

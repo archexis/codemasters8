@@ -22,7 +22,7 @@
   const readRoute = () => normalizedRoute(location.hash);
   let route = $state(readRoute());
   let loading = $state(true); let error = $state(''); let notice = $state('');
-  let menu = $state(false); let authOpen = $state(false); let email = $state(''); let password = $state(''); let reviewer = $state('Демо-аналитик'); let authBusy = $state(false);
+  let menu = $state(false); const reviewer = 'Аналитик';
   let creating = $state(false);
   let mapToolsOpen = $state(false);
   const baseRoute = $derived(route.split('?')[0]);
@@ -47,20 +47,18 @@
     const update = () => { route = readRoute(); menu = false; creating = false; window.scrollTo(0,0); };
     window.addEventListener('hashchange', update);
     void reload();
+    // Сессия влияет только на источник данных (серверный workspace или локальный
+    // DEMO-конверт). Входа в интерфейсе нет: рабочее место открыто сразу.
     const listener = supabase?.auth.onAuthStateChange((_event, session) => {
       const nextUser = session?.user.id ?? null;
       const changedUser = getSessionUser() !== nextUser;
       trackAuthSession(nextUser);
-      if (_event === 'TOKEN_REFRESHED' && !changedUser) {
-        reviewer = session?.user.email || 'Демо-аналитик';
-        return;
-      }
+      if (_event === 'TOKEN_REFRESHED' && !changedUser) return;
       reloadGeneration++;
       if (changedUser) {
         workspace = { schemaVersion: 3, complexes: [], ads: [], media: [], signals: {}, signalVersions: {}, audit: [] };
         error = ''; notice = '';
       }
-      reviewer = session?.user.email || 'Демо-аналитик';
       // Defer network calls outside the auth callback to avoid the SDK lock.
       // Без сессии — DEMO-конверт (loadState), рабочее место не блокируется.
       setTimeout(() => { void reload(); }, 0);
@@ -71,16 +69,7 @@
     try { workspace = await saveCommand($state.snapshot(workspace), $state.snapshot(command), reviewer); notice = 'Изменения сохранены'; }
     catch (e) { if (e instanceof StaleConflictError) workspace = e.serverState; throw e; }
   }
-  // Регистрации нет: вход только по выданной оператору учётной записи
-  // (временные аккаунты connected-режима). По умолчанию — DEMO без логина.
-  async function auth() {
-    if (!supabase) return; authBusy = true; error = ''; notice = '';
-    try {
-      const { error: err } = await supabase.auth.signInWithPassword({ email, password });
-      if (err) throw err;
-      authOpen = false; password = '';
-    } catch (e) { error = e instanceof Error ? e.message : String(e); } finally { authBusy = false; }
-  }
+  // Входа и регистрации нет: рабочее место открыто сразу, автор решений — «Аналитик».
   async function initialize() { try { workspace = await initializeWorkspace(); } catch (e) { error = String(e); } }
   async function reset() { try { workspace = await resetDemo(); error = ''; notice = 'Демоданные сброшены'; } catch (e) { error = String(e); } }
   // S4.4. Скачивание сигнальной карточки (signal-card/v1): только
@@ -95,19 +84,9 @@
       URL.revokeObjectURL(url); notice = 'Сигнальная карточка скачана';
     } catch (e) { error = e instanceof Error ? e.message : String(e); }
   }
-  async function exportApi() {
-    try {
-      const { data } = await supabase!.auth.getSession();
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'}/api/export`, { headers: { Authorization: `Bearer ${data.session?.access_token}` }, signal: AbortSignal.timeout(15000) });
-      if (!response.ok) throw new Error(`API: ${response.status}`);
-      const url = URL.createObjectURL(await response.blob()); const a = document.createElement('a'); a.href = url; a.download = 'saq-workspace.json'; a.click(); URL.revokeObjectURL(url);
-    } catch (e) { error = String(e); }
-  }
-</script>
-<svelte:window onkeydown={e => { if (e.key === 'Escape') { authOpen = false; menu = false; mapToolsOpen = false; } }}/><a class="skip-link" href="#main">К содержанию</a>
-<header class="topbar no-print"><a class="brand" href="#/map"><span class="brand-symbol">S</span><span>SAQ QURYLYS<small>САҚ · МОНИТОРИНГ РИСКОВ</small></span></a><button class="mobile-menu" aria-expanded={menu} aria-controls="navigation" onclick={() => menu = !menu}>Меню</button><nav id="navigation" class:open={menu} aria-label="Основная навигация">{#each ['map','publications','registries'] as key}<a href="#/{key}" class:active={page === key || (key==='publications'&&page==='analyze')} aria-current={page===key?'page':undefined}>{titles[key]}</a>{/each}</nav><div class="account">{#if page === 'map'}<button class="small map-tools-toggle" aria-expanded={mapToolsOpen} aria-controls="map-tools" onclick={() => mapToolsOpen = !mapToolsOpen}>Слои и фильтры</button>{/if}<span class="mode-dot"></span><button class="small" onclick={() => authOpen = !authOpen}>{reviewer || 'Войти'}</button></div></header>
-<div class="status-strip no-print"><span>{demoMode ? 'Реальные координаты · названия и сведения вымышлены' : 'Вы вошли · ваше рабочее место'}</span><span>Өскемен / Усть-Каменогорск</span></div>
-{#if authOpen}<section class="auth-panel no-print"><h2>{demoMode ? 'Демонстрационный сеанс' : 'Вход оператора'}</h2>{#if demoMode}<p>Демо-аналитик. Данные хранятся в этом браузере.</p><button onclick={reset}>Сбросить демо</button>{:else if reviewer !== 'Демо-аналитик'}<p>{reviewer}</p><div class="actions"><button onclick={async () => { await supabase!.auth.signOut(); authOpen = false; }}>Выйти</button><button onclick={exportApi}>Экспорт через API</button></div>{:else}<form onsubmit={e => { e.preventDefault(); void auth(); }} class="space-y-3"><label>Email<input type="email" autocomplete="username" required bind:value={email}/></label><label>Пароль<input type="password" autocomplete="current-password" minlength="8" required bind:value={password}/></label><button class="primary" disabled={authBusy}>Войти</button></form>{/if}<div class="actions mt-4"><a class="button small" href="#/backup" onclick={()=>authOpen=false}>Резервная копия</a><button class="small" onclick={() => authOpen = false}>Закрыть</button></div></section>{/if}
+ </script>
+<svelte:window onkeydown={e => { if (e.key === 'Escape') { menu = false; mapToolsOpen = false; } }}/><a class="skip-link" href="#main">К содержанию</a>
+<header class="topbar no-print"><a class="brand" href="#/map" aria-label="SAQ QURYLYS — на карту"><span class="brand-symbol">S</span><span>SAQ QURYLYS</span></a><button class="mobile-menu" aria-expanded={menu} aria-controls="navigation" onclick={() => menu = !menu}>Меню</button><nav id="navigation" class:open={menu} aria-label="Основная навигация">{#each ['map','publications','registries'] as key}<a href="#/{key}" class:active={page === key || (key==='publications'&&page==='analyze')} aria-current={page===key?'page':undefined}>{titles[key]}</a>{/each}</nav>{#if page === 'map'}<div class="account"><button class="small map-tools-toggle" aria-expanded={mapToolsOpen} aria-controls="map-tools" onclick={() => mapToolsOpen = !mapToolsOpen}>Слои и фильтры</button></div>{/if}</header>
 <main id="main">
 {#if error}<div class="error mb-5" role="alert">{error}<button class="small ml-3" onclick={reload}>Повторить загрузку</button></div>{/if}
 {#if notice}<div class="notice no-print mb-5" role="status">{notice}<button class="small ml-3" onclick={() => notice = ''}>Закрыть</button></div>{/if}
@@ -127,4 +106,4 @@
 {:else}<section class="panel"><h1>Страница не найдена</h1><a href="#/map">Открыть карту</a></section>{/if}
 {#if !loading&&!workspace.complexes.length}<section class="panel mt-5"><h2>Начните работу</h2><div class="actions"><button onclick={initialize}>Загрузить демоданные</button><button onclick={()=>creating=true}>Создать объект</button></div>{#if creating}<ComplexForm onsave={async complex=>{await commit({type:'complex',complex});creating=false;}} oncancel={()=>creating=false}/>{/if}</section>{/if}
 </main>
-<footer class="no-print"><b>SAQ QURYLYS</b><span>Решение принимает человек. Система не устанавливает факт правонарушения.</span></footer>
+<footer class="no-print"><div class="footer-brand"><b>SAQ QURYLYS</b><span>Решение принимает человек. Система не устанавливает факт правонарушения.</span></div><div class="footer-actions"><a class="footer-link" href="#/backup">Резервная копия</a>{#if demoMode}<button class="footer-link" onclick={reset}>Сбросить демо</button>{/if}</div></footer>

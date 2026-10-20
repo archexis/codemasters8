@@ -173,7 +173,7 @@ describe('investigation flow',()=>{
     const claim={id:'page-claim',complexId,artifactId:artifact.id,code:'R6',quote:'Просрочка 12 месяцев.'};
     state=applyCommand(state,{type:'claim.propose',claim},actor);
     expect(state.claims![0]).toMatchObject({quoteStart:13,quoteEnd:34});
-    expect(validateLoadedState(state).artifacts![0].pageNumber).toBe(7);
+    expect(validateLoadedState(state).artifacts!.find(a=>a.id==='page-source')!.pageNumber).toBe(7);
     expect(()=>applyCommand(state,{type:'claim.propose',claim:{...claim,id:'spoof-offset',quoteStart:0,quoteEnd:3}},actor)).toThrow('неизвестные поля');
     expect(()=>applyCommand(state,{type:'artifact.register',artifact:{...artifact,id:'bad-page',pageNumber:0}},actor)).toThrow();
     const malformed=structuredClone(state);malformed.claims![0].quoteStart=0;
@@ -246,9 +246,9 @@ describe('investigation flow',()=>{
     const relation={id:'typed-link',complexId,fromId:`complex:${complexId}`,toId:'publication:flow-ad',relationType:'advertises',sourceArtifactIds:['artifact-flow'],matchMethod:'manual'};
     const factors=structuredClone(state.complexes[0].factors);
     state=applyCommand(state,{type:'relation.register',relation},actor);
-    expect(state.relations![0]).toMatchObject({verificationStatus:'candidate',actor});
+    expect(state.relations!.find(r=>r.id===relation.id)).toMatchObject({verificationStatus:'candidate',actor});
     state=applyCommand(state,{type:'relation.review',relationId:relation.id,status:'verified',comment:'Оригинал связывает рекламу с объектом'},actor);
-    expect(state.relations![0].verificationStatus).toBe('verified');
+    expect(state.relations!.find(r=>r.id===relation.id)!.verificationStatus).toBe('verified');
     expect(state.audit[0].before).toMatchObject({verificationStatus:'candidate'});
     expect(state.complexes[0].factors).toEqual(factors);
     state=open(state,complexId);state=verify(state);
@@ -256,7 +256,7 @@ describe('investigation flow',()=>{
     expect(state.caseSnapshots![0].relations![0].verificationStatus).toBe('verified');
     state=applyCommand(state,{type:'relation.review',relationId:relation.id,status:'rejected',comment:'Область связи уточнена'},actor);
     expect(state.caseSnapshots![0].relations![0].verificationStatus).toBe('verified');
-    expect(validateLoadedState(state).relations).toHaveLength(1);
+    expect(validateLoadedState(state).relations!.map(r=>r.id)).toContain('typed-link');
     const imported=applyImportTransform({...state,relations:[{...state.relations![0],verificationStatus:'verified'}]},'importer');
     expect(imported.relations![0].verificationStatus).toBe('candidate');
     expect(()=>applyCommand(state,{type:'relation.register',relation:{...relation,id:'self-link',toId:relation.fromId}},actor)).toThrow('разные');

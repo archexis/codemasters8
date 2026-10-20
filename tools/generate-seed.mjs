@@ -128,6 +128,8 @@ export function buildSeedEnvelope(seed) {
     schemaVersion: 3,
     complexes: seed.COMPLEXES.map((c) => normalizeComplex(c, ads)),
     ads,
+    artifacts: Array.isArray(seed.ARTIFACTS) ? seed.ARTIFACTS.map((a) => ({ ...a })) : [],
+    relations: Array.isArray(seed.RELATIONS) ? seed.RELATIONS.map((r) => ({ ...r })) : [],
     media: [],
     signals: {},
     signalVersions: {},
