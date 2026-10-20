@@ -12,6 +12,8 @@ SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "same-origin",
     "X-Frame-Options": "DENY",
+    # Local http:// origins ignore HSTS per spec; https prod gets one year.
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
 }
 
 # Authenticated GET projections whose responses must never be cached by
