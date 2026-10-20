@@ -1,8 +1,0 @@
-
-> saq-qurylys@2.0.0 check
-> svelte-check --tsconfig ./tsconfig.json
-
-Loading svelte-check in workspace: c:\Users\BIGra\codemasters8\test-results\score-maxxing\20261019\clean-source
-Getting Svelte diagnostics...
-
-svelte-check found 0 errors and 0 warnings

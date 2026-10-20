@@ -1,8 +1,0 @@
-GATE FAIL: sprint 6 — 7 problem(s):
-  - report.status is "BLOCKED", expected "PASS"
-  - report is in terminal non-pass state: BLOCKED
-  - package S6.4 status is "BLOCKED", expected "PASS"
-  - package S6.4: terminal state BLOCKED
-  - criterion D6.4 status is "BLOCKED", expected "PASS"
-  - criterion D6.4: terminal state BLOCKED
-  - open blockers: 1 recorded, expected none

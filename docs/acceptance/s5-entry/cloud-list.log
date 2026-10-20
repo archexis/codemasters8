@@ -1,3 +1,0 @@
-Listing tests:
-  supabase.spec.ts:4:1 › Supabase SDK login, server analysis, optimistic RPC save and logout
-Total: 1 test in 1 file

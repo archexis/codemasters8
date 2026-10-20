@@ -1,8 +1,0 @@
-
-> saq-qurylys@2.0.0 check
-> svelte-check --tsconfig ./tsconfig.json
-
-Loading svelte-check in workspace: c:\Users\BIGra\codemasters8\.temp\s6-rc-1792346711014
-Getting Svelte diagnostics...
-
-svelte-check found 0 errors and 0 warnings

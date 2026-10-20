@@ -1,5 +1,0 @@
-
-> saq-qurylys@2.0.0 gate
-> node tools/check-sprint-gate.mjs 0
-
-GATE PASS: sprint 0 — 5 packages, 5 criteria, manifest fresh, no blockers.

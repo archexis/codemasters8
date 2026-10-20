@@ -1,8 +1,0 @@
-C:\Users\BIGra\codemasters8\.impeccable\critique\index-html\2026-10-15-2050.md
-C:\Users\BIGra\codemasters8\README.md
-C:\Users\BIGra\codemasters8\docs\CODEBASE_AUDIT.md
-C:\Users\BIGra\codemasters8\docs\FEATURE_INVENTORY.md
-C:\Users\BIGra\codemasters8\docs\IMPLEMENTATION_HANDOFF.md
-C:\Users\BIGra\codemasters8\docs\REQUIREMENTS_MATRIX.md
-C:\Users\BIGra\codemasters8\index.html
-C:\Users\BIGra\codemasters8\scrollcraft\FINGERPRINTS.md

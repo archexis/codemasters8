@@ -1,6 +1,0 @@
-
-> saq-qurylys@2.0.0 test:cloud
-> playwright test --config playwright.cloud.config.ts
-
-Error: http://127.0.0.1:5174 is already used, make sure that nothing is running on the port/url or set reuseExistingServer:true in config.webServer.
-

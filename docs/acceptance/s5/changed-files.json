@@ -1,7 +1,0 @@
-{
-  "scope": "S5 changes only; pre-existing dirty changes preserved",
-  "implementation": ["src/App.svelte","src/app.css","src/components/Analyze.svelte","src/components/Detail.svelte","src/components/Signal.svelte","src/lib/domain.ts","src/lib/export.ts","src/lib/signal-snapshot.ts","src/lib/types.ts","src/lib/validation.ts","supabase/migrations/20261019000500_s5_signal_cycle.sql"],
-  "tests": ["tests/unit/database.test.ts","tests/unit/signal-history.test.ts","tests/unit/signal-s5.test.ts","tests/unit/ai-provenance-sql.test.ts","tests/e2e/ai-review.spec.ts","tests/e2e/signal-export.spec.ts","tests/live/investigation.spec.ts"],
-  "tools": ["tools/s5-investigation.mjs","tools/record-s5-acceptance.mjs","tools/verify-s5-pdfs.py"],
-  "acceptance": ["docs/acceptance/sprint-0.json through sprint-5.json and .md","docs/acceptance/progress.md","docs/acceptance/s5/","docs/acceptance/history/s5-before-regression/","docs/acceptance/history/s5-before-implementation/"]
-}

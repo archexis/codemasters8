@@ -1,5 +1,0 @@
-
-> saq-qurylys@2.0.0 gate
-> node tools/check-sprint-gate.mjs 2
-
-GATE PASS: sprint 2 — 6 packages, 6 criteria, manifest fresh, no blockers.
