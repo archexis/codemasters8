@@ -13,6 +13,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import BaseModel, Field
 from backend.app.projections import complex_factors, risk, preview, page, case_model, scope_model, timeline_items, latest_assertions
 from backend.app import registry_import
+from backend.app.security_headers import SecurityHeadersMiddleware
 
 
 class Settings(BaseSettings):
@@ -70,6 +71,10 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["Authorization", "Content-Type"],
 )
+# Additive response headers only (nosniff/frame-deny/no-store on GET
+# projections); never blocks, never touches auth. Rate limiting lives in
+# backend/app/rate_limit.py and stays unwired (see its docstring).
+app.add_middleware(SecurityHeadersMiddleware)
 
 
 def _supabase_headers(request: Request, settings: Settings) -> dict:
@@ -77,6 +82,47 @@ def _supabase_headers(request: Request, settings: Settings) -> dict:
     here we only avoid KeyError/None crashes (missing -> empty string)."""
     authorization = request.headers.get("authorization") or ""
     return {"Authorization": authorization, "apikey": settings.supabase_anon_key}
+
+
+MAX_UPLOAD_BYTES = 20 * 1024 * 1024
+
+
+async def read_limited_body(request: Request, label: str, max_bytes: int = MAX_UPLOAD_BYTES) -> bytes:
+    """Stream the request body with a Content-Length pre-check and an in-stream cap.
+
+    The pre-check rejects oversized declarations without reading the socket;
+    the streaming cap covers missing/lying Content-Length. Raises 413 either way.
+    """
+    raw_length = request.headers.get("content-length")
+    if raw_length is not None:
+        with suppress(ValueError):
+            if int(raw_length.strip()) > max_bytes:
+                raise HTTPException(413, f"{label} exceeds 20 MB")
+    body = bytearray()
+    async for chunk in request.stream():
+        body.extend(chunk)
+        if len(body) > max_bytes:
+            raise HTTPException(413, f"{label} exceeds 20 MB")
+    return bytes(body)
+
+
+def is_pdf_bytes(data: bytes | bytearray) -> bool:
+    """Server-side magic-bytes sniff: must look like a PDF before we link/store it.
+
+    Tolerates a UTF-8 BOM and leading whitespace, then requires ``%PDF-<digit>.<digit>``
+    (e.g. 1.4, 2.0). Deliberately does NOT require a ``%%EOF`` trailer: minimal yet
+    structurally valid PDFs in tests/clients omit it; deep validation stays with the parser.
+    """
+    _BOM = bytes((0xEF, 0xBB, 0xBF))
+    _WS = bytes((0, 9, 10, 13, 32))
+    head = bytes(data[:32])
+    if head.startswith(_BOM):
+        head = head[len(_BOM):]
+    head = head.lstrip(_WS)
+    if not head.startswith(b"%PDF-") or len(head) < 8:
+        return False
+    ver = head[len(b"%PDF-"):]
+    return len(ver) >= 3 and ver[0:1].isdigit() and ver[1:2] == b"." and ver[2:3].isdigit()
 
 
 async def fetch_workspace(
@@ -383,12 +429,8 @@ async def import_pdf(request: Request, workspace: dict = Depends(fetch_workspace
     """Parse a locally supplied original into an unsaved extraction candidate."""
     if request.headers.get("content-type", "").split(";", 1)[0] != "application/pdf":
         raise HTTPException(415, "application/pdf required")
-    body = bytearray()
-    async for chunk in request.stream():
-        body.extend(chunk)
-        if len(body) > 20 * 1024 * 1024:
-            raise HTTPException(413, "PDF exceeds 20 MB")
-    if not body.startswith(b"%PDF-"):
+    body = await read_limited_body(request, "PDF")
+    if not is_pdf_bytes(body):
         raise HTTPException(422, "Invalid PDF")
     from backend.app.document_jobs import bounded_extract
     try:
@@ -405,11 +447,7 @@ async def import_image(request: Request, workspace: dict = Depends(fetch_workspa
     import subprocess
     if request.headers.get("content-type", "").split(";", 1)[0] not in ("image/jpeg", "image/png", "image/webp"):
         raise HTTPException(415, "JPG, PNG or WebP required")
-    body = bytearray()
-    async for chunk in request.stream():
-        body.extend(chunk)
-        if len(body) > 20 * 1024 * 1024:
-            raise HTTPException(413, "Image exceeds 20 MB")
+    body = await read_limited_body(request, "Image")
     try:
         async with _slots:
             result = await run_in_threadpool(extract_image, bytes(body))
@@ -433,12 +471,8 @@ async def create_document_job(request: Request, complex_id: str = Query(..., pat
         raise HTTPException(404, "Complex not found")
     if request.headers.get("content-type", "").split(";", 1)[0] != "application/pdf":
         raise HTTPException(415, "application/pdf required")
-    body = bytearray()
-    async for chunk in request.stream():
-        body.extend(chunk)
-        if len(body) > 20 * 1024 * 1024:
-            raise HTTPException(413, "PDF exceeds 20 MB")
-    if not body.startswith(b"%PDF-"):
+    body = await read_limited_body(request, "PDF")
+    if not is_pdf_bytes(body):
         raise HTTPException(422, "Invalid PDF")
     uid = request.state.user_id
     job_id = str(uuid4())
