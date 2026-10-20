@@ -24,6 +24,7 @@
   let loading = $state(true); let error = $state(''); let notice = $state('');
   let menu = $state(false); let authOpen = $state(false); let email = $state(''); let password = $state(''); let reviewer = $state('Демо-аналитик'); let authBusy = $state(false);
   let creating = $state(false);
+  let mapToolsOpen = $state(false);
   const baseRoute = $derived(route.split('?')[0]);
   const page = $derived(/^[a-z]+(?:\/[A-Za-z0-9-]+)?$/.test(baseRoute) ? baseRoute.split('/')[0] : 'missing');
   const routeId = $derived(baseRoute.split('/')[1] || '');
@@ -103,26 +104,26 @@
     } catch (e) { error = String(e); }
   }
 </script>
-<svelte:window onkeydown={e => { if (e.key === 'Escape') { authOpen = false; menu = false; } }}/><a class="skip-link" href="#main">К содержанию</a>
-<header class="topbar no-print"><a class="brand" href="#/map"><span class="brand-symbol">S</span><span>SAQ QURYLYS<small>реестр рисков долевого строительства · демо</small></span></a><button class="mobile-menu" aria-expanded={menu} aria-controls="navigation" onclick={() => menu = !menu}>Меню</button><nav id="navigation" class:open={menu} aria-label="Основная навигация"><a href="#/map" class:active={page === 'map'} aria-current={page==='map'?'page':undefined}>Карта</a><a href="#/publications" class:active={page === 'publications' || page === 'analyze'} aria-current={page==='publications'?'page':undefined}>Публикации</a><a href="#/registries" class:active={page === 'registries'} aria-current={page==='registries'?'page':undefined}>Реестры</a></nav><div class="account"><span class="mode-dot"></span><button class="small" onclick={() => authOpen = !authOpen}>{reviewer || 'Войти'}</button></div></header>
-
+<svelte:window onkeydown={e => { if (e.key === 'Escape') { authOpen = false; menu = false; mapToolsOpen = false; } }}/><a class="skip-link" href="#main">К содержанию</a>
+<header class="topbar no-print"><a class="brand" href="#/map"><span class="brand-symbol">S</span><span>SAQ QURYLYS<small>САҚ · МОНИТОРИНГ РИСКОВ</small></span></a><button class="mobile-menu" aria-expanded={menu} aria-controls="navigation" onclick={() => menu = !menu}>Меню</button><nav id="navigation" class:open={menu} aria-label="Основная навигация">{#each ['map','publications','registries'] as key}<a href="#/{key}" class:active={page === key || (key==='publications'&&page==='analyze')} aria-current={page===key?'page':undefined}>{titles[key]}</a>{/each}</nav><div class="account">{#if page === 'map'}<button class="small map-tools-toggle" aria-expanded={mapToolsOpen} aria-controls="map-tools" onclick={() => mapToolsOpen = !mapToolsOpen}>Слои и фильтры</button>{/if}<span class="mode-dot"></span><button class="small" onclick={() => authOpen = !authOpen}>{reviewer || 'Войти'}</button></div></header>
+<div class="status-strip no-print"><span>{demoMode ? 'Реальные координаты · названия и сведения вымышлены' : 'Вы вошли · ваше рабочее место'}</span><span>Өскемен / Усть-Каменогорск</span></div>
 {#if authOpen}<section class="auth-panel no-print"><h2>{demoMode ? 'Демонстрационный сеанс' : 'Вход оператора'}</h2>{#if demoMode}<p>Демо-аналитик. Данные хранятся в этом браузере.</p><button onclick={reset}>Сбросить демо</button>{:else if reviewer !== 'Демо-аналитик'}<p>{reviewer}</p><div class="actions"><button onclick={async () => { await supabase!.auth.signOut(); authOpen = false; }}>Выйти</button><button onclick={exportApi}>Экспорт через API</button></div>{:else}<form onsubmit={e => { e.preventDefault(); void auth(); }} class="space-y-3"><label>Email<input type="email" autocomplete="username" required bind:value={email}/></label><label>Пароль<input type="password" autocomplete="current-password" minlength="8" required bind:value={password}/></label><button class="primary" disabled={authBusy}>Войти</button></form>{/if}<div class="actions mt-4"><a class="button small" href="#/backup" onclick={()=>authOpen=false}>Резервная копия</a><button class="small" onclick={() => authOpen = false}>Закрыть</button></div></section>{/if}
 <main id="main">
 {#if error}<div class="error mb-5" role="alert">{error}<button class="small ml-3" onclick={reload}>Повторить загрузку</button></div>{/if}
 {#if notice}<div class="notice no-print mb-5" role="status">{notice}<button class="small ml-3" onclick={() => notice = ''}>Закрыть</button></div>{/if}
 {#if loading}<p role="status">Загрузка рабочего пространства…</p>
 {:else if page==='map'}
-<div class="map-page"><RiskMap complexes={shown} ads={workspace.ads} geometry={workspace.geometries??[]} relations={(workspace.relations??[]).filter(r=>r.fromId.startsWith('complex:')&&r.toId.startsWith('complex:')).map(r=>({fromId:r.fromId.slice(8),toId:r.toId.slice(8),verified:r.verificationStatus==='verified'}))}/></div>
+<div class="map-page"><RiskMap toolsOpen={mapToolsOpen} complexes={shown} ads={workspace.ads} geometry={workspace.geometries??[]} relations={(workspace.relations??[]).filter(r=>r.fromId.startsWith('complex:')&&r.toId.startsWith('complex:')).map(r=>({fromId:r.fromId.slice(8),toId:r.toId.slice(8),verified:r.verificationStatus==='verified'}))}/></div>
 {:else if page==='publications'||page==='analyze'}
 <div class="pub-page"><Publications {workspace} {commit} adding={page==='analyze'||params.has('add')} initialText={params.get('text')||''} complexId={page==='analyze'?zkId:params.get('complex')||''}/></div>
 {:else if page==='registries'}<RegistryCatalog workspace={scopedWorkspace} {commit}/>
 {:else if page==='complexes'||page==='cases'}
 {#if selected&&(page!=='cases'||selectedCase)&&(!phaseId||workspace.phases?.some(p=>p.id===phaseId&&p.complexId===zkId))}
-{#key `${zkId}-${phaseId??''}-${selectedCase?.id??''}`}<ComplexDossier {workspace} complexId={zkId} {phaseId} caseId={selectedCase?.id} tab={activeTab} evidenceId={params.get('evidence')||''} {commit}/>{/key}
+{#key `${zkId}-${phaseId??''}-${selectedCase?.id??''}`}<ComplexDossier {workspace} getWorkspace={()=> $state.snapshot(workspace)} complexId={zkId} {phaseId} caseId={selectedCase?.id} tab={activeTab} evidenceId={params.get('evidence')||''} scoreDetail={params.get('score')||''} {commit}/>{/key}
 {:else}<section class="panel"><h1>Досье не найдено</h1><p>Объект, очередь или дело недоступны в текущем рабочем пространстве.</p><a class="button mt-4" href="#/registries">К реестрам</a></section>{/if}
-{:else if page==='signal'}{#if selected}<Detail {workspace} complex={selected} {commit} signal/>{/if}
+{:else if page==='signal'}{#if selected}{#key route}<Detail {workspace} complex={selected} {commit} signal/>{/key}{:else}<section class="panel"><h1>Сигнал не найден</h1><p>Объект недоступен в текущем рабочем пространстве.</p><a class="button" href="#/registries">К реестрам</a></section>{/if}
 {:else if page==='backup'}<h1 class="mb-5">Резервная копия</h1><BackupPanel {workspace} onRestoreDone={s=>{workspace=s;notice='Данные восстановлены. Решения требуют повторной проверки.';}}/>
-{:else if page==='export'}{#if selected}<section class="panel"><h1>Экспорт исторического сигнала</h1>{#if exportRevisionError}<p role="alert">{exportRevisionError}</p>{:else}<button class="mt-5" onclick={downloadSignalExport}>Скачать JSON</button>{/if}</section>{/if}
+{:else if page==='export'}{#if selected}<section class="panel"><h1>Экспорт исторического сигнала</h1>{#if exportRevisionError}<p role="alert">{exportRevisionError}</p><a class="button" href={`#/signal/${zkId}`}>К текущему сигналу</a>{:else}<button class="mt-5" onclick={downloadSignalExport}>Скачать JSON</button>{/if}</section>{/if}
 {:else}<section class="panel"><h1>Страница не найдена</h1><a href="#/map">Открыть карту</a></section>{/if}
 {#if !loading&&!workspace.complexes.length}<section class="panel mt-5"><h2>Начните работу</h2><div class="actions"><button onclick={initialize}>Загрузить демоданные</button><button onclick={()=>creating=true}>Создать объект</button></div>{#if creating}<ComplexForm onsave={async complex=>{await commit({type:'complex',complex});creating=false;}} oncancel={()=>creating=false}/>{/if}</section>{/if}
 </main>

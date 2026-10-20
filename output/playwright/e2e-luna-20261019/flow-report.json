@@ -1,0 +1,571 @@
+{
+  "config": {
+    "argv": [
+      "C:\\nvm4w\\nodejs\\node.exe",
+      "C:\\Users\\BIGra\\codemasters8\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config",
+      "output/playwright/e2e-luna-20261019/playwright.config.ts",
+      "--max-failures=4"
+    ],
+    "configFile": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\playwright.config.ts",
+    "rootDir": "C:/Users/BIGra/codemasters8/output/playwright/e2e-luna-20261019",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 4,
+    "metadata": {
+      "actualWorkers": 2
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/BIGra/codemasters8/output/playwright/e2e-luna-20261019/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/BIGra/codemasters8/output/playwright/e2e-luna-20261019",
+        "testIgnore": [],
+        "testMatch": [
+          "current-flow.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/BIGra/codemasters8/output/playwright/e2e-luna-20261019/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "C:/Users/BIGra/codemasters8/output/playwright/e2e-luna-20261019",
+        "testIgnore": [],
+        "testMatch": [
+          "current-flow.spec.ts"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "name": "chromium",
+        "testDir": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019",
+        "snapshotDir": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019",
+        "testIgnore": [],
+        "testMatch": "current-flow.spec.ts",
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5176",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "name": "mobile",
+        "testDir": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019",
+        "snapshotDir": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019",
+        "testIgnore": [],
+        "testMatch": "current-flow.spec.ts",
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5176",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1",
+          "viewport": {
+            "width": 390,
+            "height": 664
+          },
+          "screen": {
+            "width": 390,
+            "height": 844
+          },
+          "deviceScaleFactor": 3,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "mobile"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json",
+        {
+          "outputFile": "./flow-report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 2,
+    "webServer": {
+      "command": "npm run dev -- --port 5176 --strictPort",
+      "cwd": "C:\\Users\\BIGra\\codemasters8",
+      "url": "http://127.0.0.1:5176",
+      "env": {
+        "VITE_SUPABASE_URL": "",
+        "VITE_SUPABASE_ANON_KEY": ""
+      },
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "current-flow.spec.ts",
+      "file": "current-flow.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "manual publication → human R2 verification → confirmed snapshot → reload → printable PDF",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 61551,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-flow.spec.ts",
+                        "column": 62,
+                        "line": 9
+                      },
+                      "message": "Error: locator.fill: Test timeout of 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Текст объявления', { exact: true })\u001b[22m\n\u001b[2m    - waiting for \"http://127.0.0.1:5176/\" navigation to finish...\u001b[22m\n\u001b[2m    - navigated to \"http://127.0.0.1:5176/#/publications?add=1&complex=SQ-001\"\u001b[22m\n\n\n   7 |   const quote = 'Платная бронь квартиры 654 321 тенге до сдачи дома.';\n   8 |   await page.goto('/#/publications?add=1&complex=SQ-001', { waitUntil: 'domcontentloaded' });\n>  9 |   await page.getByLabel('Текст объявления', { exact: true }).fill(quote);\n     |                                                              ^\n  10 |   await page.getByLabel('Площадка', { exact: true }).fill(`Luna E2E ${info.project.name}`);\n  11 |   await page.getByLabel('Дата публикации (пусто — не указана)', { exact: true }).fill('2026-10-19');\n  12 |   await page.getByRole('button', { name: 'Сохранить материал без AI', exact: true }).click();\n    at C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-flow.spec.ts:9:62"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-19T11:11:16.729Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\artifacts\\current-flow-manual-public-92df2-ot-→-reload-→-printable-PDF-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\artifacts\\current-flow-manual-public-92df2-ot-→-reload-→-printable-PDF-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\artifacts\\current-flow-manual-public-92df2-ot-→-reload-→-printable-PDF-chromium\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "332f4e13ef3e93770bd2-3c02931d80e9d292c461",
+          "file": "current-flow.spec.ts",
+          "line": 6,
+          "column": 1
+        },
+        {
+          "title": "returned signal reason and version survive reload",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "timedOut",
+                  "duration": 60484,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-flow.spec.ts",
+                        "column": 14,
+                        "line": 50
+                      },
+                      "message": "Error: page.goto: Test timeout of 60000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5176/#/complexes/SQ-002\", waiting until \"domcontentloaded\"\u001b[22m\n\n\n  48 |\n  49 | test('returned signal reason and version survive reload', async ({ page }) => {\n> 50 |   await page.goto('/#/complexes/SQ-002', { waitUntil: 'domcontentloaded' });\n     |              ^\n  51 |   await page.getByRole('button', { name: 'Начать расследование', exact: true }).click();\n  52 |   await page.getByRole('button', { name: 'Предпросмотр сигнала', exact: true }).click();\n  53 |   await page.getByLabel('Обоснование решения', { exact: true }).fill('Нужна дополнительная сверка исходных материалов.');\n    at C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-flow.spec.ts:50:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-19T11:11:16.729Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\artifacts\\current-flow-returned-sign-80876--and-version-survive-reload-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\artifacts\\current-flow-returned-sign-80876--and-version-survive-reload-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\artifacts\\current-flow-returned-sign-80876--and-version-survive-reload-chromium\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "332f4e13ef3e93770bd2-12e12aae75a2a24dd900",
+          "file": "current-flow.spec.ts",
+          "line": 49,
+          "column": 1
+        },
+        {
+          "title": "WebGL fallback renders markers and opens a dossier preview",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 1,
+                  "status": "timedOut",
+                  "duration": 63103,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-flow.spec.ts",
+                        "column": 14,
+                        "line": 70
+                      },
+                      "message": "Error: page.goto: Test timeout of 60000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5176/#/map\", waiting until \"domcontentloaded\"\u001b[22m\n\n\n  68 |     } as any;\n  69 |   });\n> 70 |   await page.goto('/#/map', { waitUntil: 'domcontentloaded' });\n     |              ^\n  71 |   const map = page.getByRole('region', { name: 'Карта объектов', exact: true });\n  72 |   await expect(map.getByLabel('Двумерная карта без WebGL')).toBeVisible();\n  73 |   await expect(map.getByRole('button', { name: '2.5D', exact: true })).toBeDisabled();\n    at C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-flow.spec.ts:70:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-19T11:12:18.492Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\artifacts\\current-flow-WebGL-fallbac-f8f79-and-opens-a-dossier-preview-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\artifacts\\current-flow-WebGL-fallbac-f8f79-and-opens-a-dossier-preview-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\artifacts\\current-flow-WebGL-fallbac-f8f79-and-opens-a-dossier-preview-chromium\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "332f4e13ef3e93770bd2-3f97cccb99fe9555f0ba",
+          "file": "current-flow.spec.ts",
+          "line": 62,
+          "column": 1
+        },
+        {
+          "title": "WebGL fallback zoom control receives a real pointer click",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 19909,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('region', { name: 'Карта объектов', exact: true }).getByLabel('Двумерная карта без WebGL')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('region', { name: 'Карта объектов', exact: true }).getByLabel('Двумерная карта без WebGL') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('region', { name: 'Карта объектов', exact: true }).getByLabel('Двумерная карта без WebGL')\u001b[22m\n\u001b[2m    - waiting for navigation to finish...\u001b[22m\n\u001b[2m    2 × navigated to \"http://127.0.0.1:5176/#/map\"\u001b[22m\n\u001b[2m      - waiting for \"http://127.0.0.1:5176/\" navigation to finish...\u001b[22m\n\u001b[2m    - navigated to \"http://127.0.0.1:5176/#/map\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('region', { name: 'Карта объектов', exact: true }).getByLabel('Двумерная карта без WebGL')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('region', { name: 'Карта объектов', exact: true }).getByLabel('Двумерная карта без WebGL') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('region', { name: 'Карта объектов', exact: true }).getByLabel('Двумерная карта без WebGL')\u001b[22m\n\u001b[2m    - waiting for navigation to finish...\u001b[22m\n\u001b[2m    2 × navigated to \"http://127.0.0.1:5176/#/map\"\u001b[22m\n\u001b[2m      - waiting for \"http://127.0.0.1:5176/\" navigation to finish...\u001b[22m\n\u001b[2m    - navigated to \"http://127.0.0.1:5176/#/map\"\u001b[22m\n\n    at C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-flow.spec.ts:90:61",
+                    "location": {
+                      "file": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-flow.spec.ts",
+                      "column": 61,
+                      "line": 90
+                    },
+                    "snippet": "  88 |   await page.goto('/#/map', { waitUntil: 'domcontentloaded' });\n  89 |   const map = page.getByRole('region', { name: 'Карта объектов', exact: true });\n> 90 |   await expect(map.getByLabel('Двумерная карта без WebGL')).toBeVisible();\n     |                                                             ^\n  91 |   const zoom = map.getByRole('button', { name: 'Приблизить', exact: true });\n  92 |   await expect(zoom).toBeEnabled();\n  93 |   const before = await page.locator('.map-caption').innerText();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-flow.spec.ts",
+                        "column": 61,
+                        "line": 90
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('region', { name: 'Карта объектов', exact: true }).getByLabel('Двумерная карта без WebGL')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('region', { name: 'Карта объектов', exact: true }).getByLabel('Двумерная карта без WebGL') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('region', { name: 'Карта объектов', exact: true }).getByLabel('Двумерная карта без WebGL')\u001b[22m\n\u001b[2m    - waiting for navigation to finish...\u001b[22m\n\u001b[2m    2 × navigated to \"http://127.0.0.1:5176/#/map\"\u001b[22m\n\u001b[2m      - waiting for \"http://127.0.0.1:5176/\" navigation to finish...\u001b[22m\n\u001b[2m    - navigated to \"http://127.0.0.1:5176/#/map\"\u001b[22m\n\n\n  88 |   await page.goto('/#/map', { waitUntil: 'domcontentloaded' });\n  89 |   const map = page.getByRole('region', { name: 'Карта объектов', exact: true });\n> 90 |   await expect(map.getByLabel('Двумерная карта без WebGL')).toBeVisible();\n     |                                                             ^\n  91 |   const zoom = map.getByRole('button', { name: 'Приблизить', exact: true });\n  92 |   await expect(zoom).toBeEnabled();\n  93 |   const before = await page.locator('.map-caption').innerText();\n    at C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-flow.spec.ts:90:61"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-19T11:12:19.329Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\artifacts\\current-flow-WebGL-fallbac-a273a-ceives-a-real-pointer-click-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\artifacts\\current-flow-WebGL-fallbac-a273a-ceives-a-real-pointer-click-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\artifacts\\current-flow-WebGL-fallbac-a273a-ceives-a-real-pointer-click-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\current-flow.spec.ts",
+                    "column": 61,
+                    "line": 90
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "332f4e13ef3e93770bd2-41a90b97fd324aee3c34",
+          "file": "current-flow.spec.ts",
+          "line": 80,
+          "column": 1
+        },
+        {
+          "title": "manual publication → human R2 verification → confirmed snapshot → reload → printable PDF",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "interrupted",
+                  "duration": 42350,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-19T11:12:41.775Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\artifacts\\current-flow-manual-public-92df2-ot-→-reload-→-printable-PDF-mobile\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\artifacts\\current-flow-manual-public-92df2-ot-→-reload-→-printable-PDF-mobile\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\BIGra\\codemasters8\\output\\playwright\\e2e-luna-20261019\\artifacts\\current-flow-manual-public-92df2-ot-→-reload-→-printable-PDF-mobile\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "332f4e13ef3e93770bd2-444d224ab1634cdecd3e",
+          "file": "current-flow.spec.ts",
+          "line": 6,
+          "column": 1
+        },
+        {
+          "title": "returned signal reason and version survive reload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "332f4e13ef3e93770bd2-e27cb509db2c4e540040",
+          "file": "current-flow.spec.ts",
+          "line": 49,
+          "column": 1
+        },
+        {
+          "title": "WebGL fallback renders markers and opens a dossier preview",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "332f4e13ef3e93770bd2-834a9c7215fd3c335da1",
+          "file": "current-flow.spec.ts",
+          "line": 62,
+          "column": 1
+        },
+        {
+          "title": "WebGL fallback zoom control receives a real pointer click",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "332f4e13ef3e93770bd2-388284ef7781ede65d36",
+          "file": "current-flow.spec.ts",
+          "line": 80,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "message": "\u001b[31mTesting stopped early after 4 maximum allowed failures.\u001b[39m"
+    }
+  ],
+  "stats": {
+    "startTime": "2026-10-19T11:11:14.286Z",
+    "duration": 130784.55500000001,
+    "expected": 0,
+    "skipped": 4,
+    "unexpected": 4,
+    "flaky": 0
+  }
+}

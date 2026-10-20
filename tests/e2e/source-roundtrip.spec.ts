@@ -24,7 +24,7 @@ const CSV = [
 const VALID_TEXT = 'Бронь квартиры в строящемся доме — 500 000 тенге, сдача скоро (S3ROUND).';
 
 async function openCsv(page: Page) {
-  await page.goto('/#/analyze/SQ-001');
+  await page.goto('/#/analyze/SQ-001',{waitUntil:'domcontentloaded'});
   await page.getByText('Импорт из CSV').click();
   await page.getByTestId('csv-input').fill(CSV);
   await page.getByTestId('csv-preview').click();
@@ -43,7 +43,7 @@ test('source roundtrip: preview → save valid → reload → re-import без �
   await expect(page.locator('[data-rowid="csv-r2"] [data-testid="csv-select"]')).toBeDisabled();
   await expect(page.locator('[data-rowid="csv-r3"]')).toContainText('не найден — выберите вручную.');
   await expect(page.locator('[data-rowid="csv-r3"] [data-testid="csv-row-source"]')).toContainText('Публикация: не указана');
-  await expect(page.locator('[data-rowid="csv-r1"] [data-testid="csv-row-source"]')).toContainText('Публикация: 2026-10-11');
+  await expect(page.locator('[data-rowid="csv-r1"] [data-testid="csv-row-source"]')).toContainText('2026-10-11');
   await expect(page.locator('[data-rowid="csv-r1"]')).toContainText('ЖК сопоставлен по ID');
   await expect(page.locator('[data-rowid="csv-r4"] [data-testid="csv-row-dupe"]')).toHaveCount(0);
 
@@ -63,12 +63,12 @@ test('source roundtrip: preview → save valid → reload → re-import без �
   await expect(page.locator('[data-rowid="csv-r1"] [data-testid="csv-row-saved"]')).toContainText(/Сохранена как AD-/);
 
   // Reload: список и карточка согласованы — публикация/фиксация раздельно.
-  await page.reload();
-  await page.goto('/#/ads');
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.goto('/#/ads',{waitUntil:'domcontentloaded'});
   await expect(page.getByText(VALID_TEXT)).toBeVisible();
-  await page.goto('/#/detail/SQ-001');
-  await expect(page.locator('.ad-item', { hasText: VALID_TEXT })).toContainText('Публикация: 2026-10-11');
-  const pubsHeading = await page.getByRole('heading', { name: /Публикации ·/ }).textContent();
+  await page.goto('/#/complexes/SQ-001?tab=verification',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('.ad-item', { hasText: VALID_TEXT })).toContainText('2026-10-11');
+  const pubsCount = await page.locator('.ad-item').count();
 
   // Повтор всего CSV: valid и duplicate — повторы, новых ad нет.
   await openCsv(page);
@@ -79,8 +79,8 @@ test('source roundtrip: preview → save valid → reload → re-import без �
   await page.getByTestId('csv-save').click();
   await expect(page.getByRole('alert')).toContainText(/уже сохранена \(AD-/);
 
-  await page.goto('/#/detail/SQ-001');
-  await expect(page.getByRole('heading', { name: /Публикации ·/ })).toHaveText(pubsHeading ?? '');
+  await page.goto('/#/complexes/SQ-001?tab=verification',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('.ad-item')).toHaveCount(pubsCount);
 
   expect(errors).toEqual([]);
 });

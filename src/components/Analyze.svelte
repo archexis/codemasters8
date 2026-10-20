@@ -262,16 +262,15 @@
     } catch (e) { error = e instanceof Error ? e.message : String(e); } finally { busy = false; }
   }
 </script>
-<div class="page-heading"><div><p class="eyebrow">Публикация → гипотеза → решение</p><h1>Проверка объявления</h1></div></div>
-<p class="muted mb-6">Вставьте текст и зафиксируйте источник. Анализ предлагает гипотезы; факторы подтверждает аналитик.</p>
+<div class="page-heading"><div><p class="eyebrow">ПУБЛИКАЦИЯ → ГИПОТЕЗА → РЕШЕНИЕ</p><h1>Проверка объявления</h1></div></div>
 <div class="two-col">
   <form class="panel space-y-4" onsubmit={e => { e.preventDefault(); void run(); }}>
-    <h2>Исходные данные</h2>
+    <h2>Новая публикация</h2>
     <div class="actions">{#each ['SQ-001', 'SQ-002', 'SQ-003'] as id, i}<button type="button" class="small" onclick={() => preset(id)}>Пример {String.fromCharCode(65 + i)}</button>{/each}</div>
     <label>Объект<select required bind:value={selected}>{#each workspace.complexes as z}<option value={z.id}>{z.name} · {z.id}</option>{/each}</select></label>
     <label>Очередь<select bind:value={phaseId}><option value="">Очередь не определена / весь ЖК</option>{#each phases as p}<option value={p.id}>{p.name}</option>{/each}</select></label><label>Текст объявления<textarea required maxlength="20000" rows="8" bind:value={text} placeholder="Бронь квартиры — 500 000 тенге…"></textarea></label>
     <div class="form-grid"><label>Ссылка на источник<input type="url" bind:value={url} placeholder="https://"/></label><label>Площадка<input bind:value={platform} placeholder="Krisha.kz, Telegram…"/></label><label>Аккаунт<input bind:value={account}/></label><label>Дата публикации (пусто — не указана)<input type="date" bind:value={date}/></label></div>
-    <p class="muted text-xs">Источник: {source.label} · определён {viaLabel(source.via)}. Публикация: {date.trim() ? date : 'не указана'}; фиксация — момент сохранения, датой публикации не считается. Система не загружает страницы по ссылке.</p>
+    <details><summary>Как сохраняется источник</summary><p class="muted text-xs mt-2">{source.label} · {viaLabel(source.via)}. Дата публикации указывается отдельно от времени сохранения. Текст по ссылке автоматически не загружается.</p></details>
     <label>Скриншот / документ<input type="file" accept="image/png,image/jpeg,image/webp,application/pdf" bind:files/></label>{#if supabase}<button type="button" disabled={busy||!files?.[0]?.type.startsWith('image/')} onclick={ocrImage}>Распознать изображение</button>{/if}
     {#if busy && !saving}<button type="button" onclick={cancelRun}>Отменить анализ</button>{/if}
     <button class="primary" disabled={saving || !selected}>{busy ? 'Обработка…' : 'Проанализировать'}</button>
@@ -279,7 +278,7 @@
     {#if saved && publishedAdId}<p class="success" role="status">Материал сохранён: {publishedAdId}. Его можно добавить в материалы дела.</p>{/if}
   </form>
   <section class="panel space-y-4" aria-live="polite">
-    <h2>Гипотезы ИИ</h2><p class="notice">Принятие гипотезы передаёт её на проверку. Баллы меняются только после проверки факта в деле.</p>
+    <h2>Результат анализа</h2><p class="muted text-xs">Факты подтверждаются в расследовании.</p>
     {#if error}<p class="error" role="alert">{error}</p>{/if}
     {#if result}
       <span class="badge">{result.engine}</span>
@@ -289,14 +288,14 @@
       {#if parsed?.entities.length}<div class="table-scroll"><table><thead><tr><th>Сущность</th><th>Значение</th><th>Цитата</th></tr></thead><tbody>{#each parsed.entities as entity}<tr><td>{entity.label}</td><td>{entity.value}</td><td>«{entity.quote}»</td></tr>{/each}</tbody></table></div>{/if}
       <button disabled={busy || saved || stale} onclick={() => saveMaterial()}>Сохранить без подтверждения</button>
       {#if saved}<p class="success" role="status">Публикация сохранена. Триаж гипотезы не начисляет баллы.</p>{/if}
-    {:else}<p class="muted">Здесь появятся дословные цитаты, извлечённые данные и гипотезы.</p>{/if}
+    {:else}<p class="muted">Добавьте текст и запустите анализ.</p>{/if}
   </section>
 </div>
-<section class="panel ai-review-history"><h2>Сохранённые решения гипотез</h2>
+{#if workspace.audit.some(a=>(a.details as Command|undefined)?.type==='ai.review')}<details class="panel ai-review-history"><summary>История проверки гипотез</summary>
 {#each workspace.audit.filter(a => {const d=a.details as Command | undefined; return d?.type==='ai.review';}) as a}
 {@const d=a.details as Command}
 <p>{d.type==='ai.review' ? workspace.claims?.find(c=>c.id===d.claimId)?.code : ''} · {d.type==='ai.review' ? (d.decision==='accepted' ? 'Гипотеза принята' : 'Гипотеза отклонена') : ''} · {a.comment} · {a.reviewer}</p>
-{/each}</section>
+{/each}</details>{/if}
 <details class="panel mt-6"><summary>Импорт из CSV</summary><p class="muted my-3">Заголовки: text/текст, url/ссылка, platform/площадка, account/аккаунт, date/дата, zk/жк. Каждую строку проверяет человек.</p><label>CSV<textarea rows="4" data-testid="csv-input" bind:value={csv}></textarea></label><button data-testid="csv-preview" onclick={previewCsv}>Предпросмотр CSV</button>
   {#if csvRows}{#each csvRows.errors as e}<p class="error" data-testid="csv-error">{e}</p>{/each}
     {#each csvRows.rows as row}

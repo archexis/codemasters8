@@ -1,0 +1,31 @@
+import {expect,test} from '@playwright/test';
+
+test('starting investigation preserves dossier, registry and map scores after reload',async({page})=>{
+  await page.goto('/#/complexes/SQ-002',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('.risk-score strong')).toHaveText('70');
+  const complexName=await page.getByRole('heading',{level:1}).innerText();
+  const factors=await page.locator('.factor-row').allTextContents();
+  await page.getByRole('button',{name:'Начать расследование',exact:true}).click();
+  await expect(page).toHaveURL(/#\/cases\/CASE-/);
+  const caseUrl=page.url();
+  await expect(page.locator('.risk-score strong')).toHaveText('70');
+  await expect(page.getByRole('status').filter({hasText:'Показана исходная оценка'})).toContainText('70 баллов');
+  await page.getByRole('tab',{name:'Обзор',exact:true}).click();
+  await expect(page.locator('.factor-row')).toHaveText(factors);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await expect(page.locator('.risk-score strong')).toHaveText('70');
+  await page.getByRole('button',{name:'Предпросмотр сигнала',exact:true}).click();
+  await expect(page.locator('.case-signal-sheet .risk-score strong')).toHaveText('0');
+  await page.goto('/#/registries',{waitUntil:'domcontentloaded'});
+  const row=page.getByRole('row').filter({has:page.locator('a[href="#/complexes/SQ-002?tab=overview"]')});
+  await expect(row.locator('.registry-risk')).toHaveText('70');
+  await expect(row.locator('.registry-risk-dot')).toHaveClass(/red/);
+  await page.goto('/#/map',{waitUntil:'domcontentloaded'});
+  await page.getByRole('button',{name:'Слои и фильтры',exact:true}).click();
+  await page.getByRole('button',{name:/Список ·/}).click();
+  await page.locator('.map-list-body button').filter({hasText:complexName}).click();
+  await expect(page.locator('.preview-score strong')).toHaveText('70');
+  await page.goto(caseUrl,{waitUntil:'domcontentloaded'});
+  await page.getByRole('link',{name:'Режим чтения',exact:true}).click();
+  await expect(page.locator('.risk-score strong')).toHaveText('70');
+});

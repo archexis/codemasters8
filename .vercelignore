@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+test-results/
+output/
+images/
+graphify-out/
+.playwright-cli/
+docs/
+backend/
+.agents/
+.temp/
+supabase/
+tests/
+playwright-report/

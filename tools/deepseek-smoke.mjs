@@ -4,6 +4,7 @@ import { spawn } from 'node:child_process';
 import { randomUUID, createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import { createClient } from '@supabase/supabase-js';
+assert(process.env.SAQ_ALLOW_PAID_AI==='1','Set SAQ_ALLOW_PAID_AI=1 only after agreeing the maximum 13 provider calls (12 eval + 1 browser)');
 const config=JSON.parse((await readFile('supabase/.temp/status.json','utf8')).replace(/^\uFEFF/,''));
 assert(/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(config.API_URL),'Only local test users');
 const env=Object.fromEntries((await readFile('.env.edge','utf8')).split(/\r?\n/).filter(s=>s && !s.startsWith('#')).map(s=>{const i=s.indexOf('=');return [s.slice(0,i),s.slice(i+1).replace(/^['"]|['"]$/g,'')];}));
@@ -22,9 +23,9 @@ if(reuse>=0) {
   assert(prior.cases.every(c=>c.status==='PASS' && c.promptVersion==='s4-r2r3-v3'));
   report.cases=prior.cases;report.previousEvalReport=path;
 }
-const reportPath=`docs/acceptance/s4-repair/ai-${Date.now()}.json`;
+const reportPath=`test-results/score-maxxing/ai-${Date.now()}.json`;
 let user;
-async function save() {await mkdir('docs/acceptance/s4-repair',{recursive:true});await writeFile(reportPath,JSON.stringify(report,null,2)+'\n');}
+async function save() {await mkdir('test-results/score-maxxing',{recursive:true});await writeFile(reportPath,JSON.stringify(report,null,2)+'\n');}
 try {
   const created=await admin.auth.admin.createUser({email,password,email_confirm:true}); if(created.error) throw created.error; user=created.data.user;
   const signed=await client.auth.signInWithPassword({email,password}); if(signed.error) throw signed.error;
@@ -64,15 +65,21 @@ try {
   const workspace=await client.from('workspaces').select('data').single(); if(workspace.error) throw new Error('BROWSER_WORKSPACE_READ_FAILED');
   const ads=workspace.data.data.ads.filter(a=>a.text.includes('ЖК Новый Берег'));
   assert.equal(ads.length,1); const ad=ads[0]; assert(ad.analysis.runId);
-  const z=workspace.data.data.complexes.find(z=>z.id==='SQ-001');
-  assert.equal(z.factors.find(f=>f.code==='R2').status,'confirmed'); assert.equal(z.factors.find(f=>f.code==='R3').status,'rejected');
-  assert.equal(z.factors.find(f=>f.code==='R2').evidence.runId,ad.analysis.runId);
-  assert.equal(z.factors.find(f=>f.code==='R3').evidence.runId,ad.analysis.runId);
-  assert.equal(workspace.data.data.signals['SQ-001']?.status ?? 'draft','draft');
-  assert.equal(workspace.data.data.signalVersions['SQ-001']?.length ?? 0,0,'AI review must not confirm a signal');
+  const state=workspace.data.data;
+  const artifact=state.artifacts.find(a=>a.adId===ad.id);
+  const claims=state.claims.filter(c=>c.artifactId===artifact.id);
+  const r2=claims.find(c=>c.code==='R2'),r3=claims.find(c=>c.code==='R3');
+  assert.equal(r2.triage,'accepted');assert.equal(r3.triage,'rejected');
+  const assertions=state.assertions.filter(a=>a.claimId===r2.id);
+  assert.equal(assertions[0].status,'verified');assert.equal(assertions.at(-1).status,'rejected');
+  assert.equal(assertions[0].evidence.runId,ad.analysis.runId);
+  const snapshots=state.caseSnapshots.filter(s=>s.caseId===assertions[0].caseId);
+  assert.equal(snapshots[0].score,25);assert.equal(snapshots[0].status,'confirmed');
+  assert.equal(snapshots.at(-1).status,'returned');assert.equal(snapshots.at(-1).score,0);
+  report.caseId=assertions[0].caseId;report.claimIds=claims.map(c=>c.id);report.snapshotIds=snapshots.map(s=>s.id);
   const browserRun=await client.from('analysis_runs').select('id,input_hash,model,prompt_version,status,hypotheses').eq('id',ad.analysis.runId).single(); if(browserRun.error) throw new Error('BROWSER_RUN_READ_FAILED');
   report.browserRun=browserRun.data;
-  report.browser='PASS';report.status='PASS';await save();console.log(`PASS real AI acceptance: ${reportPath}`);
+  report.browser='PASS';report.status=reuse>=0?'BROWSER_PASS_ARCHIVED_EVAL':'PASS';await save();console.log(`PASS real AI acceptance: ${reportPath}`);
 } catch(e) {report.status='FAIL';report.error=e.message;await save();throw e;}
 finally {
   if(user) {

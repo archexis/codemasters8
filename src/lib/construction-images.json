@@ -1,0 +1,226 @@
+[
+  {
+    "complexId": "SQ-001",
+    "complexName": "Янтарный мыс",
+    "date": "2026-05-20",
+    "image": "demo-construction/SQ-001/SQ-001_drone_2026-05-20.webp",
+    "thumbnail": "demo-construction/SQ-001/SQ-001_drone_2026-05-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-001",
+    "complexName": "Янтарный мыс",
+    "date": "2026-07-20",
+    "image": "demo-construction/SQ-001/SQ-001_drone_2026-07-20.webp",
+    "thumbnail": "demo-construction/SQ-001/SQ-001_drone_2026-07-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-001",
+    "complexName": "Янтарный мыс",
+    "date": "2026-09-20",
+    "image": "demo-construction/SQ-001/SQ-001_drone_2026-09-20.webp",
+    "thumbnail": "demo-construction/SQ-001/SQ-001_drone_2026-09-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-001",
+    "complexName": "Янтарный мыс",
+    "date": "2026-10-20",
+    "image": "demo-construction/SQ-001/SQ-001_drone_2026-10-20.webp",
+    "thumbnail": "demo-construction/SQ-001/SQ-001_drone_2026-10-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-002",
+    "complexName": "Кедровый горизонт",
+    "date": "2026-05-20",
+    "image": "demo-construction/SQ-002/SQ-002_drone_2026-05-20.webp",
+    "thumbnail": "demo-construction/SQ-002/SQ-002_drone_2026-05-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-002",
+    "complexName": "Кедровый горизонт",
+    "date": "2026-07-20",
+    "image": "demo-construction/SQ-002/SQ-002_drone_2026-07-20.webp",
+    "thumbnail": "demo-construction/SQ-002/SQ-002_drone_2026-07-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-002",
+    "complexName": "Кедровый горизонт",
+    "date": "2026-09-20",
+    "image": "demo-construction/SQ-002/SQ-002_drone_2026-09-20.webp",
+    "thumbnail": "demo-construction/SQ-002/SQ-002_drone_2026-09-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-002",
+    "complexName": "Кедровый горизонт",
+    "date": "2026-10-20",
+    "image": "demo-construction/SQ-002/SQ-002_drone_2026-10-20.webp",
+    "thumbnail": "demo-construction/SQ-002/SQ-002_drone_2026-10-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-003",
+    "complexName": "Лунный сад",
+    "date": "2026-05-20",
+    "image": "demo-construction/SQ-003/SQ-003_drone_2026-05-20.webp",
+    "thumbnail": "demo-construction/SQ-003/SQ-003_drone_2026-05-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-003",
+    "complexName": "Лунный сад",
+    "date": "2026-07-20",
+    "image": "demo-construction/SQ-003/SQ-003_drone_2026-07-20.webp",
+    "thumbnail": "demo-construction/SQ-003/SQ-003_drone_2026-07-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-003",
+    "complexName": "Лунный сад",
+    "date": "2026-09-20",
+    "image": "demo-construction/SQ-003/SQ-003_drone_2026-09-20.webp",
+    "thumbnail": "demo-construction/SQ-003/SQ-003_drone_2026-09-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-003",
+    "complexName": "Лунный сад",
+    "date": "2026-10-20",
+    "image": "demo-construction/SQ-003/SQ-003_drone_2026-10-20.webp",
+    "thumbnail": "demo-construction/SQ-003/SQ-003_drone_2026-10-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-004",
+    "complexName": "Тихая гавань",
+    "date": "2026-05-20",
+    "image": "demo-construction/SQ-004/SQ-004_drone_2026-05-20.webp",
+    "thumbnail": "demo-construction/SQ-004/SQ-004_drone_2026-05-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-004",
+    "complexName": "Тихая гавань",
+    "date": "2026-07-20",
+    "image": "demo-construction/SQ-004/SQ-004_drone_2026-07-20.webp",
+    "thumbnail": "demo-construction/SQ-004/SQ-004_drone_2026-07-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-004",
+    "complexName": "Тихая гавань",
+    "date": "2026-09-20",
+    "image": "demo-construction/SQ-004/SQ-004_drone_2026-09-20.webp",
+    "thumbnail": "demo-construction/SQ-004/SQ-004_drone_2026-09-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-004",
+    "complexName": "Тихая гавань",
+    "date": "2026-10-20",
+    "image": "demo-construction/SQ-004/SQ-004_drone_2026-10-20.webp",
+    "thumbnail": "demo-construction/SQ-004/SQ-004_drone_2026-10-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-005",
+    "complexName": "Медный квартал",
+    "date": "2026-05-20",
+    "image": "demo-construction/SQ-005/SQ-005_drone_2026-05-20.webp",
+    "thumbnail": "demo-construction/SQ-005/SQ-005_drone_2026-05-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-005",
+    "complexName": "Медный квартал",
+    "date": "2026-07-20",
+    "image": "demo-construction/SQ-005/SQ-005_drone_2026-07-20.webp",
+    "thumbnail": "demo-construction/SQ-005/SQ-005_drone_2026-07-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-005",
+    "complexName": "Медный квартал",
+    "date": "2026-09-20",
+    "image": "demo-construction/SQ-005/SQ-005_drone_2026-09-20.webp",
+    "thumbnail": "demo-construction/SQ-005/SQ-005_drone_2026-09-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-005",
+    "complexName": "Медный квартал",
+    "date": "2026-10-20",
+    "image": "demo-construction/SQ-005/SQ-005_drone_2026-10-20.webp",
+    "thumbnail": "demo-construction/SQ-005/SQ-005_drone_2026-10-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-006",
+    "complexName": "Облачный двор",
+    "date": "2026-05-20",
+    "image": "demo-construction/SQ-006/SQ-006_drone_2026-05-20.webp",
+    "thumbnail": "demo-construction/SQ-006/SQ-006_drone_2026-05-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-006",
+    "complexName": "Облачный двор",
+    "date": "2026-07-20",
+    "image": "demo-construction/SQ-006/SQ-006_drone_2026-07-20.webp",
+    "thumbnail": "demo-construction/SQ-006/SQ-006_drone_2026-07-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-006",
+    "complexName": "Облачный двор",
+    "date": "2026-09-20",
+    "image": "demo-construction/SQ-006/SQ-006_drone_2026-09-20.webp",
+    "thumbnail": "demo-construction/SQ-006/SQ-006_drone_2026-09-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-006",
+    "complexName": "Облачный двор",
+    "date": "2026-10-20",
+    "image": "demo-construction/SQ-006/SQ-006_drone_2026-10-20.webp",
+    "thumbnail": "demo-construction/SQ-006/SQ-006_drone_2026-10-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-007",
+    "complexName": "Сосновый берег",
+    "date": "2026-05-20",
+    "image": "demo-construction/SQ-007/SQ-007_drone_2026-05-20.webp",
+    "thumbnail": "demo-construction/SQ-007/SQ-007_drone_2026-05-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-007",
+    "complexName": "Сосновый берег",
+    "date": "2026-07-20",
+    "image": "demo-construction/SQ-007/SQ-007_drone_2026-07-20.webp",
+    "thumbnail": "demo-construction/SQ-007/SQ-007_drone_2026-07-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-007",
+    "complexName": "Сосновый берег",
+    "date": "2026-09-20",
+    "image": "demo-construction/SQ-007/SQ-007_drone_2026-09-20.webp",
+    "thumbnail": "demo-construction/SQ-007/SQ-007_drone_2026-09-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-007",
+    "complexName": "Сосновый берег",
+    "date": "2026-10-20",
+    "image": "demo-construction/SQ-007/SQ-007_drone_2026-10-20.webp",
+    "thumbnail": "demo-construction/SQ-007/SQ-007_drone_2026-10-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-008",
+    "complexName": "Северный атлас",
+    "date": "2026-05-20",
+    "image": "demo-construction/SQ-008/SQ-008_drone_2026-05-20.webp",
+    "thumbnail": "demo-construction/SQ-008/SQ-008_drone_2026-05-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-008",
+    "complexName": "Северный атлас",
+    "date": "2026-07-20",
+    "image": "demo-construction/SQ-008/SQ-008_drone_2026-07-20.webp",
+    "thumbnail": "demo-construction/SQ-008/SQ-008_drone_2026-07-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-008",
+    "complexName": "Северный атлас",
+    "date": "2026-09-20",
+    "image": "demo-construction/SQ-008/SQ-008_drone_2026-09-20.webp",
+    "thumbnail": "demo-construction/SQ-008/SQ-008_drone_2026-09-20_thumb.webp"
+  },
+  {
+    "complexId": "SQ-008",
+    "complexName": "Северный атлас",
+    "date": "2026-10-20",
+    "image": "demo-construction/SQ-008/SQ-008_drone_2026-10-20.webp",
+    "thumbnail": "demo-construction/SQ-008/SQ-008_drone_2026-10-20_thumb.webp"
+  }
+]

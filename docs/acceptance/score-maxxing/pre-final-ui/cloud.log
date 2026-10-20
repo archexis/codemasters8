@@ -1,0 +1,16 @@
+
+> saq-qurylys@2.0.0 test:cloud
+> playwright test --config playwright.cloud.config.ts --reporter=line,json
+
+[WebServer] (node:26968) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 1 test using 1 worker
+
+(node:46516) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/1] tests\cloud\supabase.spec.ts:4:1 › Supabase SDK login, server analysis, optimistic RPC save and logout
+  1 passed (31.9s)

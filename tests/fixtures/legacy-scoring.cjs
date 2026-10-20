@@ -56,15 +56,15 @@ ok(COMPLEXES.length >= 8, ">= 8 complexes, got " + COMPLEXES.length);
 ok(ADS.length >= 12, ">= 12 ads, got " + ADS.length);
 ok(COMPLEXES.every((z) => z.origin === "scenario" || z.origin === "public-snapshot"), "every complex has provenance origin");
 const real = COMPLEXES.filter((z) => z.origin === "public-snapshot");
-ok(real.length >= 5, ">= 5 public-snapshot rows, got " + real.length);
+ok(real.length === 0, "retired public-snapshot rows removed");
 ok(real.every((z) => z.legalBasis && z.legalBasis.status === "verified" && /Ashyq Data/.test(z.legalBasis.source || "")), "snapshots carry registry permit source");
 ok(real.every((z) => z.retrieved !== undefined || (z.sources || []).some((s) => /Ashyq Data/.test(s.title || ""))), "snapshots traceable to Ashyq dataset");
 ok(real.every((z) => computeScore(z.factors).score === 0), "snapshots score 0 (no ads attached, nothing to judge)");
 ok(["SQ-001", "SQ-002", "SQ-003"].every((id) => COMPLEXES.find((z) => z.id === id).origin === "scenario"), "A/B/C stay labeled scenarios");
 ok(ADS.every((a) => COMPLEXES.some((z) => z.id === a.zkId)), "every ad links to a known ZK");
 ok(COMPLEXES.every((z) => ADS.some((a) => a.zkId === z.id) || z.id === "SQ-004" || z.origin === "public-snapshot"), "every scenario ZK (except control SQ-004) has >= 1 ad; snapshots need none");
-ok(COMPLEXES.filter((z) => typeof z.lat === "number").length >= 13, "coords present (scenarios + geocoded snapshots)");
-ok(COMPLEXES.some((z) => typeof z.lat !== "number"), "one ZK without coords (map honesty case)");
+ok(COMPLEXES.every((z) => typeof z.lat === "number" && typeof z.lng === "number"), "every replacement site has real coordinates");
+ok(COMPLEXES.every((z) => z.demo && z.note.includes('Реальны только координаты')), "fictional dossier content explicitly identified");
 ok(new Set(COMPLEXES.map((z) => z.bin).filter(Boolean)).size === COMPLEXES.filter((z) => z.bin).length, "BINs unique where present (snapshots carry hashed BINs -> null)");
 ok(!/(?<!вымышлен)(?<!демо)(?<!DEMO)(Астана|Алматы)/i.test(JSON.stringify(COMPLEXES)), "no real-city claims beyond demo framing");
 

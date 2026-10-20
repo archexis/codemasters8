@@ -1,5 +1,5 @@
 // Only creates and deletes its own temporary local Supabase users.
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
@@ -17,6 +17,8 @@ const password = `${randomUUID()}Aa9!`;
 let api;
 let clientA;
 const checks = [];
+const reportDir = `test-results/score-maxxing/local-live-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+await mkdir(reportDir, { recursive: true });
 function checked(name) { checks.push(name); console.log(`PASS ${name}`); }
 function runNpm(args, env) {
   return new Promise((resolve,reject) => {
@@ -43,7 +45,7 @@ try {
   const denied=await clientA.from('workspaces').update({version:99}).eq('owner_id',users[0].id);
   assert(denied.error);
   checked('actual PostgreSQL RLS and direct-write denial');
-  const saved=await clientA.rpc('apply_command',{command:{type:'signal',zkId:'SQ-002',status:'confirmed',comment:'Local smoke'},expected_version:1,command_id:randomUUID()});
+  const saved=await clientA.rpc('apply_command',{command:{type:'case.create',id:'CASE-'+randomUUID(),complexId:'SQ-002'},expected_version:1,command_id:randomUUID()});
   if(saved.error) throw saved.error;
   assert.equal(saved.data.version,2);
   const stale=await clientA.rpc('apply_command',{command:{type:'signal',zkId:'SQ-002',status:'returned',comment:'stale'},expected_version:1,command_id:randomUUID()});
@@ -58,7 +60,7 @@ try {
   const forbidden=await clientB.storage.from('evidence').createSignedUrl(path,60);
   assert(forbidden.error);
   checked('actual Storage upload, signed URL and cross-user denial');
-  api=spawn(process.platform==='win32'?'backend/.venv/Scripts/python.exe':'backend/.venv/bin/python',['-m','uvicorn','backend.app.main:app','--host','127.0.0.1','--port','8005'],{env:{...process.env,SUPABASE_URL:url,SUPABASE_ANON_KEY:anon},stdio:'ignore',windowsHide:true});
+  api=spawn(process.platform==='win32'?'backend/.venv/Scripts/python.exe':'backend/.venv/bin/python',['-m','uvicorn','backend.app.main:app','--host','127.0.0.1','--port','8005'],{env:{...process.env,SUPABASE_URL:url,SUPABASE_ANON_KEY:anon,CORS_ORIGINS:'http://127.0.0.1:5175'},stdio:'ignore',windowsHide:true});
   api.on('error',e=>console.error(e.message));
   let healthy=false;
   for(let i=0;i<60;i++) { try { healthy=(await fetch('http://127.0.0.1:8005/health')).ok; if(healthy) break; } catch {} await new Promise(r=>setTimeout(r,100)); }
@@ -73,7 +75,8 @@ try {
   checked('actual Edge runtime rejects unauthenticated requests; external LLM tests run separately');
   await runNpm(['run','test:live','--','--grep-invert','real external LLM'],{SAQ_LIVE_SUPABASE_URL:url,SAQ_LIVE_SUPABASE_KEY:anon,SAQ_LIVE_EMAIL:users[0].email,SAQ_LIVE_PASSWORD:password,SAQ_LIVE_SERVICE_KEY:adminKey});
   checked('actual browser login, Storage, RPC and reload');
-  await writeFile('supabase/.temp/live-test-report.json',JSON.stringify({passed:checks,date:new Date().toISOString()},null,2));
+  await writeFile(`${reportDir}/live-test-report.json`,JSON.stringify({passed:checks,date:new Date().toISOString()},null,2));
+  console.log(`Local live report: ${reportDir}/live-test-report.json`);
 } finally {
   api?.kill();
   if(clientA && users[0]) {

@@ -15,7 +15,8 @@
     "test:live": "playwright test --config playwright.live.config.ts",
     "test:local": "node tools/local-smoke.mjs",
     "test:deepseek": "node tools/deepseek-smoke.mjs",
-    "test:api": "python -m pytest backend/tests -q",
+    "test:api": "node tools/run-api-tests.mjs",
+    "verify:score": "node tools/score-maxxing-verify.mjs",
     "verify-all": "npm run check && npm test && npm run build && npm run test:e2e && npm run test:cloud && npm run test:api && npm run test:edge",
     "gate": "node tools/check-sprint-gate.mjs"
   },

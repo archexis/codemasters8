@@ -2,21 +2,89 @@
  import type {AppState,Command} from '../lib/types';
  import {previewCaseSignal} from '../lib/investigation';
  import {WEIGHTS,FACTOR_META,zoneLabel} from '../lib/scoring';
+ import {legalBasisLabel,verificationLabel,relationLabel,decisionTime} from '../lib/presentation';
  import {safeUrl} from '../lib/domain';
  import {supabase} from '../lib/supabase';
  import {downloadCasePdf} from '../lib/workspace-api';
+ import {newCommandId,withCommandId,getSessionGeneration,UnknownCommitResultError,StaleConflictError,SessionSupersededError} from '../lib/repository';
  let {workspace,caseId,commit,onclose}:{workspace:AppState;caseId:string;commit:(c:Command)=>Promise<void>;onclose:()=>void}=$props();
  let revision=$state('');let comment=$state('');let error=$state('');let busy=$state(false);
  const investigation=$derived(workspace.cases!.find(c=>c.id===caseId)!);
  const versions=$derived((workspace.caseSnapshots??[]).filter(s=>s.caseId===caseId));
  const saved=$derived(revision ? versions.find(s=>String(s.revision)===revision) : investigation.status==='draft'?undefined:versions[versions.length-1]);
  const vm=$derived(saved ?? previewCaseSignal($state.snapshot(workspace),caseId));
- async function decide(status:'confirmed'|'returned'){busy=true;error='';try{await commit({type:'case.decide',caseId,status,comment});comment='';}catch(e){error=e instanceof Error?e.message:String(e);}finally{busy=false;}}
- async function reopen(){busy=true;error='';try{await commit({type:'case.reopen',caseId,comment});comment='';revision='';}catch(e){error=String(e);}finally{busy=false;}}
+ let decisionIntent=$state.raw<{key:string;session:number;command:Command}|undefined>();
+ async function retryDecision(){
+  if(!decisionIntent)return;
+  const {commandId:_,...payload}=decisionIntent.command as Command&{commandId?:string};
+  await sendDecision(payload as Command);
+ }
+ async function sendDecision(command:Command){
+  if(busy)return;
+  busy=true;error='';
+  try{
+   const key=JSON.stringify(command);const session=getSessionGeneration();
+   if(decisionIntent&&decisionIntent.session!==session)throw new SessionSupersededError();
+   if(decisionIntent&&decisionIntent.key!==key)throw new Error('Сначала повторите прежнее решение с тем же обоснованием.');
+   decisionIntent??={key,session,command:withCommandId(command,newCommandId())};
+   await commit(decisionIntent.command);
+   if(session!==getSessionGeneration())throw new SessionSupersededError();
+   decisionIntent=undefined;comment='';revision='';
+  }catch(e){
+   if(!(e instanceof UnknownCommitResultError||e instanceof StaleConflictError||e instanceof SessionSupersededError)){
+    // A changed form must not discard an unresolved earlier delivery.
+    if(!decisionIntent||decisionIntent.key===JSON.stringify(command))decisionIntent=undefined;
+   }
+   error=e instanceof Error?e.message:String(e);
+  }finally{busy=false;}
+ }
+ async function decide(status:'confirmed'|'returned'){await sendDecision({type:'case.decide',caseId,status,comment});}
+ async function reopen(){await sendDecision({type:'case.reopen',caseId,comment});}
  function downloadJson(){if(!saved)return;const url=URL.createObjectURL(new Blob([JSON.stringify(saved,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=`saq-${caseId}-v${saved.revision}.json`;a.click();URL.revokeObjectURL(url);}
  async function downloadPdf(){if(!saved)return;busy=true;error='';try{await downloadCasePdf(caseId,saved.id);}catch(e){error=e instanceof Error?e.message:String(e);}finally{busy=false;}}
 </script>
-<div class="actions no-print mb-5"><button onclick={onclose}>← К досье</button><label>Версия<select bind:value={revision}><option value="">Текущее состояние</option>{#each versions as v}<option value={String(v.revision)}>Версия {v.revision} · {v.status==='confirmed'?'Подтверждён':'Возвращён'}</option>{/each}</select></label><button disabled={!saved} onclick={()=>window.print()}>Печать / сохранить PDF</button>{#if supabase}<button disabled={!saved||busy} onclick={downloadPdf}>Скачать PDF</button>{/if}<button disabled={!saved} onclick={downloadJson}>Скачать снимок JSON</button></div>
+<div class="actions no-print mb-5">
+<button onclick={onclose}>← К досье</button>
+<label>Версия<select bind:value={revision}>
+<option value="">Текущее состояние</option>{#each versions as v}<option value={String(v.revision)}>Версия {v.revision} · {v.status==='confirmed'?'Подтверждён':'Возвращён'}</option>{/each}</select>
+</label>
+<button disabled={!saved} onclick={()=>window.print()}>Печать / сохранить PDF</button>{#if supabase}<button disabled={!saved||busy} onclick={downloadPdf}>Скачать PDF</button>{/if}<button disabled={!saved} onclick={downloadJson}>Скачать снимок JSON</button>
+</div>
 {#if error}<p class="error mb-4" role="alert">{error}</p>{/if}
-<article class="panel signal-sheet case-signal-sheet"><p class="eyebrow">SAQ Qurylys · сигнальная карточка{vm.demo?' · демо':''}</p>{#if saved?.imported}<p class="notice">Импортированная история; это не новое подтверждение в текущем рабочем пространстве.</p>{/if}<h1>{vm.complex.name}</h1><p>{vm.complex.address} · {vm.phase?.name ?? 'Весь ЖК / очередь не определена'}</p><p>Дело: {caseId} · {saved ? `Версия ${saved.revision} · ${saved.id}` : 'Предпросмотр черновика'}</p><p>Статус: {saved ? saved.status==='confirmed'?'Подтверждён':'Возвращён':'Черновик; решение не принято'}</p>{#if saved}<p>Решение: {saved.actor} · {saved.at}</p><p>Обоснование: {saved.comment}</p>{/if}<div class="risk-score {vm.zone}"><strong>{vm.score}</strong><span class="zone-total">из 100</span><span class="formula">{vm.complex.factors.filter(f=>f.status==='confirmed').map(f=>`${f.code} +${WEIGHTS[f.code]}`).join(' + ') || 'нет подтверждённых факторов'}</span></div><p>Застройщик: {vm.complex.developer||'неизвестен'} · БИН: {vm.complex.bin||'неизвестен'} · стадия: {vm.complex.stage||'неизвестна'}</p><p>Период применимости: {vm.period ? vm.period.from+' — '+(vm.period.to??'открытый') : 'не установлен'}</p><h2>Применимое правовое основание</h2><p>{vm.complex.legalBasis.type} / {vm.complex.legalBasis.status} · {vm.complex.legalBasis.source||'Источник неизвестен'} · {vm.complex.legalBasis.checkedAt||'Дата неизвестна'}</p><p>{vm.complex.legalBasis.reviewText}</p><h2>Подтверждённые факторы</h2>{#each vm.complex.factors.filter(f=>f.status==='confirmed') as f}<section class="factor-print"><h3>{f.code} +{WEIGHTS[f.code]} · {FACTOR_META[f.code].title}</h3><p>{f.evidence?.source} · {f.evidence?.date}</p><blockquote>{f.evidence?.quote}</blockquote><p>{f.evidence?.text}</p><p class="muted">Проверил: {f.reviewer} · {f.updatedAt}</p><p>Материал: {f.evidence?.id} · публикация: {f.evidence?.adId||'нет'} · AI run: {f.evidence?.runId||'ручной факт'}</p></section>{:else}<p>Подтверждённых факторов нет.</p>{/each}<h2>Использованные материалы</h2>{#each vm.artifacts as a}<section class="factor-print"><b>{a.id} · {a.source}</b><p>Дата события: {a.date||'неизвестна'} · фиксация: {a.capturedAt}</p><p class="publication-text">{a.text}</p>{#if safeUrl(a.url)}<a href={safeUrl(a.url)}>{a.url}</a>{/if}</section>{:else}<p>Материалы не приложены.</p>{/each}<details class="tech"><summary>Связи, приложения и ограничения</summary>{#each vm.relations??[] as r}<p>{r.relationType} · {r.fromId} → {r.toId} · {r.verificationStatus}</p>{:else}<p>Связи в материалы решения не включены.</p>{/each}{#each vm.mediaManifest??[] as m}<p>{m.id} · {m.name} · SHA256: {m.sha256??'не зафиксирован'} · байт: {m.bytes??'неизвестно'}</p>{/each}{#each vm.limitations as item}<p>• {item}</p>{/each}</details><p>Версия весов: {vm.weightsVersion}. Признаки риска не устанавливают факт правонарушения. Решение принимает человек.</p></article>
-{#if !revision}<form class="panel no-print mt-5 space-y-4" onsubmit={e=>e.preventDefault()}><label>Обоснование решения<textarea required bind:value={comment}></textarea></label><div class="actions">{#if investigation.status==='draft'}<button class="primary" disabled={busy||!comment.trim()} onclick={()=>decide('confirmed')}>Подтвердить сигнал</button><button disabled={busy||!comment.trim()} onclick={()=>decide('returned')}>Вернуть на проверку</button>{:else}<button disabled={busy||!comment.trim()} onclick={reopen}>Открыть пересмотр</button>{/if}</div></form>{/if}
+{#if decisionIntent}<button class="no-print mb-4" disabled={busy} onclick={retryDecision}>Повторить доставку прежнего решения</button>{/if}
+<article class="panel signal-sheet case-signal-sheet">
+<p class="eyebrow">SAQ QURYLYS · СИГНАЛЬНАЯ КАРТОЧКА {vm.demo?'· DEMO':''}</p>{#if saved?.imported}<p class="notice">Импортированная история; это не новое подтверждение в текущем рабочем пространстве.</p>{/if}<h1>{vm.complex.name}</h1>
+<p>{vm.complex.address} · {vm.phase?.name ?? 'Весь ЖК / очередь не определена'}</p>
+<p>Дело: {caseId} · {saved ? `Версия ${saved.revision} · ${saved.id}` : 'Предпросмотр черновика'}</p>
+<p>Статус: {saved ? saved.status==='confirmed'?'Подтверждён':'Возвращён':'Черновик; решение не принято'}</p>{#if saved}<p>Решение: {saved.actor} · {decisionTime(saved.at)}</p>
+<p>Обоснование: {saved.comment}</p>{/if}<div class="risk-score {vm.zone}">
+<strong>{vm.score}</strong>
+<span class="zone-total">из 100</span><span class="formula">{vm.complex.factors.filter(f=>f.status==='confirmed').map(f=>`${f.code} +${WEIGHTS[f.code]}`).join(' + ') || 'нет подтверждённых факторов'}</span>
+</div>
+<p>Застройщик: {vm.complex.developer||'неизвестен'} · БИН: {vm.complex.bin||'неизвестен'} · стадия: {vm.complex.stage||'неизвестна'}</p>
+<p>Период применимости: {vm.period ? vm.period.from+' — '+(vm.period.to??'открытый') : 'не установлен'}</p>
+<h2>Применимое правовое основание</h2>
+<p>{legalBasisLabel(vm.complex.legalBasis.type)} · {verificationLabel(vm.complex.legalBasis.status)} · {vm.complex.legalBasis.source||'Источник неизвестен'} · {vm.complex.legalBasis.checkedAt||'Дата неизвестна'}</p>
+<p>{vm.complex.legalBasis.reviewText}</p>
+<h2>Подтверждённые факторы</h2>{#each vm.complex.factors.filter(f=>f.status==='confirmed') as f}<section class="factor-print">
+<h3>{f.code} +{WEIGHTS[f.code]} · {FACTOR_META[f.code].title}</h3>
+<p>{f.evidence?.source} · {f.evidence?.date}</p>
+<blockquote>{f.evidence?.quote}</blockquote>
+<p>{f.evidence?.text}</p>
+<p class="muted">Проверил: {f.reviewer} · {decisionTime(f.updatedAt)}</p>
+<p>Материал: {f.evidence?.id} · публикация: {f.evidence?.adId||'нет'} · AI run: {f.evidence?.runId||'ручной факт'}</p>
+</section>{:else}<p>Факты этого дела ещё не подтверждены. Нулевой балл не доказывает безопасность; добавьте материал и проверьте факт в досье.</p>{/each}<h2>Обоснования проверки фактов</h2>
+{#each vm.assertions as assertion}<section class="factor-print"><p>{assertion.code} · {verificationLabel(assertion.status)} · {assertion.actor} · {decisionTime(assertion.at)}</p><p>{assertion.comment}</p>
+{#if assertion.evidence.beforeCommissioning}<p>Материал о невводе: {assertion.evidence.beforeCommissioning.source} · {assertion.evidence.beforeCommissioning.date}</p><p>{assertion.evidence.beforeCommissioning.text}</p>{/if}</section>{/each}
+<h2>Использованные материалы</h2>{#each vm.artifacts as a}<section class="factor-print">
+<b>{a.id} · {a.source}</b>
+<p>Дата события: {a.date||'неизвестна'} · фиксация: {decisionTime(a.capturedAt)}</p>
+<p class="publication-text">{a.text}</p>{#if safeUrl(a.url)}<a href={safeUrl(a.url)}>{a.url}</a>{/if}</section>{:else}<p>Материалы не приложены.</p>{/each}<h2>Контекстные связи</h2>{#each vm.relations??[] as r}<p>{relationLabel(r.relationType)} · {r.fromId} → {r.toId} · {verificationLabel(r.verificationStatus)} · источники: {r.sourceArtifactIds.join(", ")}</p>{:else}<p>Связи в материалы решения не включены.</p>{/each}<h2>Манифест приложений</h2>{#each vm.mediaManifest??[] as m}<p>{m.id} · {m.name} · SHA256: {m.sha256??'не зафиксирован'} · байт: {m.bytes??'неизвестно'}</p>{/each}<h2>Неизвестные поля и ограничения</h2>{#each vm.limitations as item}<p>• {item}</p>{/each}<p>Версия весов: {vm.weightsVersion}. Признаки риска не устанавливают факт правонарушения. Решение принимает человек.</p>
+</article>
+{#if !revision}<form class="panel no-print mt-5 space-y-4" onsubmit={e=>e.preventDefault()}>
+<label>Обоснование решения<textarea required bind:value={comment}>
+</textarea>
+</label>
+<div class="actions">{#if investigation.status==='draft'}<button class="primary" disabled={busy||!comment.trim()} onclick={()=>decide('confirmed')}>Подтвердить сигнал</button>
+<button disabled={busy||!comment.trim()} onclick={()=>decide('returned')}>Вернуть на проверку</button>{:else}<button disabled={busy||!comment.trim()} onclick={reopen}>Открыть пересмотр</button>{/if}</div>
+</form>{/if}

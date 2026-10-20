@@ -1,3 +1,4 @@
+<script lang="ts">
 /**
  * S2.5 (C3). Backup/restore UI: экспорт полного ZIP-пакета
  * (manifest.json + workspace.json + files/ по mediaId) и импорт
@@ -9,7 +10,6 @@
  * 'sq-demo-evidence', что использует repository, и рабочий ключ localStorage.
  * Подписанные URL нигде не сохраняются — только mediaId/path/hash (C6).
  */
-<script lang="ts">
   import type { AppState, Media } from '../lib/types';
   import { supabase } from '../lib/supabase';
   import { readFileBytes, restoreDemoBackup, loadState, mediaExtFor } from '../lib/repository';

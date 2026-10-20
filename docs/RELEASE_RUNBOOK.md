@@ -1,30 +1,115 @@
-# Локальный release candidate
+# Запуск и эксплуатация
 
-Node 24.18.0/npm 11.16.0 и Python 3.11.0 проверены в этом окружении. Python зависимости фиксирует backend/requirements.lock.txt. Docker нужен только для connected Supabase.
+Руководство описывает приложение из текущей рабочей копии. Даты, candidate SHA и результаты прежних выпусков находятся в [архиве](archive/README.md); они не нужны для обычного запуска.
 
-## Чистый запуск
+## DEMO
 
-1. Получить именно candidate SHA из RELEASE_MANIFEST.json. Не копировать .env, node_modules, .venv, dist или caches. `node tools/s6-clean-room.mjs` переносит полный текущий source manifest, нужные untracked и документацию в новую .temp директорию, проверяет SHA256 каждого файла и выполняет npm ci/build/check, Python venv+locked install+pytest. Он не заменяет рабочие env/БД.
-2. `npm ci`, затем `npm run dev -- --port 5173 --strictPort`. Без env работает DEMO. Вход не нужен. Открыть http://127.0.0.1:5173. DEMO parser не является LLM.
-3. Для connected создать отдельный локальный Supabase project с уникальным project_id и свободными API/DB/Studio/Auth ports. Сначала `npx supabase start --help`, затем start из его каталога. Не выполнять reset рабочей БД. Применить **все** SQL из supabase/migrations в лексикографическом порядке, включая корректирующие миграции. Исторические миграции не редактировать. Создать операторскую учётку административно; регистрации в UI нет. initialize_workspace загружает seed только для вошедшего пользователя.
-4. Скопировать .env.example в игнорируемую .env. VITE_SUPABASE_URL/ANON_KEY — публичные URL/key; SUPABASE_URL/ANON_KEY — FastAPI. CORS_ORIGINS и ALLOWED_ORIGIN должны совпадать с фактическим frontend origin. VITE_API_URL задаёт backend URL. Секреты не имеют префикса VITE_.
-5. Создать backend/.venv: `python -m venv backend/.venv`; `backend/.venv/Scripts/python.exe -m pip install -r backend/requirements.lock.txt`; `backend/.venv/Scripts/python.exe -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000`. На Unix использовать bin/python.
-6. Edge env: LLM_API_URL (OpenAI-compatible chat completions), LLM_MODEL, LLM_API_KEY, LLM_THINKING=disabled для DeepSeek Flash, ALLOWED_ORIGIN. SUPABASE_SERVICE_ROLE_KEY нужен только серверному writer analysis_runs, локальная платформа предоставляет его автоматически вместе с SUPABASE_URL/ANON_KEY. `npx supabase functions serve analyze --env-file .env.edge`. Не использовать service_role в FastAPI/браузере. В этом спринте production deploy не выполняется.
+```sh
+npm ci
+npm run dev -- --port 5173 --strictPort
+```
 
-## Лимиты и неизвестные данные
+Откройте [127.0.0.1:5173](http://127.0.0.1:5173). Без заполненной пары `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` приложение использует локальное хранилище и parser. При ранее заданных переменных удалите обе из окружения/`.env*` и перезапустите Vite. Backend, Docker и LLM для DEMO не требуются.
 
-AI: 100000 bytes на body; 20000 JS characters текста; 30 запросов/час/пользователь; до 6 R2/R3 hypotheses; provider timeout 30 секунд, Auth/DB 10 секунд. Ошибки 401/403/413/422/429/502/503/504 не превращаются в regex-success. Повтор runId с другим snapshot запрещён; pending/failed требует нового runId. Нет даты/основания/источника — unknown, не сегодняшняя дата и не confirmed. R3 требует независимого датированного материала о невводе. Только human decision начисляет score.
+## Подключённый режим
 
-Evidence: private bucket, owner prefix, JPEG/PNG/WebP/MP4/PDF до 20 MiB. Подписанная ссылка краткоживущая. MIME — ограничение заявленного типа, не антивирус/распознавание содержимого. Upload→одна metadata/evidence команда; при неизвестном RPC исходе файл сохраняется до receipt/retry. Referenced evidence не удаляется обычным пользователем.
+### 1. Отдельный локальный Supabase
 
-## Fresh/upgrade/backup/rollback
+Нужны Docker и Supabase CLI. В репозитории уже есть `supabase/config.toml`; повторный `supabase init` не требуется. Используются API 54321, DB 54322, Studio 54323. Если на машине уже есть проект с тем же `project_id` или портами, настройте отдельную копию конфигурации до запуска.
 
-`npm test` применяет все миграции к отдельным PGlite БД с тестовыми auth/storage и проверяет legacy upgrade. S6 дополнительно проверяет fresh и upgrade на одноразовых PostgreSQL БД внутри локального контейнера: тестовый bootstrap auth/storage, не рабочая Supabase БД. L проверяет реальные Auth/Storage/Edge/API в новых временных аккаунтах и restore в третьем пустом workspace. Это разные уровни проверки, не production rehearsal.
+```sh
+npx supabase start
+npx supabase migration up --local
+npx supabase status
+```
 
-Перед настоящим upgrade снять pg_dump и полный Storage backup с manifest/SHA256; сохранить закрыто вне Git. Восстановление приложения: #/backup → скачать ZIP (JSON+байты+manifest). `/api/export` — только JSON, не полный backup. Restore только в пустое отдельное workspace; paths получают нового owner, confirmed→needs-verification, signals→draft, старая атрибуция только provenance. Проверить bytes/hash, IDs и связи, затем повторные решения аналитика.
+Это команды для отдельной локальной среды. Перед миграцией существующих данных изучите каждый новый SQL-файл: миграция может менять не только схему, но и демонстрационные пространства. Не используйте `db reset` для обновления данных, которые требуется сохранить.
 
-Rollback: остановить запись; запустить совместимую прежнюю версию либо восстановить DB+Storage backup в отдельной среде и проверить; затем переключить пользователей. Произвольные down migrations с удалением истории запрещены. Не перезаписывать рабочие данные пользовательским restore.
+Миграции из `supabase/migrations/` применяются в порядке версии. Применённые файлы не редактируются; исправления добавляются новыми миграциями. Официальная справка: [локальный запуск](https://supabase.com/docs/reference/cli/supabase-start), [применение миграций](https://supabase.com/docs/reference/cli/supabase-migration-up).
 
-## Проверка
+### 2. Переменные приложения
 
-T/U/B/E/C/A/F/L: команды docs/sprints/EXECUTION.md. `npm run test:local` читает игнорируемый supabase/.temp/status.json, создаёт и удаляет только свои аккаунты/файлы. Чужой порт 5174 не занимать; C использует tools/acceptance.cloud.config.ts и 5184. `npm run test:deepseek` вызывает платный provider; повторять только при изменении AI inputs. Секреты никогда не выводить в логи. `npm run gate -- 6` должен честно остаться ненулевым, пока candidate SHA не доступен адресату.
+Скопируйте `.env.example` в `.env`: PowerShell — `Copy-Item .env.example .env`, POSIX shell — `cp .env.example .env`. Заполните настройки своего локального Supabase.
+
+| Переменная | Где используется | Значение |
+| --- | --- | --- |
+| `VITE_SUPABASE_URL` | Браузер | URL Supabase API |
+| `VITE_SUPABASE_ANON_KEY` | Браузер | Публичный anon key; проект использует совместимый legacy-формат |
+| `VITE_API_URL` | Браузер | FastAPI, обычно `http://127.0.0.1:8000` |
+| `SUPABASE_URL` | FastAPI | Тот же Supabase URL |
+| `SUPABASE_ANON_KEY` | FastAPI | Публичный anon key; доступ определяется JWT пользователя |
+| `CORS_ORIGINS` | FastAPI | Разрешённые origin через запятую, без пробелов |
+
+`VITE_*` попадает в frontend bundle. Service role, ключ LLM и административные токены остаются на сервере. `.env.example` — шаблон, `.env*` с реальными значениями остаются вне Git. После изменения frontend env перезапустите Vite; production bundle нужно пересобрать.
+
+### 3. FastAPI
+
+Из корня репозитория, PowerShell:
+
+```powershell
+python -m venv backend/.venv
+backend/.venv/Scripts/python.exe -m pip install -r backend/requirements.lock.txt
+backend/.venv/Scripts/python.exe -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
+```
+
+POSIX shell:
+
+```sh
+python3 -m venv backend/.venv
+backend/.venv/bin/python -m pip install -r backend/requirements.lock.txt
+backend/.venv/bin/python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
+```
+
+[Health endpoint](http://127.0.0.1:8000/health) доступен без входа; `/api/*` требует Bearer JWT. `supabase_configured=true` означает наличие настроек, а не полную проверку интеграции. OpenAPI доступен по `/docs` у работающего FastAPI.
+
+Для кириллицы в PDF установите DejaVu Sans/Arial или задайте `PDF_FONT_PATH`. Для OCR установите Tesseract с `rus` и `eng`, проверьте `tesseract --list-langs`. Dockerfile backend включает DejaVu и Tesseract. Подробности — [backend/README.md](../backend/README.md).
+
+### 4. Анализ через LLM
+
+Создайте отдельный игнорируемый `.env.edge` с серверными настройками:
+
+```dotenv
+LLM_API_URL=https://api.openai.com/v1/chat/completions
+LLM_MODEL=your-model
+LLM_API_KEY=your-provider-key
+ALLOWED_ORIGIN=http://127.0.0.1:5173
+```
+
+`LLM_THINKING` — необязательная настройка провайдера; совместимость проверяйте для выбранной модели. Supabase runtime предоставляет Edge Function переменные `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`. Последняя нужна доверенной серверной записи AI-run и не используется FastAPI или браузером.
+
+```sh
+npx supabase functions serve analyze --env-file .env.edge
+```
+
+Origin должен точно совпадать с frontend. Лимиты и ссылки AI-run описаны в [архитектуре](ARCHITECTURE.md). При недоступном provider сохраняйте материал вручную.
+
+### 5. Учётная запись и frontend
+
+Создайте и подтвердите операторскую учётную запись через административные средства своей Supabase-среды. В приложении нет самостоятельной регистрации. При входе `initialize_workspace` создаёт персональное пространство из seed.
+
+Запустите frontend командой из DEMO-раздела. Проверьте вход, собственный объект, сохранение материала, reload, создание дела и версию решения. Для настоящей интеграции используйте [live-инструкцию](DEVELOPMENT.md#настройка-live-проверки), а не только HTTP mock.
+
+## Выпуск frontend
+
+```sh
+npm run check
+npm test
+npm run build
+npm run preview
+```
+
+`dist/` — статическая сборка. `vercel.json` задаёт Vite, `npm ci` и `dist`; `.vercelignore` исключает локальные env, backend и evidence. Проверьте состав пакета и настройки платформы перед публикацией.
+
+Для публичного DEMO обе `VITE_SUPABASE_*` должны быть пустыми **во время сборки**. Публикуйте проверенный commit; после deploy проверьте публичный URL без авторизации, навигацию, карту/список и создание локального дела. Frontend deploy не развёртывает FastAPI, SQL или Edge Function.
+
+Для подключённого выпуска отдельно подготовьте Supabase, HTTPS backend, точные CORS/Edge origin и серверные секреты. Внешний provider и инфраструктура имеют собственные условия и стоимость.
+
+## Backup, обновление и восстановление
+
+Перед обновлением существующей среды сохраните PostgreSQL и байты Storage с manifest/контрольными суммами в закрытом хранилище. Проверьте восстановление на отдельной среде, затем применяйте проверенные новые миграции.
+
+В приложении: меню аналитика → резервная копия → ZIP. Он содержит JSON, файлы и SHA256 manifest. `/api/export` содержит только JSON и не заменяет полный ZIP.
+
+Прикладное восстановление выполняется в отдельное пустое workspace. Файлы получают нового владельца, импортированные факты требуют повторной проверки, активные решения становятся черновиками. Исходная атрибуция остаётся provenance. Проверьте байты, хеши, связи и возможность нового решения.
+
+При откате остановите запись и используйте совместимую прежнюю версию приложения либо восстановленную отдельную среду. Произвольные down migrations и перезапись рабочего пространства пользовательским restore могут уничтожить историю. Переключайте пользователей после проверки восстановленных данных.

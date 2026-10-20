@@ -8,7 +8,7 @@
  * Сессии — как временные аккаунты connected-режима (userA/userB) + перемена
  * пользователя на уровне repository (sessionGeneration).
  */
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { PGlite } from '@electric-sql/pglite';
 import { createTestDatabase, login, userA, userB } from '../helpers/database';
 import type { Command } from '../../src/lib/domain';
@@ -395,9 +395,9 @@ describe('S2.3 evidence atomicity + storage checks (SQL, real migrations)', () =
 /* ------------------------------------------------------------------ */
 
 describe('S2.2 repository DEMO: queue, pending, session (no mocks)', () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     await resetDemo();
-    trackAuthSession('unit-test');
+    trackAuthSession(null);
   });
 
   it('same commandId twice → single audit; retry replays (lost-response safe)', async () => {
@@ -414,6 +414,8 @@ describe('S2.2 repository DEMO: queue, pending, session (no mocks)', () => {
 
   it('same commandId + changed payload → COMMAND_ID_REUSED', async () => {
     const base = await loadState();
+    const original = withCommandId(adCmd('AD-D1', 'SQ-001', 'Демо-бронь 666 000 тенге за квартиру.'), 'cid-demo-01');
+    await commitCommand(base, original, 'unit-test');
     const other = withCommandId(adCmd('AD-D1', 'SQ-001', 'Демо-бронь 666 000 тенге за квартиру.') as never, 'cid-demo-01');
     (other as unknown as Record<string, unknown>)['comment'] = 'изменено';
     await expect(commitCommand(base, other, 'unit-test')).rejects.toThrow(/COMMAND_ID_REUSED/);
@@ -421,13 +423,13 @@ describe('S2.2 repository DEMO: queue, pending, session (no mocks)', () => {
 
   it('failed command keeps pending with user stamp; foreign session cannot retry it', async () => {
     const base = await loadState();
+    trackAuthSession('unit-test');
     const bad = withCommandId({ type: 'media', media: { id: 'x', zkId: 'SQ-NOPE', path: 'demo/SQ-NOPE/x.png' } } as never, 'cid-demo-pend');
     await expect(commitCommand(base, bad, 'unit-test')).rejects.toThrow();
     const pending = readPendingCommand();
     expect(pending?.commandId).toBe('cid-demo-pend');
-    // Регистрации нет: без сессии владелец намерения — demo; привязка к сессии
-    // всё равно enforced: чужая сессия повторить не может (ниже).
-    expect(pending?.user).toBe('demo');
+    // Pending is bound to the selected session, independently of reviewer text.
+    expect(pending?.user).toBe('unit-test');
     trackAuthSession('unit-other');
     await expect(retryPendingCommand(base, 'unit-other')).rejects.toThrow(/другой сессии/);
     trackAuthSession('unit-test');
@@ -437,6 +439,7 @@ describe('S2.2 repository DEMO: queue, pending, session (no mocks)', () => {
 
   it('session switch cancels queued commands of the old session', async () => {
     const base = await loadState();
+    trackAuthSession('unit-test');
     const gen = getSessionGeneration();
     const cmd = withCommandId(adCmd('AD-D2', 'SQ-001', 'Демо-бронь 777 000 тенге за квартиру.'), 'cid-demo-sup');
     const p = commitCommand(base, cmd, 'unit-test');
@@ -453,6 +456,15 @@ describe('S2.2 repository DEMO: queue, pending, session (no mocks)', () => {
     const fresh = await loadState();
     expect(fresh.ads.some((a) => a.id === 'AD-D2')).toBe(false);
     trackAuthSession('unit-test');
+  });
+
+  it('DEMO without a session stamps demo, not the displayed reviewer', async () => {
+    trackAuthSession(null);
+    const base = await loadState();
+    const bad = withCommandId({ type: 'media', media: { id: 'x', zkId: 'SQ-NOPE', path: 'demo/SQ-NOPE/x.png' } } as never, 'cid-no-session');
+    await expect(commitCommand(base, bad, 'Displayed analyst')).rejects.toThrow();
+    expect(readPendingCommand()?.user).toBe('demo');
+    clearPendingCommand('cid-no-session');
   });
 
   it('saveCommand keeps the legacy 3-arg signature working', async () => {

@@ -13,7 +13,9 @@ def latest_assertions(data: dict, case_id: str) -> list:
 
 
 def complex_factors(data: dict, complex_: dict, phase_id: str | None = None) -> list:
-    cases = [c for c in data.get("cases", []) if c["complexId"] == complex_["id"] and c.get("phaseId") == phase_id]
+    assessed = {a["caseId"] for a in data.get("assertions", [])} | {s["caseId"] for s in data.get("caseSnapshots", [])}
+    cases = [c for c in data.get("cases", []) if c["complexId"] == complex_["id"] and c.get("phaseId") == phase_id
+             and (c["status"] != "draft" or c["id"] in assessed)]
     if cases:
         case = max(cases, key=lambda c: c["updatedAt"])
         return [{"code": a["code"], "status": "confirmed" if a["status"] == "verified" else "needs-verification" if a["status"] == "candidate" else "rejected"}

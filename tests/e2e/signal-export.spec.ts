@@ -1,7 +1,7 @@
 import {expect,test} from '@playwright/test';
 import {mkdirSync} from 'node:fs';
 for(const fixture of ['confirmed','long','returned']) test(`S5 print ${fixture}: immutable revision and full text`,async({page,browserName},info)=>{
- await page.goto('/');
+ await page.goto('/',{waitUntil:'domcontentloaded'});
  await page.evaluate(async(fixture)=>{
   const {initialState,applyCommand}=await import(/* @vite-ignore */ '/src/lib/'+'domain.ts');let s=initialState();
   const z=s.complexes.find((z:any)=>z.id==='SQ-002')!;
@@ -15,12 +15,12 @@ for(const fixture of ['confirmed','long','returned']) test(`S5 print ${fixture}:
   s=applyCommand(s,{type:'signal',zkId:z.id,status:fixture==='returned'?'returned':'confirmed',comment:'PDF fixture, синтетический DEMO материал'},'DEMO PDF',{sourceVersion:9,commandId:'PDF-'+fixture});
   localStorage.setItem('sq_svelte_demo_v2',JSON.stringify({envelope:1,state:s,version:10,receipts:{}}));
  },fixture);
- await page.goto('/#/signal/SQ-002?revision=1');await page.reload();
+ await page.goto('/#/signal/SQ-002?revision=1',{waitUntil:'domcontentloaded'});await page.reload({waitUntil:'domcontentloaded'});
  const sheet=page.locator('.signal-sheet');await expect(sheet).toContainText('revision 1');await expect(sheet).toContainText('Счёт: 70');await expect(sheet).toContainText('PDF-'+fixture);
  await expect(page.getByRole('button',{name:'Подтвердить сигнал'})).toHaveCount(0);
  if(fixture==='long')await expect(sheet).toContainText('Құрылыс жүріп жатыр');
  if(info.project.name==='chromium'){
-  mkdirSync('docs/acceptance/s5/pdf',{recursive:true});
-  await page.pdf({path:`docs/acceptance/s5/pdf/${fixture}.pdf`,format:'A4',printBackground:true});
+  mkdirSync('test-results/score-maxxing/artifacts/s5/pdf',{recursive:true});
+  await page.pdf({path:`test-results/score-maxxing/artifacts/s5/pdf/${fixture}.pdf`,format:'A4',printBackground:true});
  }
 });

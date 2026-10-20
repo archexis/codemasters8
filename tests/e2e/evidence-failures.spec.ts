@@ -25,7 +25,7 @@ const PNG = Buffer.from(
 const uniq = (tag: string) => `Депозит ${Date.now() % 100000000} тенге ${tag} за квартиру.`;
 
 async function analyzeWith(page: Page, zk: string, text: string) {
-  await page.goto(`/#/analyze/${zk}`);
+  await page.goto(`/#/analyze/${zk}`,{waitUntil:'domcontentloaded'});
   await page.getByLabel('Текст объявления').fill(text);
   await page.getByRole('button', { name: 'Проанализировать', exact: true }).click();
   await expect(page.getByText('R2 · гипотеза')).toBeVisible();
@@ -38,8 +38,8 @@ test('F1: чужой MIME не даёт решения и не сохраняе�
   await page.getByRole('button', { name: 'Проанализировать', exact: true }).click();
   await page.getByRole('button', { name: 'Сохранить без подтверждения' }).click();
   await expect(page.getByRole('alert')).toContainText('Допустимы');
-  await expect(page.getByText('Публикация и решение сохранены.')).toHaveCount(0);
-  await page.goto('/#/ads');
+  await expect(page.getByText('Публикация сохранена. Триаж гипотезы не начисляет баллы.')).toHaveCount(0);
+  await page.goto('/#/ads',{waitUntil:'domcontentloaded'});
   await expect(page.getByText(text)).toHaveCount(0);
 });
 
@@ -51,33 +51,34 @@ test('F2: файл больше 20 МБ отклоняется до commit', asy
   await page.getByRole('button', { name: 'Проанализировать', exact: true }).click();
   await page.getByRole('button', { name: 'Сохранить без подтверждения' }).click();
   await expect(page.getByRole('alert')).toContainText('Допустимы');
-  await page.goto('/#/ads');
+  await page.goto('/#/ads',{waitUntil:'domcontentloaded'});
   await expect(page.getByText(text)).toHaveCount(0);
 });
 
-test('F3+F4: дубль отклонён, staged-файл намерения удалён, принятый файл жив', async ({ page }) => {
+test('F3+F4: повторный материал сохраняет одну публикацию и оба принятых файла', async ({ page }) => {
   const text = uniq('F34');
   await analyzeWith(page, 'SQ-001', text);
   await page.getByLabel('Скриншот / документ').setInputFiles({ name: 'shot.png', mimeType: 'image/png', buffer: PNG });
   await page.getByRole('button', { name: 'Проанализировать', exact: true }).click();
   await page.getByRole('button', { name: 'Сохранить без подтверждения' }).click();
-  await expect(page.getByText('Публикация и решение сохранены.')).toBeVisible();
+  await expect(page.getByText('Публикация сохранена. Триаж гипотезы не начисляет баллы.')).toBeVisible();
 
   // Тот же текст + новый файл: RPC отклонит DUPLICATE_AD уже после upload.
   await analyzeWith(page, 'SQ-001', text);
   await page.getByLabel('Скриншот / документ').setInputFiles({ name: 'shot2.png', mimeType: 'image/png', buffer: PNG });
   await page.getByRole('button', { name: 'Проанализировать', exact: true }).click();
   await page.getByRole('button', { name: 'Сохранить без подтверждения' }).click();
-  await expect(page.getByRole('alert')).toContainText(/уже сохранена|DUPLICATE_AD/);
+  await expect(page.getByText('Публикация сохранена. Триаж гипотезы не начисляет баллы.')).toBeVisible();
 
   // F3: область cleanup этого намерения пуста (staged-файл удалён, не завис).
   const staged = await page.evaluate(() => localStorage.getItem('sq_staged_files_v1'));
   expect(staged === null || staged === '{}').toBe(true);
   // F4: принятый файл первой попытки на месте (ссылочные не удаляются).
   const envelope = await page.evaluate(() => JSON.parse(localStorage.getItem('sq_svelte_demo_v2') ?? '{}'));
-  expect(envelope?.state?.media).toHaveLength(1);
-  await page.goto('/#/detail/SQ-001');
-  await expect(page.getByAltText(`Источник публикации ${envelope.state.ads[0].id}`)).toBeVisible();
+  expect(envelope?.state?.media).toHaveLength(2);
+  expect(envelope.state.ads.filter((a:any)=>a.text===text)).toHaveLength(1);
+  await page.goto('/#/complexes/SQ-001?tab=verification',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('.dossier-visual .evidence-image')).toBeVisible();
 });
 
 test('F5+F6: saved только после ACK; ID и квитанция стабильны после reload', async ({ page }) => {
@@ -86,19 +87,19 @@ test('F5+F6: saved только после ACK; ID и квитанция ста�
   await page.getByLabel('Скриншот / документ').setInputFiles({ name: 'shot.png', mimeType: 'image/png', buffer: PNG });
   await page.getByRole('button', { name: 'Проанализировать', exact: true }).click();
   await page.getByRole('button', { name: 'Сохранить без подтверждения' }).click();
-  await expect(page.getByText('Публикация и решение сохранены.')).toBeVisible();
+  await expect(page.getByText('Публикация сохранена. Триаж гипотезы не начисляет баллы.')).toBeVisible();
   const before = await page.evaluate(() => JSON.parse(localStorage.getItem('sq_svelte_demo_v2') ?? '{}'));
   const adId = before.state.ads[0].id as string;
   const mediaId = before.state.media[0].id as string;
   expect(typeof before.state.audit[0].commandId).toBe('string');
   expect(before.state.media[0].bytes).toBeGreaterThan(0);
 
-  await page.reload();
+  await page.reload({waitUntil:'domcontentloaded'});
   const after = await page.evaluate(() => JSON.parse(localStorage.getItem('sq_svelte_demo_v2') ?? '{}'));
   // F6: повтор после reload — те же сущности, дублей нет.
   expect(after.state.ads.filter((a: { id: string }) => a.id === adId)).toHaveLength(1);
   expect(after.state.media.filter((m: { id: string }) => m.id === mediaId)).toHaveLength(1);
-  await page.goto('/#/ads');
+  await page.goto('/#/ads',{waitUntil:'domcontentloaded'});
   await expect(page.getByText(text)).toHaveCount(1);
 });
 
@@ -112,8 +113,8 @@ test('F7: две DEMO-вкладки через Web Locks — оба решен�
     page.getByRole('button', { name: 'Сохранить без подтверждения' }).click(),
     second.getByRole('button', { name: 'Сохранить без подтверждения' }).click(),
   ]);
-  await expect(page.getByText('Публикация и решение сохранены.')).toBeVisible();
-  await expect(second.getByText('Публикация и решение сохранены.')).toBeVisible();
+  await expect(page.getByText('Публикация сохранена. Триаж гипотезы не начисляет баллы.')).toBeVisible();
+  await expect(second.getByText('Публикация сохранена. Триаж гипотезы не начисляет баллы.')).toBeVisible();
   const envelope = await page.evaluate(() => JSON.parse(localStorage.getItem('sq_svelte_demo_v2') ?? '{}'));
   const texts = (envelope.state.ads as { text: string }[]).map((a) => a.text);
   expect(texts).toContain(t1);
@@ -123,14 +124,14 @@ test('F7: две DEMO-вкладки через Web Locks — оба решен�
 });
 
 test('F8: очередь повтора очистки переживает reload', async ({ page }) => {
-  await page.goto('/#/analyze/SQ-001');
+  await page.goto('/#/analyze/SQ-001',{waitUntil:'domcontentloaded'});
   await page.evaluate(() => {
     const key = 'sq_cleanup_retry_v1';
     const list = JSON.parse(localStorage.getItem(key) ?? '[]') as string[];
     if (!list.includes('demo/SQ-001/ghost-f8.bin')) list.push('demo/SQ-001/ghost-f8.bin');
     localStorage.setItem(key, JSON.stringify(list));
   });
-  await page.reload();
+  await page.reload({waitUntil:'domcontentloaded'});
   const list = await page.evaluate(() => JSON.parse(localStorage.getItem('sq_cleanup_retry_v1') ?? '[]'));
   expect(list).toContain('demo/SQ-001/ghost-f8.bin');
 });

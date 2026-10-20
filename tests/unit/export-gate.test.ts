@@ -25,9 +25,9 @@ describe('S4.4 export gate: draft с заземлённым evidence', () => {
     expect(exp.needsReverification).toEqual([]);
     expect(exp.score).toBe(70);
     expect(exp.zone).toBe('red');
-    // AD-003 цитируется дважды — в материалах один раз.
+    // AD-002 цитируется дважды — в материалах один раз.
     const ads = exp.materials.filter((m) => m.kind === 'ad');
-    expect(ads.map((m) => m.id)).toEqual(['AD-003']);
+    expect(ads.map((m) => m.id)).toEqual(['AD-002']);
     // Seed без run-ссылок: provenance нет, modelReason null.
     for (const e of exp.evidence) {
       expect(e).not.toHaveProperty('provenance');
@@ -79,7 +79,7 @@ describe('S4.4 export gate: блокировки и пометки', () => {
     };
     const exp = buildExport(s, 'SQ-002');
     expect(exp.evidence.map((e) => e.code).sort()).toEqual(['R1', 'R3']);
-    expect(exp.excluded).toEqual([{ code: 'R2', reason: 'quote-ungrounded:AD-003' }]);
+    expect(exp.excluded).toEqual([{ code: 'R2', reason: 'quote-ungrounded:AD-002' }]);
     expect(exp.score).toBe(45);
   });
 

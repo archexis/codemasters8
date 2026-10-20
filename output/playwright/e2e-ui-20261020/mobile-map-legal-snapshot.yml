@@ -1,0 +1,58 @@
+- generic [ref=f1e2]:
+  - banner [ref=f1e3]:
+    - link "S SAQ QURYLYS" [ref=f1e1283] [cursor=pointer]:
+      - /url: "#/map"
+      - generic [ref=f1e5]: S
+      - generic [ref=f1e6]: SAQ QURYLYS
+    - button "Меню" [ref=f1e85] [cursor=pointer]
+    - generic [ref=f1e12]:
+      - button "Слои и фильтры" [active] [ref=f1e1284] [cursor=pointer]
+      - button "Демо-аналитик" [ref=f1e14] [cursor=pointer]
+  - main [ref=f1e18]:
+    - region "Карта объектов" [ref=f1e1286]:
+      - generic [ref=f1e1287]:
+        - generic "Карта объектов Өскемена" [ref=f1e1288]:
+          - region "Map" [ref=f1e1289]
+          - generic:
+            - generic [ref=f1e1290]:
+              - button "Zoom in" [ref=f1e1291] [cursor=pointer]
+              - button "Zoom out" [ref=f1e1293] [cursor=pointer]
+              - button "Drag to rotate map, click to reset north" [ref=f1e1295]
+            - group [ref=f1e1297]:
+              - generic "Toggle attribution" [ref=f1e1298] [cursor=pointer]
+              - generic [ref=f1e1299]:
+                - text: © OpenStreetMap contributors |
+                - link "MapLibre" [ref=f1e1332] [cursor=pointer]:
+                  - /url: https://maplibre.org/
+        - complementary "Предпросмотр ЖК" [ref=f1e1301]:
+          - generic [ref=f1e1302]:
+            - generic [ref=f1e1303]: Демо · Жилой комплекс
+            - button "Закрыть предпросмотр" [ref=f1e1304] [cursor=pointer]: ×
+          - generic [ref=f1e1305]:
+            - heading "Кедровый горизонт" [level=3] [ref=f1e1306]
+            - paragraph [ref=f1e1307]: Демо-участок 02 · адрес вымышленный
+            - button "Открыть снимки строительства" [ref=f1e1308] [cursor=pointer]:
+              - img "AI-реконструкция ЖК «Кедровый горизонт»" [ref=f1e1309]
+              - generic [ref=f1e1310]: AI-реконструкция · 20.10.2026
+            - generic [ref=f1e1311]:
+              - strong [ref=f1e1312]: "0"
+              - generic [ref=f1e1313]: баллов риска
+            - generic [ref=f1e1314]:
+              - generic [ref=f1e1315]:
+                - term [ref=f1e1316]: Застройщик
+                - definition [ref=f1e1317]: ТОО «Кедр Проект» (вымышленное)
+              - generic [ref=f1e1318]:
+                - term [ref=f1e1319]: Публикации
+                - definition [ref=f1e1320]: "3"
+            - paragraph [ref=f1e1349]: Подтверждено отсутствие основания
+            - paragraph [ref=f1e1351]: Вымышленная сверка DEMO-SQ-002 · 20.10.2026
+          - generic [ref=f1e1321]:
+            - button "Открыть досье" [ref=f1e1322] [cursor=pointer]
+            - button "Показать связи" [ref=f1e1323] [cursor=pointer]
+        - generic [ref=f1e1324]:
+          - generic [ref=f1e1325]: ӨСКЕМЕН · 8 объектов · DEMO
+          - button "О данных" [ref=f1e1326] [cursor=pointer]
+        - generic [ref=f1e1327]:
+          - generic [ref=f1e1352]: Проверенное основание
+          - generic [ref=f1e1354]: Проверенное отсутствие
+          - generic [ref=f1e1356]: Требует проверки

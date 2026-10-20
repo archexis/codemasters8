@@ -1,0 +1,61 @@
+PASS AI01 (1873ms)
+PASS AI02 (1133ms)
+PASS AI03 (915ms)
+PASS AI04 (836ms)
+PASS AI05 (1048ms)
+PASS AI06 (1157ms)
+PASS AI07 (1057ms)
+PASS AI08 (1146ms)
+PASS AI09 (1404ms)
+PASS AI10 (1253ms)
+PASS AI11 (1081ms)
+PASS AI12 (1456ms)
+
+> saq-qurylys@2.0.0 test:live
+> playwright test --config playwright.live.config.ts --grep real external LLM --headed --trace on
+
+[WebServer] (node:49784) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:41144) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\live\investigation.spec.ts:6:1 › real external LLM current case review, immutable snapshot and PDF (12.2s)
+
+
+  1) tests\live\investigation.spec.ts:6:1 › real external LLM current case review, immutable snapshot and PDF 
+
+    TypeError: Cannot read properties of undefined (reading 'split')
+
+      29 |  await page.goto('/#/complexes/SQ-001?tab=verification',{waitUntil:'domcontentloaded'});
+      30 |  await page.getByRole('button',{name:'Начать расследование',exact:true}).click();
+    > 31 |  const caseId=page.url().split('/cases/')[1].split('?')[0];
+         |                                             ^
+      32 |  await expect(page.locator('.risk-score strong')).toHaveText('0');
+      33 |  await page.screenshot({path:info.outputPath('03-triage-score-zero.png'),fullPage:true});
+      34 |  const before=(await client.from('workspaces').select('data').single()).data!.data;
+        at C:\Users\BIGra\codemasters8\tests\live\investigation.spec.ts:31:45
+
+    Error Context: test-results\live\investigation-real-externa-bd738--immutable-snapshot-and-PDF\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\live\investigation-real-externa-bd738--immutable-snapshot-and-PDF\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\live\investigation-real-externa-bd738--immutable-snapshot-and-PDF\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests\live\investigation.spec.ts:6:1 › real external LLM current case review, immutable snapshot and PDF 
+file:///C:/Users/BIGra/codemasters8/test-results/paid-candidate/smoke.mjs:63
+    child.on('error',reject);child.on('exit',code=>code===0 ? resolve() : reject(new Error(`Browser failed: ${code}`)));
+                                                                                 ^
+
+Error: Browser failed: 1
+    at ChildProcess.<anonymous> (file:///C:/Users/BIGra/codemasters8/test-results/paid-candidate/smoke.mjs:63:82)
+    at ChildProcess.emit (node:events:509:28)
+    at ChildProcess._handle.onexit (node:internal/child_process:295:12)
+
+Node.js v24.18.0
