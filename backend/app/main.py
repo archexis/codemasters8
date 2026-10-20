@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 from backend.app.projections import complex_factors, risk, preview, page, case_model, scope_model, timeline_items, latest_assertions
 from backend.app import registry_import
 from backend.app.security_headers import SecurityHeadersMiddleware
+from backend.app.rate_limit import RateLimitMiddleware
 
 
 class Settings(BaseSettings):
@@ -72,9 +73,13 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 # Additive response headers only (nosniff/frame-deny/no-store on GET
-# projections); never blocks, never touches auth. Rate limiting lives in
-# backend/app/rate_limit.py and stays unwired (see its docstring).
+# projections); never blocks, never touches auth.
 app.add_middleware(SecurityHeadersMiddleware)
+# S3. Abuse guard for heavy GET projections: 300 req/min per IP+token.
+# Generous on purpose — backend suites (~60 GETs) and dossier polling stay
+# green; dumb loops get 429 + Retry-After. Per-process memory; shared Redis
+# counter stays a TODO in rate_limit.py for multi-worker prod.
+app.add_middleware(RateLimitMiddleware, limit=300, window_s=60.0)
 
 
 def _supabase_headers(request: Request, settings: Settings) -> dict:

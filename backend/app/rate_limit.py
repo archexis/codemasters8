@@ -1,18 +1,13 @@
 """In-memory sliding-window rate limiter for heavy projections.
 
-WIRING (intentionally NOT enabled in main.py — see why below)::
+WIRED in main.py with generous defaults (300 req/min per IP+token)::
 
-    from backend.app.rate_limit import RateLimitMiddleware
-    app.add_middleware(RateLimitMiddleware)  # defaults: see below
+    app.add_middleware(RateLimitMiddleware, limit=300, window_s=60.0)
 
-Why left disabled:
-  * In-memory counters are per-process. Under multiple workers / serverless
-    instances each keeps its own window, so limits are neither exact nor
-    shared — production needs a shared store (Redis) before enforcing 429s.
-  * An aggressive default could 429 legitimate polling (dossier/timeline
-    pagination) and break TestClient suites that reuse one client IP.
-  * Enable only after: shared counter backend + per-route budgets tuned from
-    access logs + Retry-After handling on the frontend.
+Limits stay approximate under multiple workers / serverless instances (each
+keeps its own window) — production needs a shared store (Redis) for exact
+enforcement. Enable stricter per-route budgets only after tuning from access
+logs + Retry-After handling on the frontend.
 
 Design (no new dependencies):
   * Sliding window with per-key deque of hit timestamps; O(k) trim per hit.
@@ -91,7 +86,7 @@ def _request_key(scope: Scope) -> str:
 
 
 class RateLimitMiddleware:
-    """429-guard for heavy GET projections. See module docstring: NOT wired."""
+    """429-guard for heavy GET projections. Generous default; see module docstring."""
 
     def __init__(
         self,
