@@ -25,14 +25,16 @@ def image_text(content: bytes) -> str:
         with Image.open(BytesIO(content)) as image:
             if image.format not in ("JPEG", "PNG", "WEBP") or image.width * image.height > 25_000_000:
                 raise ValueError("Image must be JPG/PNG/WebP, at most 25 megapixels")
-            image.verify()
-        with tempfile.TemporaryDirectory(prefix="saq-ocr-") as directory:
-            path = Path(directory) / "original.png"
-            with Image.open(BytesIO(content)) as image:
+            # load() forces a full decode, catching the truncated/corrupt files
+            # verify() used to catch. verify() invalidates the image object, which
+            # is why this used to open the same bytes a second time.
+            image.load()
+            with tempfile.TemporaryDirectory(prefix="saq-ocr-") as directory:
+                path = Path(directory) / "original.png"
                 image.convert("RGB").save(path, format="PNG")
-            flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
-            result = subprocess.run([executable, str(path), "stdout", "-l", "rus+eng"], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30, check=True, shell=False, creationflags=flags)
-            return result.stdout[:100_000]
+                flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+                result = subprocess.run([executable, str(path), "stdout", "-l", "rus+eng"], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30, check=True, shell=False, creationflags=flags)
+                return result.stdout[:100_000]
     except (UnidentifiedImageError, OSError, Image.DecompressionBombError) as exc:
         raise ValueError("Image is invalid or unsupported") from exc
 

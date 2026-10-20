@@ -1,5 +1,6 @@
 """Small bounded document worker. Results are untrusted extraction candidates."""
 import asyncio
+import threading
 from io import BytesIO
 from hashlib import sha256
 
@@ -11,10 +12,19 @@ _slots = asyncio.Semaphore(CONCURRENCY)
 _tasks: set[asyncio.Task] = set()
 _active_job_ids: set[str] = set()
 MAX_PENDING_JOBS = 32
+# _tasks/_active_job_ids are only mutated in the event-loop thread, but
+# launch_job/queue_has_capacity may be called from other threads (tests, a
+# threaded server wrapper), so the synchronous sections below take this lock.
+# NOTE: single-process scope — every uvicorn worker keeps its own sets, so
+# MAX_PENDING_JOBS is a per-process bound, not a global one.
+# TODO: move capacity/ownership state to a shared backend (Redis/DB) if the
+# API ever scales beyond a single worker process.
+_state_lock = threading.Lock()
 
 
 def queue_has_capacity() -> bool:
-    return len(_tasks) < MAX_PENDING_JOBS
+    with _state_lock:
+        return len(_tasks) < MAX_PENDING_JOBS
 
 
 def extract_pdf(content: bytes) -> dict:
@@ -67,11 +77,12 @@ async def run_job(url: str, headers: dict, job: dict, content: bytes):
 
 
 def launch_job(url: str, headers: dict, job: dict, content: bytes):
-    if job['id'] in _active_job_ids:
-        return False
-    _active_job_ids.add(job['id'])
-    task = asyncio.create_task(run_job(url, headers, job, content))
-    _tasks.add(task)
+    with _state_lock:
+        if job['id'] in _active_job_ids:
+            return False
+        _active_job_ids.add(job['id'])
+        task = asyncio.create_task(run_job(url, headers, job, content))
+        _tasks.add(task)
     task.add_done_callback(_tasks.discard)
     task.add_done_callback(lambda _: _active_job_ids.discard(job['id']))
     return True

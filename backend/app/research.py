@@ -1,5 +1,6 @@
 """Durable, owner-scoped discovery. Never writes workspace decisions or stores JWTs."""
 import asyncio
+import logging
 from contextlib import closing
 from datetime import date, datetime, timezone
 from email.utils import parsedate_to_datetime
@@ -17,6 +18,8 @@ import httpx
 
 LEASE_SECONDS = 600
 MAX_HISTORY = 20
+
+logger = logging.getLogger(__name__)
 
 
 def normalize(value):
@@ -320,9 +323,14 @@ async def research_worker(settings):
                                     result = await collect_sources(target, settings.tavily_api_key, target['domains'], client)
                                 failed = all(s['status'] == 'failed' for s in result['searches'])
                                 store.finish(job_id, lease, result, 'Внешний поиск недоступен; повторите позже.' if failed else None)
-                        except Exception:
+                        except Exception as exc:
+                            # Generic user-facing error only; log the failure type
+                            # without payloads, keys, targets or content.
+                            logger.warning("research job %s failed: %s", job_id, type(exc).__name__)
                             store.finish(job_id, lease, error='Не удалось обработать поиск. Повторите позже.')
-        except Exception:
-            # Initialization/network/provider failures do not kill the worker. Never log credentials/content.
-            pass
+        except Exception as exc:
+            # Initialization/network/provider failures do not kill the worker.
+            # Log only the exception type: messages may echo URLs, credentials
+            # or provider content, which must never reach the logs.
+            logger.warning("research worker iteration failed: %s", type(exc).__name__)
         await asyncio.sleep(3)

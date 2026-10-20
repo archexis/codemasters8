@@ -4,6 +4,25 @@ from copy import deepcopy
 WEIGHTS = {"R1": 35, "R2": 25, "R3": 10, "R4": 15, "R5": 10, "R6": 5}
 
 
+def workspace_data(workspace: dict) -> dict:
+    """Guarded workspace payload: {} when data is missing or malformed.
+
+    fetch_workspace rows are expected as {"data": {...}, "version": N}, but a
+    500 from a bare workspace["data"] lookup is worse than an empty model, so
+    callers should go through this accessor.
+    """
+    if not isinstance(workspace, dict):
+        return {}
+    data = workspace.get("data")
+    return data if isinstance(data, dict) else {}
+
+
+def workspace_version(workspace: dict) -> int:
+    """Guarded workspace version: 0 when the key is missing or malformed."""
+    version = workspace.get("version") if isinstance(workspace, dict) else None
+    return version if isinstance(version, int) and not isinstance(version, bool) else 0
+
+
 def latest_assertions(data: dict, case_id: str) -> list:
     latest = {}
     for assertion in data.get("assertions", []):
@@ -60,12 +79,13 @@ def case_model(data: dict, case_id: str) -> dict | None:
         ]))
     return {"investigation": deepcopy(case), "complex": scoped['complex'] if scoped else None,
             "assertions": latest_assertions(data, case_id),
-            "artifacts": [a for a in data.get("artifacts", []) if a["id"] in case["artifactIds"]],
+            "artifacts": [a for a in data.get("artifacts", []) if a["id"] in (case.get("artifactIds") or [])],
             "snapshots": [{k: s.get(k) for k in ("id", "revision", "status", "at", "actor", "score", "zone")} for s in data.get("caseSnapshots", []) if s["caseId"] == case_id]}
 
 
 def scope_model(data: dict, complex_id: str, phase_id: str | None = None) -> dict | None:
-    z = next((z for z in data["complexes"] if z["id"] == complex_id), None)
+    complexes = data.get("complexes") if isinstance(data, dict) else None
+    z = next((z for z in (complexes or []) if z["id"] == complex_id), None)
     if z is None:
         return None
     phase = next((p for p in data.get("phases", []) if p["id"] == phase_id and p["complexId"] == complex_id), None)
