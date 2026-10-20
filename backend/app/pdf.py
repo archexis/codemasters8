@@ -1,17 +1,16 @@
 """Snapshot-only PDF rendering: no network fetches and no AI-generated fields."""
+import os
 from io import BytesIO
 from pathlib import Path
-import os
 from xml.sax.saxutils import escape
 
-from .projections import WEIGHTS
-
-from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.enums import TA_LEFT
+from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 
+from .projections import WEIGHTS
 
 LABELS = {
     'id': 'Идентификатор', 'caseId': 'Дело', 'revision': 'Версия', 'status': 'Статус',

@@ -1,16 +1,16 @@
 """Durable, owner-scoped discovery. Never writes workspace decisions or stores JWTs."""
 import asyncio
-import logging
-from contextlib import closing
-from datetime import date, datetime, timezone
-from email.utils import parsedate_to_datetime
-from hashlib import sha256
 import ipaddress
 import json
-from pathlib import Path
+import logging
 import re
 import sqlite3
 import time
+from contextlib import closing
+from datetime import date
+from email.utils import parsedate_to_datetime
+from hashlib import sha256
+from pathlib import Path
 from urllib.parse import urlparse, urlunparse
 from uuid import uuid4
 
@@ -284,8 +284,9 @@ async def resolve_monitor_target(settings, owner, case_id, client):
     rows = response.json()
     if not rows:
         return None
-    from backend.app.main import research_target
     from fastapi import HTTPException
+
+    from backend.app.main import research_target
     try:
         target = research_target(rows[0], case_id)
         if target['complex'].get('demo') or target['complex'].get('origin') == 'demo':

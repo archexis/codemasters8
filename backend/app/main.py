@@ -1,20 +1,29 @@
 """Authenticated reporting API. Supabase validates JWTs; PostgREST enforces RLS."""
+import asyncio
+from contextlib import asynccontextmanager, suppress
 from functools import lru_cache
 from typing import Annotated, Literal
-from contextlib import asynccontextmanager, suppress
-import asyncio
 
 import httpx
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
-from starlette.concurrency import run_in_threadpool
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import BaseModel, Field
-from backend.app.projections import complex_factors, risk, preview, page, case_model, scope_model, timeline_items, latest_assertions
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from starlette.concurrency import run_in_threadpool
+
 from backend.app import registry_import
-from backend.app.security_headers import SecurityHeadersMiddleware
+from backend.app.projections import (
+    case_model,
+    complex_factors,
+    latest_assertions,
+    page,
+    preview,
+    scope_model,
+    timeline_items,
+)
 from backend.app.rate_limit import RateLimitMiddleware
+from backend.app.security_headers import SecurityHeadersMiddleware
 
 
 class Settings(BaseSettings):
@@ -447,9 +456,10 @@ async def import_pdf(request: Request, workspace: dict = Depends(fetch_workspace
 
 @app.post("/api/import/image")
 async def import_image(request: Request, workspace: dict = Depends(fetch_workspace)) -> dict:
-    from backend.app.ocr import extract_image, OCRUnavailable
-    from backend.app.document_jobs import _slots
     import subprocess
+
+    from backend.app.document_jobs import _slots
+    from backend.app.ocr import OCRUnavailable, extract_image
     if request.headers.get("content-type", "").split(";", 1)[0] not in ("image/jpeg", "image/png", "image/webp"):
         raise HTTPException(415, "JPG, PNG or WebP required")
     body = await read_limited_body(request, "Image")
@@ -469,6 +479,7 @@ async def import_image(request: Request, workspace: dict = Depends(fetch_workspa
 async def create_document_job(request: Request, complex_id: str = Query(..., pattern="^[A-Za-z0-9-]{1,80}$"), kind: str = Query("pdf-text", pattern="^(pdf-text|ocr)$"), workspace: dict = Depends(fetch_workspace), settings: Settings = Depends(get_settings)) -> dict:
     """Persist the original and job, then process with at most two concurrent workers."""
     from uuid import uuid4
+
     from backend.app.document_jobs import launch_job, queue_has_capacity
     if not queue_has_capacity():
         raise HTTPException(429, "Document queue is full; retry later")

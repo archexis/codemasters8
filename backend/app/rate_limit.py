@@ -21,13 +21,12 @@ Design (no new dependencies):
 import hashlib
 import time
 from collections import deque
-from typing import Deque, Dict, Tuple
 
 from starlette.responses import JSONResponse
-from starlette.types import ASGIApp, Message, Receive, Scope, Send
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 # Heavy projections worth throttling once a shared store exists.
-DEFAULT_LIMITED_PREFIXES: Tuple[str, ...] = (
+DEFAULT_LIMITED_PREFIXES: tuple[str, ...] = (
     "/api/summary",
     "/api/registry",
     "/api/export",
@@ -41,7 +40,7 @@ class SlidingWindowLimiter:
     def __init__(self, limit: int = 60, window_s: float = 60.0) -> None:
         self.limit = limit
         self.window_s = window_s
-        self._hits: Dict[str, Deque[float]] = {}
+        self._hits: dict[str, deque[float]] = {}
 
     def _evict_idle(self, now: float) -> None:
         if len(self._hits) <= MAX_KEYS:
@@ -93,7 +92,7 @@ class RateLimitMiddleware:
         app: ASGIApp,
         limit: int = 60,
         window_s: float = 60.0,
-        prefixes: Tuple[str, ...] = DEFAULT_LIMITED_PREFIXES,
+        prefixes: tuple[str, ...] = DEFAULT_LIMITED_PREFIXES,
     ) -> None:
         self.app = app
         self.prefixes = prefixes

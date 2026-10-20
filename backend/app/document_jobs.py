@@ -1,8 +1,8 @@
 """Small bounded document worker. Results are untrusted extraction candidates."""
 import asyncio
 import threading
-from io import BytesIO
 from hashlib import sha256
+from io import BytesIO
 
 import httpx
 from pypdf import PdfReader

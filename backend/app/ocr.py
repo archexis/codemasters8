@@ -1,12 +1,12 @@
 """Optional local OCR. Source pixels never become verified facts automatically."""
-from hashlib import sha256
-from io import BytesIO
-from pathlib import Path
 import shutil
 import subprocess
 import tempfile
 import time
+from hashlib import sha256
+from io import BytesIO
 from itertools import islice
+from pathlib import Path
 
 from PIL import Image, UnidentifiedImageError
 

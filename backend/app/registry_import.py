@@ -1,20 +1,20 @@
 """Owner-scoped registry previews. Remote discovery never establishes legal facts."""
-from contextlib import closing
 import asyncio
-from datetime import date, datetime, timezone, timedelta
-from hashlib import sha256
 import json
-from pathlib import Path
 import re
 import sqlite3
 import unicodedata
-from urllib.parse import urlparse, parse_qs
+from contextlib import closing
+from datetime import date, datetime, timedelta, timezone
+from hashlib import sha256
+from pathlib import Path
+from typing import Literal
+from urllib.parse import parse_qs, urlparse
 from uuid import uuid4
 
 import httpx
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
-from typing import Literal
 
 SOURCES = {
     'egov': ('data.egov.kz', 'official_open_data'),
