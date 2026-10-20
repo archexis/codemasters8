@@ -1,0 +1,81 @@
+- generic [ref=f1e2]:
+  - banner [ref=f1e3]:
+    - link "S SAQ QURYLYS САҚ · МОНИТОРИНГ РИСКОВ" [ref=f1e4] [cursor=pointer]:
+      - /url: "#/map"
+      - generic [ref=f1e5]: S
+      - generic [ref=f1e6]:
+        - text: SAQ QURYLYS
+        - generic [ref=f1e7]: САҚ · МОНИТОРИНГ РИСКОВ
+    - button "Меню" [ref=f1e85] [cursor=pointer]
+    - button "Демо-аналитик" [ref=f1e14] [cursor=pointer]
+  - generic [ref=f1e15]: Реальные координаты · названия и сведения вымышлены
+  - main [ref=f1e18]:
+    - status [ref=f1e145]:
+      - text: Изменения сохранены
+      - button "Закрыть" [ref=f1e146] [cursor=pointer]
+    - generic [ref=f1e232]:
+      - button "← К досье" [ref=f1e233] [cursor=pointer]
+      - generic [ref=f1e234]:
+        - text: Версия
+        - combobox "Версия" [ref=f1e235]:
+          - option "Текущее состояние"
+          - option "Версия 1 · Подтверждён" [selected]
+      - button "Печать / сохранить PDF" [ref=f1e236] [cursor=pointer]
+      - button "Скачать снимок JSON" [ref=f1e237] [cursor=pointer]
+    - article [ref=f1e238]:
+      - paragraph [ref=f1e239]: SAQ QURYLYS · СИГНАЛЬНАЯ КАРТОЧКА · DEMO
+      - heading "Кедровый горизонт" [level=1] [ref=f1e240]
+      - paragraph [ref=f1e241]: Демо-участок 02 · адрес вымышленный · Весь ЖК / очередь не определена
+      - paragraph [ref=f1e242]: "Дело: CASE-882badcf-65ac-4399-8f3b-6d8ceee85a89 · Версия 1 · 41c67cd5-7366-4ee0-8a54-55fab99595f6"
+      - paragraph [ref=f1e243]: "Статус: Подтверждён"
+      - paragraph [ref=f1e284]: "Решение: Демо-аналитик · 2026-10-20 05:51:10 UTC"
+      - paragraph [ref=f1e285]: "Обоснование: E2E UI: подтверждён только R2. Учебный сигнал, источник example.com, вывод не относится к реальному объекту."
+      - generic [ref=f1e244]:
+        - strong [ref=f1e245]: "25"
+        - generic [ref=f1e246]: Жёлтая зона
+      - paragraph [ref=f1e247]: "Застройщик: ТОО «Кедр Проект» (вымышленное) · БИН: неизвестен · стадия: Возведение этажей · DEMO"
+      - paragraph [ref=f1e248]: "Период применимости: не установлен"
+      - heading "Применимое правовое основание" [level=2] [ref=f1e249]
+      - paragraph [ref=f1e250]: Отсутствие проверено · Отсутствие проверено · Вымышленная сверка DEMO-SQ-002 · 2026-10-20
+      - paragraph [ref=f1e251]: Учебный юридический сценарий. Реальны только координаты стройплощадки. Название, адрес, застройщик, документы, публикации, сроки, готовность и оценки вымышлены. Не характеризует реальный объект.
+      - heading "Подтверждённые факторы" [level=2] [ref=f1e252]
+      - generic [ref=f1e286]:
+        - heading "R2 +25 · Прямое предложение внести деньги" [level=3] [ref=f1e287]
+        - paragraph [ref=f1e288]: Учебный E2E · 2026-10-20
+        - blockquote [ref=f1e289]: Платная бронь квартиры 987 650 тенге до сдачи дома.
+        - paragraph [ref=f1e290]: E2E UI 20.10.2026. Платная бронь квартиры 987 650 тенге до сдачи дома. Новый жилой комплекс, старт продаж.
+        - paragraph [ref=f1e291]: "Проверил: Демо-аналитик · 2026-10-20 05:50:46 UTC"
+        - paragraph [ref=f1e292]: "Материал: 2f3490f4-cc3d-498b-ac6c-144b060de3fa · публикация: AD-299812ae-2ee8-4f64-a017-5857043a0e46 · AI run: ручной факт"
+      - heading "Обоснования проверки фактов" [level=2] [ref=f1e254]
+      - generic [ref=f1e255]:
+        - paragraph [ref=f1e256]: R2 · Проверено · Демо-аналитик · 2026-10-20 05:50:46 UTC
+        - paragraph [ref=f1e257]: "E2E: проверены сохранённый текст, источник и дата, предложение брони присутствует."
+      - heading "Использованные материалы" [level=2] [ref=f1e258]
+      - generic [ref=f1e259]:
+        - text: ART-8cda5b2b-f655-4db9-a151-2143090eb8a5 · Учебный E2E
+        - paragraph [ref=f1e260]: "Дата события: 2026-10-20 · фиксация: 2026-10-20 05:49:56 UTC"
+        - paragraph [ref=f1e261]: E2E UI 20.10.2026. Платная бронь квартиры 987 650 тенге до сдачи дома. Новый жилой комплекс, старт продаж.
+        - link "https://example.com/e2e-ui-20261020" [ref=f1e262] [cursor=pointer]:
+          - /url: https://example.com/e2e-ui-20261020
+      - generic [ref=f1e263]:
+        - text: ART-56cdd5e8-5eff-4935-82f7-239e02ef77ea · Демо-публикация · demo_project_2
+        - paragraph [ref=f1e264]: "Дата события: 2026-10-20 · фиксация: 2026-10-20 05:50:22 UTC"
+        - paragraph [ref=f1e265]: ВЫМЫШЛЕННЫЙ МАТЕРИАЛ. Открыты продажи квартир в строящемся ЖК «Кедровый горизонт», ввод по демосценарию — в 2027 году. Резервирование квартиры — 450 000 тенге с зачётом в стоимость. Реальны только координаты стройплощадки. Название, адрес, застройщик, документы, публикации, сроки, готовность и оценки вымышлены. Не характеризует реальный объект.
+        - link "https://example.invalid/projects/SQ-002/publication" [ref=f1e266] [cursor=pointer]:
+          - /url: https://example.invalid/projects/SQ-002/publication
+      - generic [ref=f1e267]:
+        - text: ART-849377f9-308c-4671-8de9-e6992ab4e87b · Демо-обновление · demo_project_2
+        - paragraph [ref=f1e268]: "Дата события: 2026-10-20 · фиксация: 2026-10-20 05:50:22 UTC"
+        - paragraph [ref=f1e269]: "ВЫМЫШЛЕННЫЙ МАТЕРИАЛ. ЖК «Кедровый горизонт»: обновлён учебный график строительства. Реальны только координаты стройплощадки. Название, адрес, застройщик, документы, публикации, сроки, готовность и оценки вымышлены. Не характеризует реальный объект."
+        - link "https://example.invalid/projects/SQ-002/progress" [ref=f1e270] [cursor=pointer]:
+          - /url: https://example.invalid/projects/SQ-002/progress
+      - heading "Контекстные связи" [level=2] [ref=f1e271]
+      - paragraph [ref=f1e272]: Связи в материалы решения не включены.
+      - heading "Манифест приложений" [level=2] [ref=f1e273]
+      - heading "Неизвестные поля и ограничения" [level=2] [ref=f1e274]
+      - paragraph [ref=f1e275]: • Период применимости не установлен
+      - paragraph [ref=f1e276]: • БИН не указан
+      - paragraph [ref=f1e277]: "Версия весов: 1. Признаки риска не устанавливают факт правонарушения. Решение принимает человек."
+  - contentinfo [ref=f1e82]:
+    - generic [ref=f1e83]: SAQ QURYLYS
+    - generic [ref=f1e84]: Решение принимает человек. Система не устанавливает факт правонарушения.

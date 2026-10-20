@@ -16,6 +16,7 @@ async function readState(page: Page): Promise<AppState> {
 test('investigation lifecycle: publication → fact → signal → reconsideration → immutable export', async ({ page }, info) => {
   test.setTimeout(120000);
   const errors: string[] = [];
+  const publicationCandidate = page.locator('.hypothesis').filter({hasText:'Депозит 654 000 тенге'});
   page.on('pageerror', error => errors.push(error.message));
   let caseId: string;
   let caseUrl: string;
@@ -45,11 +46,13 @@ test('investigation lifecycle: publication → fact → signal → reconsiderati
     await page.getByRole('button', { name: 'Начать расследование', exact: true }).click();
     await expect(page).toHaveURL(/#\/cases\/CASE-/);
     await expect(page.getByRole('region',{name:'Автоматическая подготовка расследования'}).getByRole('status')).toContainText('Подготовка завершена');
-    await expect(page.getByRole('checkbox',{name:/Выбрать факт/})).not.toBeChecked();
+    await expect(page.getByRole('checkbox',{name:/Выбрать факт/})).toHaveCount(2);
+    await expect(page.locator('.claim-selection input:checked')).toHaveCount(0);
     await expect(page.getByRole('button',{name:'Подтвердить выбранные факты',exact:true})).toBeDisabled();
     const prepared=await readState(page);
     expect(prepared.assertions??[]).toHaveLength(0);
-    expect(prepared.claims).toHaveLength(1);
+    expect(prepared.claims).toHaveLength(2);
+    expect(prepared.artifacts?.filter(a=>a.id.startsWith('DEMO-'))).toHaveLength(1);
     expect(prepared.claims![0].triage).toBeUndefined();
     expect(prepared.claims![0].quote).toContain('Депозит');
     await page.screenshot({path:info.outputPath('00-automatically-prepared.png'),fullPage:true});
@@ -63,14 +66,14 @@ test('investigation lifecycle: publication → fact → signal → reconsiderati
     await expect(page.getByRole('button', { name: 'Скачать снимок JSON', exact: true })).toBeDisabled();
     await page.getByRole('button', { name: '← К досье', exact: true }).click();
 
-    await expect(page.getByRole('button', { name: 'Подтвердить факт R2', exact: true })).toBeDisabled();
+    await expect(publicationCandidate.getByRole('button', { name: 'Подтвердить факт R2', exact: true })).toBeDisabled();
     await page.getByLabel('Обоснование проверки факта', { exact: true }).fill(confirmation);
-    await page.getByRole('checkbox',{name:/Выбрать факт R2/}).check();
+    await publicationCandidate.getByRole('checkbox',{name:/Выбрать факт R2/}).check();
     await page.getByRole('button', { name: 'Подтвердить выбранные факты', exact: true }).click();
     await expect(page.locator('.risk-score strong')).toHaveText('25');
     await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page.locator('.risk-score strong')).toHaveText('25');
-    await expect(page.locator('.hypothesis')).toContainText('Факт проверен');
+    await expect(publicationCandidate).toContainText('Факт проверен');
     await expect(page.locator('.dossier-visual .evidence-image')).toBeVisible();
   });
 
@@ -103,7 +106,7 @@ test('investigation lifecycle: publication → fact → signal → reconsiderati
     await expect(page.locator('.case-signal-sheet')).toContainText('Предпросмотр черновика');
     await page.getByRole('button', { name: '← К досье', exact: true }).click();
     await page.getByLabel('Обоснование проверки факта', { exact: true }).fill(withdrawal);
-    await page.getByRole('button', { name: 'Отклонить факт', exact: true }).click();
+    await publicationCandidate.getByRole('button', { name: 'Отклонить факт', exact: true }).click();
     await expect(page.locator('.risk-score strong')).toHaveText('0');
     await page.getByRole('button', { name: 'Предпросмотр сигнала', exact: true }).click();
     await page.getByLabel('Обоснование решения', { exact: true }).fill(withdrawal);
@@ -111,7 +114,7 @@ test('investigation lifecycle: publication → fact → signal → reconsiderati
     await expect(page.locator('.case-signal-sheet')).toContainText('Версия 2');
     await expect(page.locator('.case-signal-sheet')).toContainText('Статус: Возвращён');
     await page.reload({ waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.hypothesis')).toContainText('Факт отклонён');
+    await expect(publicationCandidate).toContainText('Факт отклонён');
     await expect(page.locator('.risk-score strong')).toHaveText('0');
     await page.getByRole('button', { name: 'Предпросмотр сигнала', exact: true }).click();
     await expect(page.locator('.case-signal-sheet .risk-score strong')).toHaveText('0');

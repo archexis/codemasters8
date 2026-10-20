@@ -1,0 +1,25 @@
+name: Предложение
+description: Пользовательская задача, улучшение интерфейса или разработки
+title: "[Feature] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Пользовательская задача
+      description: Кому нужно изменение и что сейчас мешает выполнить работу?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Желаемое поведение
+      description: Опишите наблюдаемый результат и пример сценария.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Критерии готовности
+      description: Как проверить результат? Укажите важные ограничения или альтернативы.
+    validations:
+      required: true

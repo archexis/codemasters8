@@ -1,0 +1,45 @@
+name: Ошибка
+description: Воспроизводимая проблема в интерфейсе, данных или API
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: "Для уязвимостей используйте SECURITY.md. Не прикладывайте токены, .env и персональные данные."
+  - type: textarea
+    id: problem
+    attributes:
+      label: Что произошло
+      description: Фактический результат и что ожидалось вместо него.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Как воспроизвести
+      description: Шаги с учебными данными, маршрут и при необходимости снимок экрана.
+      placeholder: "1. Открыть…\n2. Выбрать…\n3. Нажать…"
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Режим
+      options:
+        - DEMO локально
+        - Публичный DEMO
+        - Подключённый Supabase
+        - Не удалось определить
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Окружение
+      description: Commit или URL сборки, ОС, браузер, размер экрана. Для локального запуска — версия Node/Python при необходимости.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Дополнительные сведения
+      description: Обезличенный текст ошибки или связанные проверки. Удалите ключи и пользовательские материалы.

@@ -1,61 +1,134 @@
+<div align="center">
+
 # SAQ QURYLYS
 
-Мониторинг рисков долевого строительства для аналитика: публикация → AI-гипотеза → проверка человеком → объяснимый score → неизменная версия сигнала → PDF. Риск не устанавливает факт правонарушения. Synthetic кейсы явно обозначены; публичный снимок не является актуальной юридической проверкой.
+**От публикации о строящемся жилье — к проверяемому решению аналитика.**
 
-Новый UX: **Карта / Публикации / Реестры** → единое досье с вкладками **Обзор / Проверка / Связи / Хронология**. Расследование использует то же досье. Принятие AI-гипотезы не начисляет баллы: факт проверяется отдельным решением в активном деле. [Реализованные изменения, проверки и оставшиеся ограничения](docs/UX_IMPLEMENTATION.md).
+Карта объектов · анализ материалов · объяснимый риск · история решений
 
-## Запуск DEMO
+[Открыть DEMO](https://saq-qurylys-pi.vercel.app) · [Быстрый старт](#быстрый-старт) · [Документация](docs/README.md) · [Сообщить об ошибке](https://github.com/archexis/codemasters8/issues/new/choose)
 
-Проверены Node 24.18.0/npm 11.16.0, Python 3.11.0. Из чистой копии:
+[![CI](https://github.com/archexis/codemasters8/actions/workflows/ci.yml/badge.svg)](https://github.com/archexis/codemasters8/actions/workflows/ci.yml)
+![Svelte 5](https://img.shields.io/badge/Svelte-5-FF3E00?logo=svelte&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?logo=supabase&logoColor=white)
+
+</div>
+
+![Карта объектов SAQ QURYLYS](docs/assets/map-preview.png)
+
+<sub>Карта опубликованной DEMO-сборки от 19 октября 2026 года. Интерфейс и состав набора могут отличаться в последующих версиях.</sub>
+
+## Что делает проект
+
+SAQ QURYLYS помогает аналитику сопоставить рекламу, документы и наблюдения по объектам долевого строительства в Казахстане. Материал проходит последовательную проверку: извлечённое утверждение, решение человека, расчёт риска и сохранённая версия заключения с источниками.
+
+| Возможность | Как используется |
+| --- | --- |
+| Карта и поиск | Найти объект по названию, адресу или БИН; отфильтровать риски; открыть досье |
+| Публикации | Сохранить оригинал, выделить цитаты и разобрать гипотезы R2/R3 |
+| Единое досье | Просмотреть сведения, проверку, связи и хронологию объекта |
+| Расследование | Проверить факты в отдельном деле с материалами, периодом и обоснованием |
+| Объяснимый score | Увидеть вклад каждого подтверждённого фактора |
+| Версии и PDF | Зафиксировать решение и вернуться к его исходным данным после пересмотра |
+| Резервная копия | Выгрузить ZIP с данными, файлами и контрольными суммами |
+
+> Оценка риска помогает расставлять приоритеты проверки и не устанавливает факт правонарушения. Принятие AI-гипотезы само по себе не начисляет баллы. Отсутствие подтверждённых факторов не доказывает безопасность объекта.
+
+## Быстрый старт
+
+Нужны **Node.js 24** и npm. Python, Docker и учётная запись Supabase для DEMO не требуются.
 
 ```sh
+git clone https://github.com/archexis/codemasters8.git
+cd codemasters8
 npm ci
 npm run dev -- --port 5173 --strictPort
 ```
 
-Открыть http://127.0.0.1:5173. Без Supabase env работает DEMO без регистрации. Seed: 16 объектов, 13 публикаций. Решения — localStorage, файлы — IndexedDB. DEMO анализ — локальный RU/KZ parser, не внешний AI. Web Locks сериализует локальные записи; без него запись блокируется. Сброс доступен через «Демо-аналитик». API JSON export не содержит файлы; полный ZIP backup находится на #/backup.
+Откройте [127.0.0.1:5173](http://127.0.0.1:5173). Без заполненных `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY` включается DEMO без регистрации. Если эти переменные уже заданы в окружении или `.env*`, очистите обе и перезапустите Vite.
 
-## Connected и настоящий AI
+Начните с карты, откройте объект и перейдите к проверке. Полный путь от новой публикации до PDF описан в [сценарии демонстрации](docs/DEMO_SCRIPT.md).
 
-Полная инструкция: [RELEASE_RUNBOOK](docs/RELEASE_RUNBOOK.md). Создать отдельный локальный Supabase (Docker), применить **все** миграции supabase/migrations по имени; не reset рабочей БД. Скопировать .env.example в игнорируемый .env, задать публичные VITE_SUPABASE_URL/ANON_KEY и backend URL. Оператор входит по административно выданной учётке; регистрации в интерфейсе нет. initialize_workspace загружает персональный seed. RLS закрывает чужие данные.
+## DEMO и подключённый режим
 
-FastAPI: создать backend/.venv, установить `backend/requirements.lock.txt`, запустить `backend/.venv/Scripts/python.exe -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000`. На Unix использовать bin/python. SUPABASE_URL/ANON_KEY и CORS_ORIGINS — серверная конфигурация API; service_role ему не нужен.
+| | DEMO | Подключённый режим |
+| --- | --- | --- |
+| Вход | Без регистрации | Учётная запись Supabase Auth |
+| Данные | Локальный демонстрационный набор | Персональное пространство в PostgreSQL с RLS |
+| Файлы | IndexedDB браузера | Приватный Supabase Storage |
+| Разбор текста | Локальный parser RU/KZ | Внешняя LLM через Edge Function |
+| PDF | Печать в браузере | Печать и серверный PDF через FastAPI |
+| Установка | Node.js и npm | Дополнительно Python; Docker для локального Supabase |
 
-Edge: LLM_API_URL/MODEL/API_KEY, LLM_THINKING, ALLOWED_ORIGIN — только сервер. Локальный runtime предоставляет SUPABASE_URL/ANON_KEY/SERVICE_ROLE_KEY; последний пишет доверенный analysis_runs. `npx supabase functions serve analyze --env-file .env.edge`. Ключи не имеют префикса VITE_ и не попадают в Git. Внешний provider — OpenAI-compatible; DeepSeek Flash проверялся в архивном прогоне, свежий платный прогон NOT_RUN. Prompt/schema и AI evidence связаны hashes в приёмке. Ошибка LLM не заменяется parser-success.
+В DEMO решения хранятся в localStorage, вложения — в IndexedDB. Используйте один origin и профиль браузера; очистка данных браузера удаляет локальную работу. Сброс доступен в меню «Демо-аналитик». Для локальных записей требуется Web Locks API.
 
-AI: body ≤100000 bytes, text ≤20000 JS characters, quota 30/час/пользователь, timeout provider 30 секунд. Только R2/R3 extraction с точной цитатой. Подтверждение человеком требует источников/дат/материала; unknown даёт 0. R1/R4/R5/R6 проверяются вручную, R3 требует отдельного материала о вводе. Score — сумма уникальных confirmed факторов, до 100; red требует R1+R2. A/B/C: 35/70/10.
+Демонстрационные сценарии содержат вымышленные сведения. Географический источник или датированный публичный снимок не подтверждает юридический статус объекта. Учитывайте происхождение и дату конкретной записи.
 
-## Доказательства, история и восстановление
+Публичная ссылка ведёт на DEMO с локальным parser. Для подключения Auth, БД, серверного PDF, OCR и внешней LLM следуйте [руководству по запуску](docs/RELEASE_RUNBOOK.md).
 
-Единственный writer RPC apply_command(command, expected_version, command_id); повторы используют receipt. Reviewer/time — серверные. Upload→атомарная metadata/evidence команда; неизвестный исход не удаляет файл. Private Storage: JPEG/PNG/WebP/MP4/PDF до 20 MiB, own prefix, подписанные ссылки; referenced evidence удалять нельзя. MIME проверяет заявленный тип, не заменяет антивирус/OCR.
+## Как считается риск
 
-Signal versions append-only. Исторический PDF читает сохранённый snapshot, включая материалы/provenance, и не подменяет его текущими фактами. Backup ZIP содержит JSON+байты+SHA256 manifest. Restore — в отдельное пустое workspace, confirmed→needs-verification, signals→draft; исходная атрибуция сохраняется как provenance. Перед upgrade снять DB+Storage backup. Rollback — совместимая старая версия либо восстановление в отдельную среду, без произвольных down migrations.
+Score — сумма **уникальных подтверждённых** факторов, максимум 100. Непроверенные и отклонённые факторы баллов не дают.
 
-## Проверки и демонстрация
+| Код | Фактор | Вес |
+| --- | --- | ---: |
+| R1 | Отсутствие применимого законного основания | 35 |
+| R2 | Прямое предложение внести деньги | 25 |
+| R3 | Активная реклама строящегося жилья | 10 |
+| R4 | Коллективное обращение | 15 |
+| R5 | Разрыв готовности ≥ 20 процентных пунктов | 10 |
+| R6 | Простой или просрочка | 5 |
+
+Красная зона требует score ≥ 60 **и** подтверждения R1 и R2. Иначе score ≥ 25 означает жёлтую зону; меньший score — зелёную. Новое дело начинает собственную проверку. AI извлекает кандидатов R2/R3 с точными цитатами; факты подтверждает человек по первичным материалам.
+
+Правила реализованы в [scoring.ts](src/lib/scoring.ts); границы доверия и сохранение истории описаны в [архитектуре](docs/ARCHITECTURE.md).
+
+## Разработка и проверки
 
 ```sh
 npm run check
 npm test
 npm run build
-npm run test:e2e
-npm run test:cloud
-npm run test:edge
-npx deno check supabase/functions/analyze/index.ts
-npm run test:api
-npm run test:local
-npm run verify:score
 ```
 
-`test:local` читает игнорируемый supabase/.temp/status.json и создаёт временные аккаунты. `test:cloud` использует mock HTTP. AI `npm run test:deepseek` требует явного `SAQ_ALLOW_PAID_AI=1` после согласования бюджета (до 13 вызовов: 12 eval + 1 browser), отдельно от unit. `test:api` выбирает backend/.venv, затем активный python; переопределение — SAQ_PYTHON. [Сценарий и резервные материалы](docs/DEMO_SCRIPT.md), [приёмка S6](docs/acceptance/sprint-6.md), [release manifest](docs/RELEASE_MANIFEST.json). Исторический gate6 проверяет архив S6 и не является текущей приёмкой. Текущий dirty-кандидат идентифицируется baseHead и manifest фактических байтов; candidateSHA до отдельного коммита равен null. Production deploy/push/отправка заявки не входят в выполненные действия.
+Для браузерных проверок установите Chromium: `npx playwright install chromium`, затем запустите `npm run test:e2e`. В Linux CI используется `npx playwright install --with-deps chromium`.
 
-## Стек и ограничения
+| Команда | Что проверяет |
+| --- | --- |
+| `npm run test:e2e` | DEMO-сценарии в desktop и mobile Chromium |
+| `npm run test:cloud` | Подключённый интерфейс с HTTP mock |
+| `npm run test:api` | FastAPI; нужны Python-зависимости |
+| `npm run test:edge` | Edge Function; нужен Deno |
+| `npm run test:local` | Настоящий локальный Supabase; нужна отдельная настройка |
 
-Svelte 5/TypeScript/Vite/Tailwind, Supabase Auth/PostgreSQL JSONB/RLS/Storage/Edge, FastAPI, MapLibre, Zod, PapaParse; версии и лицензируемые зависимости — package-lock.json и Python lockfile. Разработка и тестирование с AI assistance; решения и материалы проверяет человек.
+[Все команды и диагностика](docs/DEVELOPMENT.md). Live-проверки и платные вызовы LLM запускаются отдельно. Старые отчёты приёмки не означают, что текущий код прошёл новый прогон.
 
-Нет OCR, скрейпинга, живой сверки госреестров, CV дронов, общих организаций и полного двуязычного UI. Карта зависит от WebGL/OSM/Esri; независимый список остаётся рабочим. Seed содержит synthetic и явно датированный public snapshot. Исторические docs аудита не заменяют текущие CONTRACTS и приёмку.
+## Устройство репозитория
 
-Текущая передача разработки: [score-maxxing REPORT](docs/acceptance/score-maxxing/REPORT.md). Архивы S4–S6 отражают прежний код и не заменяют эту приёмку.
+```text
+src/                     Svelte-интерфейс и TypeScript-логика
+backend/                 FastAPI, PDF, извлечение текста и OCR
+supabase/functions/      Edge Function анализа публикаций
+supabase/migrations/     Схема, RLS и серверные команды
+tests/                   Unit, E2E, HTTP mock и live-проверки
+tools/                   Проверки и вспомогательные скрипты
+docs/                    Руководства и указатель архива
+.github/                 CI и шаблоны задач и pull request
+```
 
-## Опубликованный кандидат
+Стек: **Svelte 5 · TypeScript · Vite · Tailwind CSS · MapLibre · Supabase · FastAPI**. Точные зависимости зафиксированы в `package-lock.json` и `backend/requirements.lock.txt`. `js/` и `css/` сохраняют ранний прототип; рабочая точка входа — `src/main.ts`.
 
-[Открыть публичный DEMO](https://saq-qurylys-pi.vercel.app) · [кандидат99ec573](https://github.com/archexis/codemasters8/tree/codex/saq-score-candidate) · [успешный CI](https://github.com/archexis/codemasters8/actions/runs/39256363997). На сайте DEMO parser; настоящий DeepSeek проверен локально:12 eval + headed UI → snapshot/PDF, [доказательства](docs/acceptance/score-maxxing/paid-ai/evaluation.json). Свежие результаты заменяют прежние NOT_RUN в исторических разделах выше.
+## Ограничения
+
+- Автоматической сверки с государственными реестрами и скрейпинга источников нет.
+- OCR доступен через сервер с Tesseract; распознанный текст требует сверки с оригиналом.
+- Анализа готовности по фото или дрон-видео с помощью CV нет. Картографические модели и недатированные подложки не являются доказательствами.
+- Карта зависит от внешних тайлов и возможностей браузера; предусмотрены упрощённое отображение и список объектов.
+- Подключённые данные изолированы по пользователю. Общие пространства организаций и полный двуязычный интерфейс пока не реализованы.
+
+## Документация и участие
+
+[Документация](docs/README.md) · [Запуск и эксплуатация](docs/RELEASE_RUNBOOK.md) · [Архитектура](docs/ARCHITECTURE.md) · [Вклад в проект](CONTRIBUTING.md) · [Безопасность](SECURITY.md)
+
+В репозитории пока нет файла лицензии. Условия использования и распространения кода нужно согласовать с правообладателем.

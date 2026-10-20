@@ -1,24 +1,51 @@
-# Сервер SAQ QURYLYS
+# SAQ QURYLYS API
 
-Установка: `python -m pip install -r backend/requirements.lock.txt`. Запуск из корня: `python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000`.
+FastAPI предоставляет авторизованные представления workspace, PDF сохранённых решений и обработку документов. Полная настройка окружения — [запуск и эксплуатация](../docs/RELEASE_RUNBOOK.md); устройство данных — [архитектура](../docs/ARCHITECTURE.md).
 
-Нужны `SUPABASE_URL`, `SUPABASE_ANON_KEY`; пользовательский Bearer JWT проверяется через Auth, запросы в PostgREST и Storage выполняются с тем же токеном и RLS. Service role ключ серверу не нужен. До использования новых команд и jobs примените новую миграцию обычным процессом выпуска; в этой работе удалённая база не изменялась.
+## Запуск
 
-Сохранены `/health`, `/api/summary`, `/api/export`. Небольшие представления: `/api/map-summary`, `/api/publications`, `/api/registry`, `/api/complexes/{id}/preview`, `/dossier`, `/verification`, `/relations`, `/timeline`, `/api/cases/{id}`. У представлений досье `phase_id` ограничивает область. Списки используют `limit` и `cursor`; граф ограничен одним переходом. Backend пока читает JSONB workspace целиком внутри сервера; перенос физического хранения в отдельные индексированные сущности не выполнен.
+Установите зависимости в виртуальное окружение из `backend/requirements.lock.txt`. Из корня репозитория с активным окружением:
 
-PDF сохранённого решения: `GET /api/cases/{caseId}/snapshots/{snapshotId}/pdf`. Renderer использует только сохранённый snapshot. Для кириллицы нужен `PDF_FONT_PATH` или системный DejaVu Sans/Arial; Docker устанавливает DejaVu Sans.
+```sh
+python -m pip install -r backend/requirements.lock.txt
+python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
+```
 
-`POST /api/import/pdf` принимает raw `application/pdf` до 20 МБ/100 страниц и возвращает непроверенный candidate с постраничным текстом и SHA256. Изображения: `POST /api/import/image`, JPG/PNG/WebP до 20 МБ/25 мегапикселей. OCR использует локальный Tesseract с `rus+eng`; отсутствие возвращает 503. Docker устанавливает Tesseract, однако его OCR качество на реальных документах отдельно не проверено. Текст OCR всегда требует сверки с оригиналом.
+Нужны `SUPABASE_URL`, `SUPABASE_ANON_KEY` и `CORS_ORIGINS` из `.env` или переменных процесса. API проверяет Bearer JWT через Supabase Auth и передаёт пользовательский токен в PostgREST/Storage. Service role ему не нужен. Примените миграции своей тестовой среды перед использованием API.
 
-Фоновый вариант PDF: `POST /api/document-jobs?complex_id=...&kind=pdf-text|ocr`, тот же raw PDF. Оригинал сохраняется в приватном Storage, metadata — в `document_jobs`, ответ 202 с `pollUrl`. Worker обрабатывает максимум два документа одновременно. PDF OCR читает встроенные растровые изображения, максимум 20 страниц/5 изображений на страницу и ограничивает время; это не универсальный PDF renderer. Статусы: queued/running/succeeded/failed. После перезапуска незавершённую задачу можно возобновить авторизованным `POST /api/document-jobs/{id}/retry`: токены не сохраняются в очереди. Автоматического перезапуска без пользовательского токена нет. Queue output не подтверждает факты и не влияет на риск.
+`GET /health` доступен без входа. `supabase_configured` проверяет наличие настроек. OpenAPI: [127.0.0.1:8000/docs](http://127.0.0.1:8000/docs). Операции `/api/*` требуют авторизации.
 
-Проверки: `python -m pytest backend/tests -q`; SQL boundary: `npx vitest run tests/unit/investigation-sql.test.ts`. Тесты используют локальный HTTP mock/PGlite; это не проверка развёрнутого Supabase, Docker или установленного OCR.
+## Основные операции
 
-Переход старого workspace выполняется без потери истории. После первого нового дела по ЖК сервер отклоняет подтверждения старых команд `factor`, `ad+hypothesis`, `signal`: решения выполняются через `fact.review`/`case.decide`. Старые квитанции продолжают безопасно повторяться. ЖК без новых дел сохраняют legacy путь для совместимости. Изменение исходных правовых/строительных данных отзывает зависимые текущие утверждения в `candidate`, возвращает дело в draft; исторические snapshots сохраняются. При restore активные verified становятся candidate, дела draft, геометрия verified=false, исторические snapshots получают imported=true.
+| Группа | Маршруты |
+| --- | --- |
+| Сводка и JSON | `GET /api/summary`, `/api/export` |
+| Карта и списки | `GET /api/map-summary`, `/api/publications`, `/api/registry` |
+| Досье | `GET /api/complexes/{id}/preview`, `/dossier`, `/verification`, `/relations`, `/timeline` |
+| Дело | `GET /api/cases/{id}` |
+| PDF версии | `GET /api/cases/{caseId}/snapshots/{snapshotId}/pdf` |
+| Извлечение текста | `POST /api/import/pdf`, `/api/import/image` |
+| Фоновые задания | `POST /api/document-jobs`, `GET /api/document-jobs/{id}`, `POST /api/document-jobs/{id}/retry` |
 
-Очереди используют собственные readiness observations: история `readinessSources` добавляется только в конец; сведения всего ЖК не подтверждают R5 отдельной очереди. `period` задаёт включительный интервал `{from,to?}`; известный период дела должен покрываться утверждением, для R1 — применимым основанием, для R3 — датами публикации/доказательства. Snapshot сохраняет период и собственные наблюдения очереди.
+`phase_id` ограничивает область досье; списки используют `limit` и `cursor`. Сервер читает owner-scoped JSONB workspace целиком. `/api/export` возвращает JSON и не включает байты вложений.
 
-Типизированные контекстные связи хранятся в `relations`: `relation.register` создаёт candidate, отдельный `relation.review` сохраняет human review. Проверяются канонические узлы, область первичных материалов, отсутствие self-edge. Подтверждение требует непустого списка материалов и комментария; связи не добавляют риск-баллы. Backend graph возвращает сохранённые рёбра, статусы и ссылки на первоисточники; для legacy без связей остаётся отдельно помеченная identity-проекция реестра.
+PDF renderer читает сохранённый snapshot. Для кириллицы нужен `PDF_FONT_PATH` или системный DejaVu Sans/Arial. Dockerfile устанавливает DejaVu.
+
+## PDF и OCR
+
+Импорт принимает raw body: PDF до 20 MiB и 100 страниц; JPEG/PNG/WebP до 20 MiB и 25 мегапикселей. Результат — непроверенный candidate с SHA256 и извлечённым текстом. Извлечение не подтверждает факты и не увеличивает score.
+
+OCR требует Tesseract с `rus+eng`; без него API возвращает 503. Dockerfile включает Tesseract. PDF OCR читает встроенные растровые изображения: максимум 20 страниц, до пяти изображений на страницу, с ограничением времени. Это не универсальный PDF renderer; качество на реальных документах проверяется отдельно.
+
+Фоновый импорт `POST /api/document-jobs?complex_id=...&kind=pdf-text|ocr` сохраняет оригинал в private Storage и отвечает 202 с `pollUrl`. Статусы: queued/running/succeeded/failed. Worker обрабатывает два документа одновременно внутри процесса FastAPI. После перезапуска незавершённое задание возобновляется авторизованным retry; JWT в очереди не сохраняется.
+
+## Проверки
+
+```sh
+python -m pytest backend/tests -q
+```
+
+Из общего npm-окружения: `npm run test:api`. API-тесты используют HTTP mock; они не подтверждают доступность настоящего Supabase или установленного OCR. Настройка интеграционного прогона — [руководство разработчика](../docs/DEVELOPMENT.md).
 
 ## Автоматическая подготовка существующего расследования
 

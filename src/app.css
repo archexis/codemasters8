@@ -370,8 +370,13 @@ button[aria-pressed=true] {background:#e8eedf;border-color:#6a8860;}
 .map-page .map-preview .preview-model summary { font-size:12px;color:#5c6b60; }
 .map-page .map-preview .preview-meta { font-size:12px;line-height:1.5; }
 @media(max-width:640px) {
- .map-page .map-wrap .map-preview { top:auto;left:8px;right:8px;bottom:72px;max-height:55dvh;padding:14px;width:auto; }
+ /* Reserve the legend's actual height, including wrapped rows, below the card. */
+ #app:has(.map-page) { height:100dvh; }
+ .map-page { min-height:0; }
+ .map-page .map-wrap { display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:12px;padding:0 8px 52px; }
+ .map-page .map-wrap .map-preview { position:relative;grid-row:1;grid-column:1;align-self:end;min-width:0;min-height:0;top:auto;left:auto;right:auto;bottom:auto;max-height:min(55dvh,100%);padding:14px;width:auto; }
  .map-page .map-wrap:not(.map-tools-open) .map-preview { top:auto; }
+ .map-page .map-legend-float { position:relative;grid-row:2;grid-column:1;left:auto;bottom:auto;width:fit-content;max-width:100%; }
  .map-page .map-preview h3 { font-size:20px; }
  .map-page .map-preview .preview-image img { height:104px; }
 }

@@ -30,7 +30,7 @@
   <h2>{value ? 'Редактировать объект' : 'Новый объект'}</h2>
   <div class="form-grid">
     <label>Название<input required bind:value={form.name}/></label><label>Адрес<input required bind:value={form.address}/></label>
-    <label>Застройщик<input bind:value={form.developer}/></label><label>БИН<input pattern="[0-9]{12}" bind:value={form.bin}/></label>
+    <label>Застройщик<input bind:value={form.developer}/></label><label>БИН<input pattern={'[0-9]{12}'} bind:value={form.bin}/></label>
     <label>Широта<input type="number" min="-90" max="90" step="any" bind:value={form.lat}/></label><label>Долгота<input type="number" min="-180" max="180" step="any" bind:value={form.lng}/></label>
     <label>Стадия<input bind:value={form.stage}/></label><label>Заявленная готовность, %<input type="number" min="0" max="100" bind:value={form.readinessClaimed}/></label>
   </div>

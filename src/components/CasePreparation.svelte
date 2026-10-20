@@ -5,7 +5,7 @@
  import {getSessionGeneration,getSessionUser,mediaUrl,SessionSupersededError} from '../lib/repository';
  import {supabase} from '../lib/supabase';
  import {getResearch,startResearch,setResearchMonitor,extractPdf,extractImage,type ResearchStatus,type ResearchSource} from '../lib/workspace-api';
- import {preparationJob,deliverPreparation,inPreparationScope,claimsForMaterial} from '../lib/preparation';
+ import {preparationJob,deliverPreparation,inPreparationScope,claimsForMaterial,demoPreparationCommands} from '../lib/preparation';
  import {dateWithinPeriod} from '../lib/applicability';
  import Analyze from './Analyze.svelte';
  import {adDedupeKey} from '../lib/parser';
@@ -23,6 +23,9 @@
  });
  const active=$derived(item?.status==='draft');
  const connected=!!supabase && !!untrack(getSessionUser);
+ const demoSteps=['Сбор публикаций','Разбор документов','Поиск упоминаний','Подготовка кандидатов'];
+ const demoMaterials=$derived((getWorkspace().artifacts??[]).filter(a=>item && inPreparationScope(item,a)));
+ const demoCandidates=$derived((getWorkspace().claims??[]).filter(c=>demoMaterials.some(a=>a.id===c.artifactId) && JSON.stringify(c.period)===JSON.stringify(item?.period)));
  $effect(()=>onbusy(view.running));
  function current():InvestigationCase {
    if(session!==getSessionGeneration())throw new SessionSupersededError();
@@ -64,7 +67,7 @@
      if(c.phaseId && !linked.some(a=>a.phaseId===c.phaseId)) {note('Вложения без установленной очереди требуют уточнения.');continue;}
      // Media.date is often upload date, never silently treated as the event date.
      if(c.period)note(`Вложение ${media.name}: нужна установленная дата события в материале для периода дела. Извлечённый текст останется на уточнение.`);
-     if(!connected) {note('DEMO: PDF/OCR недоступны; сохранённый текст разбирается настоящим локальным parser. Файлы остаются доступны вручную.');continue;}
+     if(!connected) {continue;}
      let url='';
      try {
        url=await mediaUrl(media);current();
@@ -135,10 +138,18 @@
    catch(e){job.error=e instanceof Error?e.message:String(e);}
    finally{job.running=false;tick++;}
  }
+ async function demoStage(step:number){
+   job.demoStep=step;job.stage=`${step+1} / ${demoSteps.length} · ${demoSteps[step]}`;tick++;
+   await new Promise(resolve=>setTimeout(resolve,900));
+   current();
+ }
  async function run(explicit=false){
-   if(job.running)return;job.running=true;job.error='';job.notes=[];freshAnalysis=explicit;
+   if(job.running)return;
+   if(!connected && (!job.demoMaterialId || !job.error&&!job.pending.length))job.demoMaterialId=`DEMO-${newRunId()}`;
+   job.running=true;job.error='';job.notes=[];freshAnalysis=explicit;
    try {
      current();if(job.pending.length)await deliver([]);
+     if(!connected)await demoStage(0);
      await savedMaterials();job.stage='3 / 3 · Поиск недостающих материалов';
      if(connected) {
        await refresh();current();
@@ -146,9 +157,13 @@
        if(z?.demo || z?.origin==='demo')note('Вымышленный объект: внешний поиск отключён.');
        else if(remote?.configured){await startResearch(caseId,searchDomains);await refresh();note('Сбор продолжится на сервере при закрытом браузере. Результаты появятся в этом деле.');}
        else note(remoteError||'Внешний поиск не подключён. Сохранённые материалы обработаны.');
+     }else {
+       for(let step=1;step<demoSteps.length;step++)await demoStage(step);
+       await deliver(demoPreparationCommands(getWorkspace(),current(),job.demoMaterialId!));
+       job.demoStep=demoSteps.length;
      }
      job.stage='Подготовка завершена · кандидаты ждут проверки';
-     try{sessionStorage.setItem(`saq-prepared:${key}`,JSON.stringify({notes:job.notes,completed:job.completed,total:job.total}));}catch{}
+     try{sessionStorage.setItem(`saq-prepared:${key}`,JSON.stringify({notes:job.notes,completed:job.completed,total:job.total,demoStep:job.demoStep,demoMaterialId:job.demoMaterialId}));}catch{}
    }catch(e){job.error=e instanceof Error?e.message:String(e);job.stage='Подготовка прервана · частичный результат сохранён';}
    finally{job.running=false;tick++;}
    await ingest();
@@ -162,7 +177,7 @@
  async function monitor(hours:number){monitorBusy=true;remoteError='';try{await setResearchMonitor(caseId,hours,searchDomains);await refresh();}catch(e){remoteError=e instanceof Error?e.message:String(e);}finally{monitorBusy=false;}}
  onMount(()=>{
    let disposed=false;let polling=false;
-   let completed=false;try{const stored=sessionStorage.getItem(`saq-prepared:${key}`);completed=!!stored;if(stored&&stored!=='1'){const previous=JSON.parse(stored);job.notes=previous.notes??[];job.completed=previous.completed??0;job.total=previous.total??0;}}catch{}
+   let completed=false;try{const stored=sessionStorage.getItem(`saq-prepared:${key}`);completed=!!stored;if(stored&&stored!=='1'&&!job.running){const previous=JSON.parse(stored);job.notes=previous.notes??[];job.completed=previous.completed??0;job.total=previous.total??0;job.demoStep=previous.demoStep;job.demoMaterialId=previous.demoMaterialId;}}catch{}
    if(completed && job.stage==='Подготовка ещё не запускалась')job.stage='Предыдущий проход завершён · материалы и кандидаты сохранены';
    if(!completed && active && new URLSearchParams(location.hash.split('?')[1]).get('prepare')==='1' && job.stage==='Подготовка ещё не запускалась')void run();
    else void refresh().then(()=>{if(!disposed)void ingest();});
@@ -173,9 +188,23 @@
 </script>
 <section class="panel mb-4 preparation" aria-label="Автоматическая подготовка расследования">
  <div class="actions"><h2>Подготовка расследования</h2>{#if active}<button disabled={view.running} onclick={()=>run(true)}>{view.error||view.pending.length?'Повторить подготовку':'Подготовить материалы'}</button>{/if}</div>
- <p role="status" aria-live="polite">{view.stage}{view.total?` · ${view.completed} / ${view.total}`:''}</p>
- {#if view.running}<progress aria-label="Разбор материалов" max={view.total||1} value={view.completed}></progress>{/if}
- {#if !connected}<p class="notice mt-2">DEMO · настоящий локальный RU/KZ parser. LLM, внешний поиск и OCR не подключены.</p>{/if}
+ <p role="status" aria-live="polite">{view.stage}{connected&&view.total?` · ${view.completed} / ${view.total}`:''}</p>
+ {#if !connected}
+ <div class="demo-preparation mt-3">
+   <p class="demo-caption">DEMO · симуляция подготовки</p>
+   <p class="muted text-xs mt-2">Посмотрите, как материалы проходят путь от сбора до предложений для аналитика.</p>
+   <ol class="demo-steps" aria-label="Этапы демонстрации">
+     {#each demoSteps as step,index}
+       <li class:done={(view.demoStep??-1)>index} class:current={view.running&&view.demoStep===index} aria-current={view.running&&view.demoStep===index?'step':undefined}>
+         <span class="demo-step-number" aria-hidden="true">{(view.demoStep??-1)>index?'✓':index+1}</span>
+         <span>{step}<small>{(view.demoStep??-1)>index?'Готово':view.running&&view.demoStep===index?'В процессе…':'Ожидает запуска'}</small></span>
+       </li>
+     {/each}
+   </ol>
+   {#if view.running}<progress aria-label="Демонстрация подготовки" max={demoSteps.length} value={(view.demoStep??0)+.5}></progress>
+   {:else if view.demoStep===demoSteps.length&&!view.error}{#if demoMaterials.some(a=>a.id===view.demoMaterialId)}<p class="demo-result">Добавлен 1 новый демо-материал на проверку.</p>{/if}<p class="demo-result">Материалов в деле: <b>{demoMaterials.length}</b> · Кандидатов на проверку: <b>{demoCandidates.length}</b></p>{/if}
+ </div>
+ {:else if view.running}<progress aria-label="Разбор материалов" max={view.total||1} value={view.completed}></progress>{/if}
  <p class="muted text-xs mt-2">Сбор и предложения фактов баллов не начисляют. Факты подтверждает аналитик.</p>
  {#if view.error}<p class="error mt-3" role="alert">{view.error}{#if view.pending.length} Доставка: {view.next} / {view.pending.length}; повтор использует прежние команды.{/if}</p>{/if}
  {#each view.notes as limitation}<p class="notice mt-2">{limitation}</p>{/each}
@@ -192,4 +221,6 @@
  {/if}
  <details class="mt-4" bind:open={manual}><summary>Добавить материал вручную в это дело</summary>{#if manual&&item}<Analyze workspace={getWorkspace()} zkId={item.complexId} {commit}/><p class="muted">После сохранения запустите подготовку материалов; для дела очереди укажите ту же очередь.</p>{/if}</details>
 </section>
-<style>.preparation h2{margin:0}.preparation progress{width:100%;margin-top:1rem}.preparation pre{max-height:20rem;overflow:auto}.preparation select{max-width:100%}.domain-selection{display:flex;flex-direction:row;align-items:center;gap:.5rem;margin-top:.5rem}.domain-selection input{width:auto;flex:none}</style>
+<style>.preparation h2{margin:0}.preparation progress{width:100%;margin-top:1rem}.preparation pre{max-height:20rem;overflow:auto}.preparation select{max-width:100%}.domain-selection{display:flex;flex-direction:row;align-items:center;gap:.5rem;margin-top:.5rem}.domain-selection input{width:auto;flex:none}
+.demo-preparation{padding:1rem;border:1px solid var(--line,#d7e0dc);border-radius:.75rem;background:var(--bg,#f7f9f8)}.demo-caption{font-size:.75rem;font-weight:700;letter-spacing:.06em}.demo-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem;list-style:none;padding:0;margin:1rem 0 0}.demo-steps li{display:flex;align-items:flex-start;gap:.6rem;color:var(--muted,#68756f);font-size:.8rem}.demo-step-number{display:grid;place-items:center;flex:none;width:1.7rem;height:1.7rem;border:1px solid currentColor;border-radius:50%;font-weight:700}.demo-steps small{display:block;font-size:.7rem;margin-top:.25rem}.demo-steps .done,.demo-steps .current{color:var(--accent,#24664d)}.demo-steps .current .demo-step-number{background:var(--accent,#24664d);color:white;animation:demo-pulse 1.2s ease-in-out infinite}.demo-result{margin-top:1rem;font-size:.85rem}@keyframes demo-pulse{50%{opacity:.5}}@media(prefers-reduced-motion:reduce){.demo-steps .current .demo-step-number{animation:none}}@media(max-width:640px){.demo-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>

@@ -1,6 +1,6 @@
 import {describe,it,expect} from 'vitest';
 import {initialState,applyCommand} from '../../src/lib/domain';
-import {claimsForMaterial,buildFactReview,inPreparationScope,preparationJob,deliverPreparation} from '../../src/lib/preparation';
+import {claimsForMaterial,buildFactReview,inPreparationScope,preparationJob,deliverPreparation,demoPreparationCommands} from '../../src/lib/preparation';
 import {demoRunFor} from '../../src/lib/analysis';
 import {previewCaseSignal} from '../../src/lib/investigation';
 import type {Command} from '../../src/lib/types';
@@ -12,6 +12,40 @@ function setup(){
  return state;
 }
 describe('automatic case preparation',()=>{
+ it('adds one different demo source and unchecked candidate per pass, including after template rotation',()=>{
+  let state=setup();const texts=new Set<string>();
+  for(let pass=0;pass<8;pass++){
+   const item=state.cases![0],id=`DEMO-pass-${pass}`;
+   const before={artifacts:state.artifacts!.length,claims:state.claims?.length??0};
+   for(const command of demoPreparationCommands(state,item,id))state=applyCommand(state,command,'demo');
+   const artifact=state.artifacts!.find(a=>a.id===id)!,claim=state.claims!.find(c=>c.artifactId===id)!;
+   expect(state.artifacts).toHaveLength(before.artifacts+1);
+   expect(state.claims).toHaveLength(before.claims+1);
+   expect(artifact.origin).toBe('demo');expect(artifact.source).toContain('DEMO');
+   expect(state.cases![0].artifactIds).toContain(id);
+   expect(artifact.text).toContain(claim.quote);expect(claim.triage).toBeUndefined();
+   texts.add(artifact.text);
+   expect(demoPreparationCommands(state,state.cases![0],id)).toEqual([]);
+   // Future passes over saved materials must not propose a second copy.
+   const run=demoRunFor({text:artifact.text,zkId:item.complexId,url:'',account:'',date:artifact.date!,platform:artifact.source});
+   expect(claimsForMaterial(state,state.cases![0],artifact,{engine:run.engine,realAI:false,hypotheses:run.hypotheses})).toEqual([]);
+  }
+  expect(texts.size).toBe(8);expect(state.assertions??[]).toEqual([]);
+  expect(previewCaseSignal(state,state.cases![0].id).score).toBe(0);
+ });
+ it('keeps a demo source within the case phase and period and resumes partial registration',()=>{
+  let state=setup();const complexId=state.cases![0].complexId;
+  state=applyCommand(state,{type:'phase.create',phase:{id:'demo-phase',complexId,name:'Очередь 2'}},'demo');
+  state=applyCommand(state,{type:'case.create',id:'demo-period-case',complexId,phaseId:'demo-phase',period:{from:'2026-01-01',to:'2026-01-31'}},'demo');
+  let item=state.cases!.find(c=>c.id==='demo-period-case')!;
+  const commands=demoPreparationCommands(state,item,'DEMO-period');
+  state=applyCommand(state,commands[0],'demo');
+  for(const command of demoPreparationCommands(state,item,'DEMO-period'))state=applyCommand(state,command,'demo');
+  item=state.cases!.find(c=>c.id===item.id)!;
+  expect(inPreparationScope(item,state.artifacts!.find(a=>a.id==='DEMO-period')!)).toBe(true);
+  expect(state.claims!.find(c=>c.artifactId==='DEMO-period')).toMatchObject({phaseId:'demo-phase',period:item.period});
+  expect(demoPreparationCommands(state,item,'DEMO-period')).toEqual([]);
+ });
  it('proposes exact local-parser candidates, deduplicates and never scores or triages them',()=>{
   let state=setup();const c=state.cases![0],a=state.artifacts![0];
   const run=demoRunFor({text:a.text,zkId:c.complexId,url:'',account:'',date:a.date!,platform:'web'});

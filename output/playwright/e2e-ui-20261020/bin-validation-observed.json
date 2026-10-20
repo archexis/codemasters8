@@ -1,0 +1,7 @@
+{
+  "source": "Observed via Playwright CLI eval on the rendered BIN input in both create and edit forms",
+  "value": "123456789012",
+  "pattern": "[0-9]12",
+  "valid": false,
+  "message": "Введите данные в указанном формате."
+}

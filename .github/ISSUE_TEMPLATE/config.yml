@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Документация и запуск
+    url: https://github.com/archexis/codemasters8/blob/HEAD/docs/README.md
+    about: Руководства по запуску, архитектуре и проверкам.
+  - name: Безопасность
+    url: https://github.com/archexis/codemasters8/blob/HEAD/SECURITY.md
+    about: Как сообщить об уязвимости без публикации секретов.

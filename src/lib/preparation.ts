@@ -7,6 +7,31 @@ export function inPreparationScope(item:InvestigationCase, artifact:EvidenceArti
   return artifact.complexId===item.complexId && artifact.phaseId===item.phaseId
     && (!item.period || !!artifact.date && dateWithinPeriod(artifact.date,item.period));
 }
+/** A fresh training source per demo pass; retries reuse the same material ID. */
+export function demoPreparationCommands(state:AppState,item:InvestigationCase,materialId:string):Command[] {
+  const existing=state.artifacts?.find(a=>a.id===materialId);
+  const sequence=1+(state.artifacts??[]).filter(a=>a.id.startsWith('DEMO-') && a.id!==materialId).length;
+  const amount=(150000+sequence*25000).toLocaleString('ru-RU');
+  const examples=[
+    {source:'Публикация в соцсети',kind:'publication' as const,quote:`Для бронирования квартиры внесите депозит ${amount} тенге.`},
+    {source:'Рекламная брошюра',kind:'document' as const,quote:`Первоначальный взнос ${amount} тенге фиксирует стоимость квартиры.`},
+    {source:'Сообщение отдела продаж',kind:'publication' as const,quote:`Для резерва квартиры требуется предоплата ${amount} тенге.`},
+    {source:'Условия акции',kind:'document' as const,quote:`Задаток ${amount} тенге сохраняет скидку на выбранную квартиру.`},
+    {source:'Объявление о рассрочке',kind:'publication' as const,quote:`Рассрочка от застройщика: первый взнос ${amount} тенге.`},
+    {source:'Предложение о покупке',kind:'document' as const,quote:`Аванс ${amount} тенге необходимо перечислить для оформления квартиры.`},
+  ];
+  const example=examples[(sequence-1)%examples.length];
+  const artifact=existing??{id:materialId,complexId:item.complexId,...(item.phaseId?{phaseId:item.phaseId}:{}),kind:example.kind,
+    source:`DEMO · ${example.source} · №${sequence}`,text:`Демонстрационный материал №${sequence}.\n${example.quote}`,
+    date:item.period?.from??new Date().toISOString().slice(0,10),origin:'demo' as const};
+  const commands:Command[]=[];
+  if(!existing)commands.push({type:'artifact.register',artifact});
+  if(!item.artifactIds.includes(materialId))commands.push({type:'case.attach',caseId:item.id,artifactId:materialId});
+  if(!(state.claims??[]).some(c=>c.artifactId===materialId))commands.push({type:'claim.propose',claim:{id:`CL-${newCommandId()}`,complexId:item.complexId,
+    ...(item.phaseId?{phaseId:item.phaseId}:{}),...(item.period?{period:item.period}:{}),artifactId:materialId,code:'R2',quote:artifact.text.split('\n').slice(1).join('\n'),
+    reason:'Демо-сценарий · предложение оплаты требует проверки аналитиком.'}});
+  return commands;
+}
 export function claimsForMaterial(state:AppState,item:InvestigationCase,artifact:EvidenceArtifact,result:Analysis):Command[] {
   return result.hypotheses.filter(h=>h.quote.trim() && artifact.text.includes(h.quote)
     && !(state.claims??[]).some(c=>c.artifactId===artifact.id && c.code===h.code && c.quote===h.quote && JSON.stringify(c.period)===JSON.stringify(item.period)))
@@ -41,6 +66,8 @@ export function buildFactReview(state:AppState,caseId:string,selected:string[],s
 export interface PreparationJob {
   running:boolean; stage:string; error:string; notes:string[]; completed:number; total:number;
   pending:Command[]; next:number; session:number;
+  demoStep?:number;
+  demoMaterialId?:string;
 }
 const jobs=new Map<string,PreparationJob>();
 export function preparationJob(key:string,session:number):PreparationJob {
