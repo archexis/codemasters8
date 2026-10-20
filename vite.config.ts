@@ -12,6 +12,12 @@ export default defineConfig({
     // PGlite-тесты под параллельной нагрузкой: дефолтные 5с дают ложные
     // таймауты (машина слабая, миграций уже 14). Лимит среды, не логики.
     testTimeout: 120000,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      include: ['src/lib/**/*.ts'],
+      // Пороги не ставим: сначала собираем базу, гейт — следующим шагом.
+    },
   },
   build: { chunkSizeWarningLimit: 1100 },
 });

@@ -21,6 +21,8 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm test
+      # Coverage как отчёт: без порогов, гейт добавим после сбора базы.
+      - run: npm run coverage
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
@@ -37,6 +39,9 @@ jobs:
         with: { python-version: '3.12' }
       - run: pip install -r backend/requirements.lock.txt
       - run: python -m pytest backend/tests -q
+      # Coverage как отчёт: без fail-under, гейт добавим после сбора базы.
+      - run: pip install pytest-cov
+      - run: python -m pytest backend/tests -q --cov=backend/app --cov-report=term-missing --cov-report=lcov
   backend-lint:
     runs-on: ubuntu-latest
     timeout-minutes: 10
