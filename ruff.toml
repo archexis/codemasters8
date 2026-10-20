@@ -1,0 +1,12 @@
+# Ruff для backend/ — КРУПНЫЙ недостаток #2 (backend-lint в CI).
+# Python 3.12 (см. docs/DEVELOPMENT.md и .github/workflows/ci.yml).
+target-version = "py312"
+line-length = 100
+
+[lint]
+select = ["E", "F", "I", "UP", "B"]
+# E501 (длина строки) не включаем: длинные SQL/строки в FastAPI — норма,
+# контроль — через ruff format.
+
+[format]
+line-length = 100

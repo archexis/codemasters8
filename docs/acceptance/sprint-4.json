@@ -173,7 +173,7 @@
       "checks": [
         {
           "profile": "T",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run check",
+          "command": "npm run check",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-T.log"
@@ -181,7 +181,7 @@
         },
         {
           "profile": "U",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js test",
+          "command": "npm test",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-U.log"
@@ -189,7 +189,7 @@
         },
         {
           "profile": "B",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run build",
+          "command": "npm run build",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-B.log"
@@ -197,7 +197,7 @@
         },
         {
           "profile": "E",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run test:e2e -- --workers=1",
+          "command": "npm run test:e2e -- --workers=1",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-E.log"
@@ -205,7 +205,7 @@
         },
         {
           "profile": "C",
-          "command": "C:\\nvm4w\\nodejs\\node.exe node_modules/@playwright/test/cli.js test --config tools/acceptance.cloud.config.ts",
+          "command": "node node_modules/@playwright/test/cli.js test --config tools/acceptance.cloud.config.ts",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-C.log"
@@ -213,7 +213,7 @@
         },
         {
           "profile": "A",
-          "command": "backend/.venv/Scripts/python.exe -m pytest backend/tests -q",
+          "command": "python -m pytest backend/tests -q",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-A.log"
@@ -221,7 +221,7 @@
         },
         {
           "profile": "F",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run test:edge",
+          "command": "npm run test:edge",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-F.log"
@@ -229,7 +229,7 @@
         },
         {
           "profile": "F-types",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js exec --yes -- deno check supabase/functions/analyze/index.ts",
+          "command": "npm exec --yes -- deno check supabase/functions/analyze/index.ts",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-F-types.log"
@@ -237,7 +237,7 @@
         },
         {
           "profile": "L",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run test:local",
+          "command": "npm run test:local",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-L.log"
@@ -301,7 +301,7 @@
       "checks": [
         {
           "profile": "T",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run check",
+          "command": "npm run check",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-T.log"
@@ -309,7 +309,7 @@
         },
         {
           "profile": "U",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js test",
+          "command": "npm test",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-U.log"
@@ -317,7 +317,7 @@
         },
         {
           "profile": "B",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run build",
+          "command": "npm run build",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-B.log"
@@ -325,7 +325,7 @@
         },
         {
           "profile": "E",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run test:e2e -- --workers=1",
+          "command": "npm run test:e2e -- --workers=1",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-E.log"
@@ -333,7 +333,7 @@
         },
         {
           "profile": "C",
-          "command": "C:\\nvm4w\\nodejs\\node.exe node_modules/@playwright/test/cli.js test --config tools/acceptance.cloud.config.ts",
+          "command": "node node_modules/@playwright/test/cli.js test --config tools/acceptance.cloud.config.ts",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-C.log"
@@ -341,7 +341,7 @@
         },
         {
           "profile": "A",
-          "command": "backend/.venv/Scripts/python.exe -m pytest backend/tests -q",
+          "command": "python -m pytest backend/tests -q",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-A.log"
@@ -349,7 +349,7 @@
         },
         {
           "profile": "F",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run test:edge",
+          "command": "npm run test:edge",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-F.log"
@@ -357,7 +357,7 @@
         },
         {
           "profile": "F-types",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js exec --yes -- deno check supabase/functions/analyze/index.ts",
+          "command": "npm exec --yes -- deno check supabase/functions/analyze/index.ts",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-F-types.log"
@@ -365,7 +365,7 @@
         },
         {
           "profile": "L",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run test:local",
+          "command": "npm run test:local",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-L.log"
@@ -430,7 +430,7 @@
       "checks": [
         {
           "profile": "T",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run check",
+          "command": "npm run check",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-T.log"
@@ -438,7 +438,7 @@
         },
         {
           "profile": "U",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js test",
+          "command": "npm test",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-U.log"
@@ -446,7 +446,7 @@
         },
         {
           "profile": "B",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run build",
+          "command": "npm run build",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-B.log"
@@ -454,7 +454,7 @@
         },
         {
           "profile": "E",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run test:e2e -- --workers=1",
+          "command": "npm run test:e2e -- --workers=1",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-E.log"
@@ -462,7 +462,7 @@
         },
         {
           "profile": "C",
-          "command": "C:\\nvm4w\\nodejs\\node.exe node_modules/@playwright/test/cli.js test --config tools/acceptance.cloud.config.ts",
+          "command": "node node_modules/@playwright/test/cli.js test --config tools/acceptance.cloud.config.ts",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-C.log"
@@ -470,7 +470,7 @@
         },
         {
           "profile": "A",
-          "command": "backend/.venv/Scripts/python.exe -m pytest backend/tests -q",
+          "command": "python -m pytest backend/tests -q",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-A.log"
@@ -478,7 +478,7 @@
         },
         {
           "profile": "F",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run test:edge",
+          "command": "npm run test:edge",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-F.log"
@@ -486,7 +486,7 @@
         },
         {
           "profile": "F-types",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js exec --yes -- deno check supabase/functions/analyze/index.ts",
+          "command": "npm exec --yes -- deno check supabase/functions/analyze/index.ts",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-F-types.log"
@@ -494,7 +494,7 @@
         },
         {
           "profile": "L",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run test:local",
+          "command": "npm run test:local",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-L.log"
@@ -559,7 +559,7 @@
       "checks": [
         {
           "profile": "T",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run check",
+          "command": "npm run check",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-T.log"
@@ -567,7 +567,7 @@
         },
         {
           "profile": "U",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js test",
+          "command": "npm test",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-U.log"
@@ -575,7 +575,7 @@
         },
         {
           "profile": "B",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run build",
+          "command": "npm run build",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-B.log"
@@ -583,7 +583,7 @@
         },
         {
           "profile": "E",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run test:e2e -- --workers=1",
+          "command": "npm run test:e2e -- --workers=1",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-E.log"
@@ -591,7 +591,7 @@
         },
         {
           "profile": "C",
-          "command": "C:\\nvm4w\\nodejs\\node.exe node_modules/@playwright/test/cli.js test --config tools/acceptance.cloud.config.ts",
+          "command": "node node_modules/@playwright/test/cli.js test --config tools/acceptance.cloud.config.ts",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-C.log"
@@ -599,7 +599,7 @@
         },
         {
           "profile": "A",
-          "command": "backend/.venv/Scripts/python.exe -m pytest backend/tests -q",
+          "command": "python -m pytest backend/tests -q",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-A.log"
@@ -607,7 +607,7 @@
         },
         {
           "profile": "F",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run test:edge",
+          "command": "npm run test:edge",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-F.log"
@@ -615,7 +615,7 @@
         },
         {
           "profile": "F-types",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js exec --yes -- deno check supabase/functions/analyze/index.ts",
+          "command": "npm exec --yes -- deno check supabase/functions/analyze/index.ts",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-F-types.log"
@@ -623,7 +623,7 @@
         },
         {
           "profile": "L",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run test:local",
+          "command": "npm run test:local",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-L.log"
@@ -686,7 +686,7 @@
       "checks": [
         {
           "profile": "T",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run check",
+          "command": "npm run check",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-T.log"
@@ -694,7 +694,7 @@
         },
         {
           "profile": "U",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js test",
+          "command": "npm test",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-U.log"
@@ -702,7 +702,7 @@
         },
         {
           "profile": "B",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run build",
+          "command": "npm run build",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-B.log"
@@ -710,7 +710,7 @@
         },
         {
           "profile": "E",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run test:e2e -- --workers=1",
+          "command": "npm run test:e2e -- --workers=1",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-E.log"
@@ -718,7 +718,7 @@
         },
         {
           "profile": "C",
-          "command": "C:\\nvm4w\\nodejs\\node.exe node_modules/@playwright/test/cli.js test --config tools/acceptance.cloud.config.ts",
+          "command": "node node_modules/@playwright/test/cli.js test --config tools/acceptance.cloud.config.ts",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-C.log"
@@ -726,7 +726,7 @@
         },
         {
           "profile": "A",
-          "command": "backend/.venv/Scripts/python.exe -m pytest backend/tests -q",
+          "command": "python -m pytest backend/tests -q",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-A.log"
@@ -734,7 +734,7 @@
         },
         {
           "profile": "F",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run test:edge",
+          "command": "npm run test:edge",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-F.log"
@@ -742,7 +742,7 @@
         },
         {
           "profile": "F-types",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js exec --yes -- deno check supabase/functions/analyze/index.ts",
+          "command": "npm exec --yes -- deno check supabase/functions/analyze/index.ts",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-F-types.log"
@@ -750,7 +750,7 @@
         },
         {
           "profile": "L",
-          "command": "C:\\nvm4w\\nodejs\\node.exe C:\\nvm4w\\nodejs\\node_modules/npm/bin/npm-cli.js run test:local",
+          "command": "npm run test:local",
           "result": "PASS",
           "evidence": [
             "docs/acceptance/s6/final-L.log"

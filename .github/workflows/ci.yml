@@ -1,8 +1,19 @@
 name: Verify application
+
+# Отмена устаревших прогонов при новом push в ту же ветку/PR.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 on: [push, pull_request]
+
+permissions:
+  contents: read
+
 jobs:
   frontend:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -19,14 +30,30 @@ jobs:
         with: { name: playwright-results, path: test-results/ }
   backend:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
       - run: pip install -r backend/requirements.lock.txt
       - run: python -m pytest backend/tests -q
+  backend-lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install ruff
+      - run: ruff check backend/
+      - run: ruff format --check backend/
+      # mypy пока информативный: типизация backend/ неполная, падать CI не должен.
+      - run: pip install mypy
+      - run: mypy backend/app --ignore-missing-imports
+        continue-on-error: true
   edge:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: denoland/setup-deno@v2

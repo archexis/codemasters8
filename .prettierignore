@@ -1,0 +1,8 @@
+dist
+node_modules
+test-results
+backend/.venv
+backend/.data
+package-lock.json
+*.min.js
+public/demo-construction
