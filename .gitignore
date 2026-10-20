@@ -19,4 +19,8 @@ supabase/.temp/
 .playwright-cli/
 .worktrees/
 backend/.data/
-output/playwright/ui-polish-20261020/
+output/
+screenshots-user-flow/
+screenshots-user-flow.zip
+test-audit*.log
+*.log
