@@ -7,6 +7,12 @@ concurrency:
 
 on: [push, pull_request]
 
+# Вне CI вручную (нужны секреты/живые стенды):
+#   npm run test:live      — живой Supabase (SAQ_LIVE_*).
+#   npm run test:deepseek  — внешний LLM + изолированный API.
+#   npm run test:local     — локальная Supabase через tools/local-smoke.mjs.
+#   npm run gate N          — гейт спринта перед закрытием.
+
 permissions:
   contents: read
 
