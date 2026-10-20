@@ -5,6 +5,24 @@ import { adDedupeKey } from './parser';
 import { isDateLike, parseCommand, seedState } from './validation';
 import { buildSignalSnapshot, nextRevisionFor } from './signal-snapshot';
 import type { SignalDecisionOpts } from './signal-snapshot';
+import {
+  adBelongsTo,
+  adContainsQuote,
+  evidenceBelongsTo,
+  hasAdRef,
+  hasAppealMaterial,
+  hasExplicitDate,
+  hasLegalBasisDetails,
+  hasMaterialText,
+  hasQuote,
+  hasReadinessGap,
+  hasReadinessPair,
+  hasVerifiedLegalAbsence,
+  isDatedIdleFact,
+  isDocument,
+  isLegalReview,
+  isPublication,
+} from './grounding';
 import { applyInvestigationCommand, invalidateCaseAssertions } from './investigation';
 import type { InvestigationCommand } from './types';
 
@@ -41,55 +59,52 @@ export function validateFactor(workspace: AppState, z: Complex, code: Code, stat
   if (status !== 'confirmed') return;
   if (!evidence.source.trim()) throw new Error('Укажите источник доказательства');
   if (evidence.date && !isDateLike(evidence.date)) throw new Error('evidence.date: неверная календарная дата (нужна реальная YYYY-MM-DD)');
-  if (evidence.zkId !== z.id) throw new Error('Доказательство относится к другому объекту');
+  if (!evidenceBelongsTo(evidence, z.id)) throw new Error('Доказательство относится к другому объекту');
   switch (code) {
     case 'R1': {
-      if (z.legalBasis.type !== 'absent' || z.legalBasis.status !== 'absent-verified') throw new Error('R1 требует проверенного отсутствия законного основания');
-      if (!z.legalBasis.source.trim() || !z.legalBasis.checkedAt.trim() || !z.legalBasis.reviewText.trim()) throw new Error('R1 требует source, checkedAt и описание сверки в legalBasis');
-      if (evidence.kind !== 'legal-review') throw new Error('R1 требует материал legal-review того же ЖК');
-      if (!evidence.text?.trim()) throw new Error('R1 требует сохранённое содержание сверки (evidence.text)');
+      if (!hasVerifiedLegalAbsence(z)) throw new Error('R1 требует проверенного отсутствия законного основания');
+      if (!hasLegalBasisDetails(z)) throw new Error('R1 требует source, checkedAt и описание сверки в legalBasis');
+      if (!isLegalReview(evidence)) throw new Error('R1 требует материал legal-review того же ЖК');
+      if (!hasMaterialText(evidence)) throw new Error('R1 требует сохранённое содержание сверки (evidence.text)');
       break;
     }
     case 'R2':
     case 'R3': {
-      if (!evidence.quote?.trim()) throw new Error(`Для ${code} нужна дословная цитата`);
-      if (evidence.kind !== 'publication') throw new Error(`Для ${code} нужен материал публикации`);
-      if (!evidence.adId) throw new Error(`Для ${code} выберите конкретную публикацию: свободная цитата без adId не сохраняется`);
+      if (!hasQuote(evidence)) throw new Error(`Для ${code} нужна дословная цитата`);
+      if (!isPublication(evidence)) throw new Error(`Для ${code} нужен материал публикации`);
+      if (!hasAdRef(evidence)) throw new Error(`Для ${code} выберите конкретную публикацию: свободная цитата без adId не сохраняется`);
       const ad = workspace.ads.find(a => a.id === evidence.adId);
       if (!ad) throw new Error('Публикация не найдена');
-      if (ad.zkId !== z.id) throw new Error('Публикация относится к другому ЖК');
-      if (!ad.text.includes(evidence.quote)) throw new Error('Цитата отсутствует в исходном тексте');
+      if (!adBelongsTo(ad, z.id)) throw new Error('Публикация относится к другому ЖК');
+      if (!adContainsQuote(ad, evidence.quote ?? '')) throw new Error('Цитата отсутствует в исходном тексте');
       if(code==='R3' && evidence.runId && (!evidence.beforeCommissioning?.source.trim() || !evidence.beforeCommissioning?.text.trim() || !evidence.beforeCommissioning?.date)) throw new Error('Для R3 нужен beforeCommissioning: источник, дата и содержание материала о вводе');
-      if (code === 'R3' && !evidence.text?.trim()) throw new Error('Для R3 нужен датированный материал, что объект не введён (source/date/text)');
+      if (code === 'R3' && !hasMaterialText(evidence)) throw new Error('Для R3 нужен датированный материал, что объект не введён (source/date/text)');
       // S2.1 (C4): дата публикации неизвестна — confirmation блокируется,
       // пока материал не несёт явной календарной даты до ввода объекта.
-      if (code === 'R3' && ad.date == null && !/\b\d{4}-\d{2}-\d{2}\b/.test(evidence.text ?? '')) {
+      if (code === 'R3' && ad.date == null && !hasExplicitDate(evidence.text)) {
         throw new Error('Для R3 с неизвестной датой публикации нужен датированный материал: явная дата до ввода объекта в тексте (captureAt датой не считается)');
       }
       break;
     }
     case 'R4': {
-      if (evidence.kind !== 'document') throw new Error('Для R4 нужен документ обращения');
-      if (!evidence.text?.trim() && !(evidence.mediaIds?.length)) throw new Error('Для R4 нужен сохранённый текст коллективного обращения о привлечении средств или файл');
+      if (!isDocument(evidence)) throw new Error('Для R4 нужен документ обращения');
+      if (!hasAppealMaterial(evidence, evidence.mediaIds?.length ?? 0)) throw new Error('Для R4 нужен сохранённый текст коллективного обращения о привлечении средств или файл');
       break;
     }
     case 'R5': {
       // S1.1-порядок сохранён: сначала разрыв (legacy без наблюдений тоже
       // отклоняется здесь), затем происхождение каждого наблюдения (S1.2).
-      if (z.readinessClaimed == null || z.readinessConfirmed == null || Math.abs(z.readinessClaimed - z.readinessConfirmed) < 20) {
+      if (!hasReadinessGap(z)) {
         throw new Error('Для R5 нужен подтверждённый разрыв ≥20 п.п.');
       }
-      const claimedSrc = z.readinessClaimedSource;
-      const confirmedRec = z.readinessSources.find(r => r.value === z.readinessConfirmed);
-      if (!claimedSrc || !claimedSrc.source.trim() || !claimedSrc.date || !confirmedRec || !confirmedRec.source.trim() || !confirmedRec.date) {
+      if (!hasReadinessPair(z)) {
         throw new Error('Для R5 нужны два наблюдения (claimed/confirmed) с источником и датой каждого');
       }
       break;
     }
     case 'R6': {
-      if (evidence.kind !== 'document') throw new Error('Для R6 нужен документ/текст наблюдения');
-      const text = evidence.text?.trim() ?? '';
-      if (text.length < 10 || !/\d/.test(text)) throw new Error('Для R6 нужен датированный факт: заявленный срок или период простоя и объяснение значимости');
+      if (!isDocument(evidence)) throw new Error('Для R6 нужен документ/текст наблюдения');
+      if (!isDatedIdleFact(evidence.text)) throw new Error('Для R6 нужен датированный факт: заявленный срок или период простоя и объяснение значимости');
       break;
     }
   }

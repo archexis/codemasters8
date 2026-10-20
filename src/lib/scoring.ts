@@ -2,9 +2,10 @@ import type { Code, Factor, Zone } from './types';
 
 /**
  * S4.2 (C5). Замороженная версия весов скоринга.
- * Зеркало: signal-snapshot.SIGNAL_WEIGHTS_VERSION и SQL build_signal_version
+ * Канон версии — здесь (единственное определение). Реэкспортируется из
+ * signal-snapshot.ts для совместимости; зеркало в SQL build_signal_version
  * (миграция s2_4_signals). При смене весов бампить ВСЕ места одновременно,
- * иначе header/тело сигнала и TS/SQL разойдутся. Канон версии — здесь.
+ * иначе header/тело сигнала и TS/SQL разойдутся.
  */
 export const SIGNAL_WEIGHTS_VERSION = 1;
 

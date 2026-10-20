@@ -6,17 +6,28 @@ import { FutureVersionError, RAW_BACKUP_KEY, V1_IMPORT_BACKUP_KEY, V1_STORAGE_KE
 import type { LegacyV1Preview } from './state-migrations';
 import { applyImportTransform, isRestoreTargetEmpty } from './backup';
 import type { ValidatedBackup } from './backup';
+import {
+  CLEANUP_RETRY_KEY,
+  DEMO_ARTIFACT_REPAIR_BACKUP_KEY,
+  DEMO_DB_NAME,
+  DEMO_DB_STORE,
+  DEMO_LOCK_NAME,
+  DEMO_LOCK_TIMEOUT_MS,
+  DEMO_PUBLICATION_REFRESH_BACKUP_KEY,
+  PENDING_COMMAND_KEY,
+  SESSION_USER_KEY,
+  STAGED_FILES_KEY,
+  WORKSPACE_KEY,
+} from './storage-keys';
 
 export { FutureVersionError };
 
-const KEY = 'sq_svelte_demo_v2';
-const PENDING_KEY = 'sq_pending_command_v1';
-const STAGED_KEY = 'sq_staged_files_v1';
-const CLEANUP_KEY = 'sq_cleanup_retry_v1';
-const SESSION_USER_KEY = 'sq_session_user_v1';
+const KEY = WORKSPACE_KEY;
+const PENDING_KEY = PENDING_COMMAND_KEY;
+const STAGED_KEY = STAGED_FILES_KEY;
+const CLEANUP_KEY = CLEANUP_RETRY_KEY;
+const DEMO_LOCK = DEMO_LOCK_NAME;
 const DEMO_OWNER = 'demo';
-const DEMO_LOCK = 'sq-demo-envelope-v1';
-const DEMO_LOCK_TIMEOUT_MS = 10000;
 const MAX_FILE_BYTES = 20 * 1024 * 1024;
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'application/pdf'];
 const EXT_FOR_MIME: Record<string, string> = {
@@ -308,7 +319,7 @@ function readDemoEnvelope(fallback: AppState): DemoEnvelope {
     }
   }
   if (repaired) {
-    setItem('sq_demo_before_artifact_repair_20261020', raw);
+    setItem(DEMO_ARTIFACT_REPAIR_BACKUP_KEY, raw);
     raw = JSON.stringify(parsed);
   }
   try {
@@ -362,7 +373,7 @@ async function loadCurrentDemo(): Promise<DemoEnvelope> {
     const env = readDemoEnvelope(current);
     if (!needsRefresh(env)) return env;
     const raw = getItem(KEY);
-    if (raw) setItem('sq_demo_before_publication_refresh_20261020', raw);
+    if (raw) setItem(DEMO_PUBLICATION_REFRESH_BACKUP_KEY, raw);
     const replaced = new Set<string>();
     env.state.ads = env.state.ads.map(ad => {
       const fresh = current.ads.find(item => item.id === ad.id && item.zkId === ad.zkId);
@@ -872,8 +883,8 @@ export async function resetDemo(): Promise<AppState> {
     if (typeof indexedDB !== 'undefined') {
       const db = await openDb();
       await new Promise<void>((resolve, reject) => {
-        const tx = db.transaction('files', 'readwrite');
-        tx.objectStore('files').clear();
+        const tx = db.transaction(DEMO_DB_STORE, 'readwrite');
+        tx.objectStore(DEMO_DB_STORE).clear();
         tx.oncomplete = () => {
           db.close();
           resolve();
@@ -900,8 +911,8 @@ export async function resetDemo(): Promise<AppState> {
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open('sq-demo-evidence', 1);
-    req.onupgradeneeded = () => req.result.createObjectStore('files');
+    const req = indexedDB.open(DEMO_DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(DEMO_DB_STORE);
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
   });
@@ -920,8 +931,8 @@ async function blobStore(mode: IDBTransactionMode, path: string, file?: File): P
   }
   const db = await openDb();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction('files', mode);
-    const req = file ? tx.objectStore('files').put(file, path) : mode === 'readwrite' ? tx.objectStore('files').delete(path) : tx.objectStore('files').get(path);
+    const tx = db.transaction(DEMO_DB_STORE, mode);
+    const req = file ? tx.objectStore(DEMO_DB_STORE).put(file, path) : mode === 'readwrite' ? tx.objectStore(DEMO_DB_STORE).delete(path) : tx.objectStore(DEMO_DB_STORE).get(path);
     tx.oncomplete = () => {
       resolve(req.result as Blob | undefined);
       db.close();

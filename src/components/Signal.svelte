@@ -3,7 +3,7 @@
   import {buildSignalSnapshot, latestSignalVersion} from '../lib/signal-snapshot';
   import {parseSignalRevision, signalRevisionError} from '../lib/signal-revision';
   import MediaCard from './MediaCard.svelte';
-  import {WEIGHTS, FACTOR_META, zoneLabel} from '../lib/scoring';
+  import {WEIGHTS, FACTOR_META, codes, zoneLabel} from '../lib/scoring';
   let {workspace,zkId,commit}:{workspace:AppState;zkId:string;commit:(c:Command)=>Promise<void>}=$props();
   let revision=$state<number|null>(parseSignalRevision(location.hash.split('?')[1] ?? ''));
   const revisionError=$derived(signalRevisionError(workspace,zkId,revision));
@@ -33,7 +33,7 @@
   <details class="tech no-print"><summary>Технические детали снимка</summary><p>ID {vm.id} · ЖК {zkId} · revision {vm.revision || 'draft'} · sourceVersion {vm.sourceVersion} · basedOnRevision {vm.basedOnRevision ?? 'нет'}</p></details>
   <p>{vm.at} · автор: {vm.reviewer}</p><p>Обоснование: {vm.comment || 'не указано'}</p>
   {#if incomplete}<p class="error">legacyIncomplete: исторический снимок неполон. Полная утверждённая карточка недоступна; требуется новая проверка.</p>{:else if z}
-    <div class="risk-score {vm.zone}"><strong>{vm.score}</strong><span class="zone-total">из 100</span><span class="formula">Сумма подтверждённых факторов · веса v{vm.weightsVersion}: R1 35, R2 25, R3 10, R4 15, R5 10, R6 5</span></div>
+    <div class="risk-score {vm.zone}"><strong>{vm.score}</strong><span class="zone-total">из 100</span><span class="formula">Сумма подтверждённых факторов · веса v{vm.weightsVersion}: {codes.map((c) => `${c} ${WEIGHTS[c]}`).join(', ')}</span></div>
     <p>Застройщик: {z.developer} · БИН: {z.bin || 'не указан'} · стадия: {z.stage || 'не указана'}</p>
     <h2>Сверка правового основания</h2><p>{z.legalBasis.type} / {z.legalBasis.status} · {z.legalBasis.source || 'не указан'} · {z.legalBasis.checkedAt || 'дата неизвестна'}</p><p>{z.legalBasis.reviewText || 'материал отсутствует'}</p>
     {#each z.factors.filter(f=>f.status==='confirmed') as f}

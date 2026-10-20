@@ -21,6 +21,23 @@
 import type { Ad, AppState, Code, Complex, Evidence, Factor } from './types';
 import { MAX_SUPPORTED_SCHEMA_VERSION, SCHEMA_VERSION, isLegalBasisPair } from './types';
 import { isDateLike, validateLoadedState } from './validation';
+import {
+  adBelongsTo,
+  adContainsQuote,
+  evidenceBelongsTo,
+  hasAdRef,
+  hasAppealMaterial,
+  hasExplicitDate,
+  hasMaterialText,
+  hasQuote,
+  hasReadinessGap,
+  hasReadinessPair,
+  hasVerifiedLegalAbsence,
+  isDatedIdleFact,
+  isDocument,
+  isLegalReview,
+  isPublication,
+} from './grounding';
 import { markLegacyIncompleteSignals } from './signal-snapshot';
 
 export const V2_STORAGE_KEY = 'sq_svelte_demo_v2';
@@ -91,65 +108,63 @@ function alreadyMigrated(raw: Record<string, unknown>): boolean {
 }
 
 /**
- * Минимальная проверка достаточности материала для confirmed — зеркало
- * domain.validateFactor без импорта domain (модуль миграций не зависит от
- * решений). Возвращает null, если материал достаточен, иначе причину снятия.
- * Не выдумывает данные: любая нехватка = снятие с provenance, не чинка.
+ * Минимальная проверка достаточности материала для confirmed — предикаты
+ * из grounding.ts (общие с domain.validateFactor; модуль миграций по-прежнему
+ * не зависит от domain). Возвращает null, если материал достаточен, иначе
+ * причину снятия. Не выдумывает данные: любая нехватка = снятие с
+ * provenance, не чинка.
  */
 function groundingReason(z: Complex, adsById: Map<string, Ad>, mediaIds: Set<string>, code: Code, status: string, evidence: Factor['evidence']): string | null {
   if (status !== 'confirmed') return null;
   if (!evidence) return 'нет материала решения (evidence отсутствует)';
-  if (evidence.zkId !== z.id) return `материал относится к другому объекту (${evidence.zkId})`;
+  if (!evidenceBelongsTo(evidence, z.id)) return `материал относится к другому объекту (${evidence.zkId})`;
   switch (code) {
     case 'R1': {
-      if (z.legalBasis.type !== 'absent' || z.legalBasis.status !== 'absent-verified') {
+      if (!hasVerifiedLegalAbsence(z)) {
         return 'R1: правовое основание не имеет проверенного отсутствия (type/absent-verified)';
       }
-      if (evidence.kind !== 'legal-review') return 'R1: нужен материал legal-review того же ЖК';
-      if (!evidence.text?.trim()) return 'R1: нет сохранённого содержания сверки (evidence.text)';
+      if (!isLegalReview(evidence)) return 'R1: нужен материал legal-review того же ЖК';
+      if (!hasMaterialText(evidence)) return 'R1: нет сохранённого содержания сверки (evidence.text)';
       return null;
     }
     case 'R2':
     case 'R3': {
-      if (!evidence.quote?.trim()) return `${code}: нет дословной цитаты`;
-      if (evidence.kind !== 'publication') return `${code}: нужен материал публикации`;
-      if (!evidence.adId) return `${code}: свободная цитата без привязки к публикации`;
+      if (!hasQuote(evidence)) return `${code}: нет дословной цитаты`;
+      if (!isPublication(evidence)) return `${code}: нужен материал публикации`;
+      if (!hasAdRef(evidence)) return `${code}: свободная цитата без привязки к публикации`;
       const ad = adsById.get(evidence.adId);
       if (!ad) return `${code}: публикация ${evidence.adId} не найдена в workspace`;
-      if (ad.zkId !== z.id) return `${code}: публикация ${evidence.adId} относится к другому ЖК`;
-      if (!ad.text.includes(evidence.quote)) return `${code}: цитата отсутствует в исходном тексте публикации`;
-      if (code === 'R3' && !evidence.text?.trim()) return 'R3: нет датированного материала, что объект не введён';
+      if (!adBelongsTo(ad, z.id)) return `${code}: публикация ${evidence.adId} относится к другому ЖК`;
+      if (!adContainsQuote(ad, evidence.quote ?? '')) return `${code}: цитата отсутствует в исходном тексте публикации`;
+      if (code === 'R3' && !hasMaterialText(evidence)) return 'R3: нет датированного материала, что объект не введён';
       // S2.1 (C4): дата публикации неизвестна (ad.date=null) — confirmation
       // блокируется, пока evidence.text не несёт явной календарной даты,
       // позволяющей установить рекламу до ввода. captureAt датой не считается.
-      if (code === 'R3' && ad.date == null && !/\b\d{4}-\d{2}-\d{2}\b/.test(evidence.text ?? '')) {
+      if (code === 'R3' && ad.date == null && !hasExplicitDate(evidence.text)) {
         return 'R3: дата публикации неизвестна (null) и в материале нет явной даты до ввода — confirmation заблокирован';
       }
       return null;
     }
     case 'R4': {
-      if (evidence.kind !== 'document') return 'R4: нужен документ обращения';
+      if (!isDocument(evidence)) return 'R4: нужен документ обращения';
       const knownMedia = (evidence.mediaIds ?? []).filter((id) => mediaIds.has(id));
-      if (!evidence.text?.trim() && knownMedia.length === 0) {
+      if (!hasAppealMaterial(evidence, knownMedia.length)) {
         return 'R4: нет сохранённого текста коллективного обращения о привлечении средств и нет файла';
       }
       return null;
     }
     case 'R5': {
-      if (z.readinessClaimed == null || z.readinessConfirmed == null || Math.abs(z.readinessClaimed - z.readinessConfirmed) < 20) {
+      if (!hasReadinessGap(z)) {
         return 'R5: нет подтверждённого разрыва ≥20 п.п.';
       }
-      const claimed = z.readinessClaimedSource;
-      const confirmedRec = z.readinessSources.find((r) => r.value === z.readinessConfirmed);
-      if (!claimed || !claimed.source.trim() || !claimed.date || !confirmedRec || !confirmedRec.source.trim() || !confirmedRec.date) {
+      if (!hasReadinessPair(z)) {
         return 'R5: нет двух наблюдений (claimed/confirmed) с источником и датой каждого';
       }
       return null;
     }
     case 'R6': {
-      if (evidence.kind !== 'document') return 'R6: нужен документ/текст наблюдения';
-      const text = evidence.text?.trim() ?? '';
-      if (text.length < 10 || !/\d/.test(text)) return 'R6: нет датированного факта (срок/период простоя и объяснение значимости)';
+      if (!isDocument(evidence)) return 'R6: нужен документ/текст наблюдения';
+      if (!isDatedIdleFact(evidence.text)) return 'R6: нет датированного факта (срок/период простоя и объяснение значимости)';
       return null;
     }
   }

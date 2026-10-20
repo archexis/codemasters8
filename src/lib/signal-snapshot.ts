@@ -31,15 +31,16 @@ import type {
   SignalVersion,
   Zone,
 } from './types';
-import { computeScore } from './scoring';
+import { computeScore, SIGNAL_WEIGHTS_VERSION } from './scoring';
 
 /**
- * Версия весов оценки, зафиксированная в snapshot. Зеркало WEIGHTS из
- * scoring.ts и SQL-функции build_signal_version (миграция s2_4_signals):
- * при смене весов бампить ВСЕ ТРИ места одновременно, иначе header/тело
- * и TS/SQL разойдутся.
+ * Версия весов оценки, зафиксированная в snapshot. Канон — scoring.ts
+ * (здесь только реэкспорт, дубля константы нет); зеркало WEIGHTS и
+ * SQL-функции build_signal_version (миграция s2_4_signals): при смене
+ * весов бампить ВСЕ места одновременно, иначе header/тело и TS/SQL
+ * разойдутся.
  */
-export const SIGNAL_WEIGHTS_VERSION = 1;
+export { SIGNAL_WEIGHTS_VERSION } from './scoring';
 
 /** Необязательный конверт решения сигнала (полный receipt — S2.2). */
 export interface SignalDecisionOpts {
