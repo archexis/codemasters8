@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
+const seed = JSON.parse(await readFile('src/lib/seed.json','utf8'));
 const config = JSON.parse((await readFile('supabase/.temp/status.json','utf8')).replace(/^\uFEFF/,''));
 const url = config.API_URL;
 assert(url && /^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(url),'This smoke test only accepts a LOCAL Supabase URL');
@@ -37,7 +38,7 @@ try {
   for (const [i,client] of [clientA,clientB].entries()) {
     const signed=await client.auth.signInWithPassword({email:users[i].email,password}); if(signed.error) throw signed.error;
     const initialized=await client.rpc('initialize_workspace'); if(initialized.error) throw initialized.error;
-    assert.equal(initialized.data.data.complexes.length,16);
+    assert.equal(initialized.data.data.complexes.length,seed.COMPLEXES.length);
   }
   checked('actual Auth and seed migrations');
   const foreign=await clientB.from('workspaces').select('*').eq('owner_id',users[0].id);
@@ -67,7 +68,7 @@ try {
   assert(healthy,'API did not start');
   const session=await clientA.auth.getSession();
   const summary=await fetch('http://127.0.0.1:8005/api/summary',{headers:{Authorization:`Bearer ${session.data.session.access_token}`}});
-  assert.equal(summary.status,200); assert.equal((await summary.json()).complexes,16);
+  assert.equal(summary.status,200); assert.equal((await summary.json()).complexes,seed.COMPLEXES.length);
   assert.equal((await fetch('http://127.0.0.1:8005/api/summary',{headers:{Authorization:'Bearer invalid'}})).status,401);
   checked('actual FastAPI → Supabase JWT validation → RLS data');
   const edgeUnauth = await fetch(`${url}/functions/v1/analyze`,{method:'POST',headers:{apikey:anon,'Content-Type':'application/json'},body:'{}'});

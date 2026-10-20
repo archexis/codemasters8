@@ -3,7 +3,8 @@
  import {computeScore} from '../lib/scoring';
  import {dossierUrl} from '../lib/navigation';
  import {safeUrl} from '../lib/domain';
- import {newCommandId,uploadFile,withCommandId,stageFileForCommand,unstageFileForCommand,getSessionGeneration,SessionSupersededError} from '../lib/repository';
+ import {newCommandId,uploadFile,withCommandId,stageFileForCommand,unstageFileForCommand,removeStagedFile,recordCleanupRetry,getSessionGeneration,SessionSupersededError,UnknownCommitResultError,StaleConflictError} from '../lib/repository';
+ import {isCalendarDate,parseCommand} from '../lib/validation';
  import ComplexForm from './ComplexForm.svelte';
  import {supabase} from '../lib/supabase';
  import {extractPdf,type PdfExtraction} from '../lib/workspace-api';
@@ -17,20 +18,42 @@
  const organizations=$derived([...new Map(workspace.complexes.filter(z=>!!z.developer).map(z=>[z.bin || z.developer,{id:z.bin || z.developer,name:z.developer,bin:z.bin,complexes:workspace.complexes.filter(other=>z.bin ? other.bin===z.bin : other.developer===z.developer)}])).values()].filter(o=>matches(`${o.name} ${o.bin ?? ''}`)));
  const documents=$derived((workspace.artifacts ?? []).filter(a=>a.kind!=='publication'&&matches(`${a.id} ${a.source} ${a.text} ${a.date ?? ''} ${a.complexId}`)));
  $effect(()=>{search;category;page=0;});$effect(()=>{complexId;phaseId='';});
- let importIntent:{key:string;session:number;id:string;commandId:string;artifactCommandId:string;mediaId:string;media?:Awaited<ReturnType<typeof uploadFile>>;mediaDone:boolean;mediaCommand?:Command;artifactCommand?:Command}|undefined;
+ let importIntent:{key:string;fileKey:string;locked:boolean;session:number;id:string;commandId:string;artifactCommandId:string;mediaId:string;media?:Awaited<ReturnType<typeof uploadFile>>;mediaDone:boolean;mediaCommand?:Command;artifactCommand?:Command}|undefined;
  let extraction=$state<PdfExtraction|null>(null);let extractionPage=$state(1);
  async function parsePdf(){busy=true;error='';extraction=null;try{const file=files?.[0];if(!file)throw new Error('Выберите оригинал PDF');extraction=await extractPdf(file);extractionPage=1;text=extraction.pages[0]?.text??'';}catch(e){error=e instanceof Error?e.message:String(e);}finally{busy=false;}}
  async function saveDocument(){if(busy)return;busy=true;error='';const session=getSessionGeneration();
- const key=JSON.stringify([complexId,phaseId,documentKind,source,text,date,url,files?.[0]?.name,files?.[0]?.size,files?.[0]?.lastModified]);
- try{if(!complexId||!source.trim()||!text.trim())throw new Error('Укажите ЖК, источник и содержание документа.');
- if(importIntent&&importIntent.key!==key)throw new Error('Для повтора сохранения верните исходные поля. Результат прежнего запроса ещё не подтверждён.');
- importIntent??={key,session,id:`DOC-${newCommandId()}`,commandId:newCommandId(),artifactCommandId:newCommandId(),mediaId:newCommandId(),mediaDone:false};const pending=importIntent;
+ const key=JSON.stringify([complexId,phaseId,documentKind,source,text,date,url,extraction?extractionPage:null,files?.[0]?.name,files?.[0]?.size,files?.[0]?.lastModified]);
+ try{if(importIntent?.locked&&importIntent.key!==key)throw new UnknownCommitResultError('Для повтора сохранения верните исходные поля. Результат прежнего запроса ещё не подтверждён.',importIntent.artifactCommandId);
+ if(!complexId||!source.trim()||!text.trim())throw new Error('Укажите ЖК, источник и содержание документа.');
+ if(url&&!safeUrl(url))throw new Error('Ссылка на оригинал должна начинаться с https:// или http://. Исправьте адрес и сохраните документ.');
+ if(date&&!isCalendarDate(date))throw new Error('Укажите реальную дату документа или оставьте поле пустым.');
+ const fileKey=JSON.stringify([complexId,files?.[0]?.name,files?.[0]?.size,files?.[0]?.lastModified]);
+ if(importIntent&&!importIntent.locked&&importIntent.key!==key){
+   if(importIntent.fileKey!==fileKey)importIntent=undefined;
+   else {importIntent.key=key;importIntent.artifactCommand=undefined;importIntent.artifactCommandId=newCommandId();}
+ }
+ // Validate before uploading or reserving a delivery intent.
+ parseCommand({type:'artifact.register',artifact:{id:'DOC-validation',complexId,...(phaseId?{phaseId}:{}),kind:documentKind,origin:'import',source,text,...(date?{date}:{}),...(url?{url}:{})}});
+ importIntent??={key,fileKey,locked:false,session,id:`DOC-${newCommandId()}`,commandId:newCommandId(),artifactCommandId:newCommandId(),mediaId:newCommandId(),mediaDone:false};const pending=importIntent;
  const checkSession=()=>{if(session!==getSessionGeneration()||pending.session!==session)throw new SessionSupersededError();};checkSession();
  if(files?.[0]&&!pending.media){pending.media=await uploadFile(files[0],complexId,{mediaId:pending.mediaId});stageFileForCommand(pending.commandId,pending.media.path);checkSession();pending.mediaCommand={type:'media',media:{...pending.media,date:date||pending.media.date,note:source}};}
  if(pending.media&&!pending.mediaDone){await commit(withCommandId(pending.mediaCommand!,pending.commandId));pending.mediaDone=true;unstageFileForCommand(pending.commandId);checkSession();}
  pending.artifactCommand??={type:'artifact.register',artifact:{id:pending.id,complexId,...(phaseId?{phaseId}:{}),kind:documentKind,origin:'import',source,text,...(extraction?{pageNumber:extractionPage}:{}),...(date?{date}:{}),...(url?{url}:{}),...(pending.media?{mediaId:pending.media.id}:{})}};
  await commit(withCommandId(pending.artifactCommand,pending.artifactCommandId));checkSession();notice='Документ сохранён. Применимость проверяется в досье.';importIntent=undefined;importing=false;source='';text='';files=undefined;extraction=null;
- }catch(e){if(session===getSessionGeneration())error=e instanceof Error?e.message:String(e);}finally{busy=false;}}
+ }catch(e){if(session===getSessionGeneration()){
+   error=e instanceof Error?e.message:String(e);
+   if(importIntent){
+     importIntent.locked=e instanceof UnknownCommitResultError||e instanceof StaleConflictError||e instanceof SessionSupersededError;
+     if(!importIntent.locked){
+       importIntent.artifactCommand=undefined;importIntent.artifactCommandId=newCommandId();
+       if(importIntent.media&&!importIntent.mediaDone){
+         const path=importIntent.media.path;
+         try{await removeStagedFile(path,importIntent.commandId);}catch{recordCleanupRetry(path);}
+         importIntent=undefined;
+       }
+     }
+   }
+ }}finally{busy=false;}}
 </script>
 <div class="page-heading"><div><p class="eyebrow mt-4">Внутренний каталог</p><h1>Реестры</h1></div><div class="actions"><button onclick={()=>importingGeometry=!importingGeometry}>Импорт GeoJSON</button><button onclick={()=>creating=!creating}>Добавить ЖК</button><button class="primary" onclick={()=>importing=!importing}>Добавить документ</button></div></div>
 {#if importingGeometry}<GeometryImport {workspace} {commit}/>{/if}

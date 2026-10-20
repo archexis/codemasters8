@@ -13,24 +13,24 @@ test('AI triage accepts a verbatim candidate without adding risk points',async({
  await page.goto('/#/complexes/SQ-003?tab=verification',{waitUntil:'domcontentloaded'});
  await expect(page.locator('.risk-score strong')).toHaveText('10');
  await expect(page.locator('.hypothesis')).toContainText('Гипотеза принята');
- await expect(page.getByRole('button',{name:'Подтвердить факт R2',exact:true})).toHaveCount(0);
+ await expect(page.locator('.hypothesis').filter({has:page.locator('blockquote').filter({hasText:'Новая платная бронь квартиры 734 000'})}).getByRole('button',{name:'Подтвердить факт R2',exact:true})).toHaveCount(0);
  await page.getByRole('button',{name:'Начать расследование',exact:true}).click();
  await expect(page.locator('.risk-score strong')).toHaveText('10');
- await expect(page.getByRole('button',{name:'Подтвердить факт R2',exact:true})).toBeVisible();
+ await expect(page.locator('.hypothesis').filter({has:page.locator('blockquote').filter({hasText:'Новая платная бронь квартиры 734 000'})}).getByRole('button',{name:'Подтвердить факт R2',exact:true})).toBeVisible();
 });
 
 test('publications keep their filters after dossier navigation and reload',async({page})=>{
  await page.goto('/#/publications',{waitUntil:'domcontentloaded'});
- await page.getByRole('searchbox',{name:'Поиск',exact:true}).fill('брон');
+ await page.getByRole('searchbox',{name:'Поиск',exact:true}).fill('Резервирование');
  const count=await page.getByRole('button',{name:'Оригинал и гипотезы',exact:true}).count();
  expect(count).toBeGreaterThan(0);
  await page.getByRole('button',{name:'Оригинал и гипотезы',exact:true}).first().click();
  await page.getByRole('link',{name:'Открыть проверку в досье',exact:true}).click();
  await page.goto('/#/publications',{waitUntil:'domcontentloaded'});
- await expect(page.getByRole('searchbox',{name:'Поиск',exact:true})).toHaveValue('брон');
+ await expect(page.getByRole('searchbox',{name:'Поиск',exact:true})).toHaveValue('Резервирование');
  await expect(page.getByRole('button',{name:'Оригинал и гипотезы',exact:true})).toHaveCount(count);
  await page.reload({waitUntil:'domcontentloaded'});
- await expect(page.getByRole('searchbox',{name:'Поиск',exact:true})).toHaveValue('брон');
+ await expect(page.getByRole('searchbox',{name:'Поиск',exact:true})).toHaveValue('Резервирование');
 });
 
 test('case deep link cannot switch its scope using a forged phase parameter',async({page})=>{

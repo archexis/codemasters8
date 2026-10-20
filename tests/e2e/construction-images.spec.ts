@@ -45,6 +45,7 @@ test('chronology filters, selects and compares synthetic frames without adding e
   await expect(comparison).not.toBeVisible();
   await page.getByRole('button', { name: 'Начать расследование', exact: true }).click();
   await expect(page).toHaveURL(/#\/cases\/CASE-/);
+  await page.getByRole('tab',{name:'Хронология',exact:true}).click();
   await expect(page.locator('.illustration-event')).toHaveCount(4);
   await expect(page.locator('.illustration-event').getByRole('button', { name: 'Добавить событие в дело' })).toHaveCount(0);
   await page.screenshot({ path: info.outputPath('construction-timeline.png'), fullPage: true });

@@ -1,3 +1,4 @@
+import seed from '../../src/lib/seed.json' with {type:'json'};
 import {test,expect} from '@playwright/test';
 test('S6 missing Web Locks blocks writes and retains input/read access',async({page})=>{
  await page.addInitScript(()=>Object.defineProperty(navigator,'locks',{value:undefined,configurable:true}));
@@ -7,5 +8,5 @@ test('S6 missing Web Locks blocks writes and retains input/read access',async({p
  await expect(page.getByRole('alert')).toContainText('Web Locks');
  await expect(page.getByLabel('Текст объявления')).toHaveValue('Депозит 534 000 тенге.');
  const env=await page.evaluate(()=>localStorage.getItem('sq_svelte_demo_v2'));expect(env).toBeNull();
- await page.goto('/#/registries',{waitUntil:'domcontentloaded'});await expect(page.locator('tbody tr')).toHaveCount(16);
+ await page.goto('/#/registries',{waitUntil:'domcontentloaded'});await expect(page.locator('tbody tr')).toHaveCount(seed.COMPLEXES.length);
 });

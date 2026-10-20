@@ -1,9 +1,11 @@
+import seed from '../../src/lib/seed.json' with {type:'json'};
 import {expect,test} from '@playwright/test';
 import {manualCase,verifyFact} from '../helpers/case-ui';
 test('map search, risk filter, dossier and direct reload',async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/#/map',{waitUntil:'domcontentloaded'});
- await page.getByLabel('Поиск ЖК, БИН или адреса на карте').fill('Сарыарқа');
+ await page.getByRole('button',{name:'Слои и фильтры',exact:true}).click();
+ await page.getByLabel('Поиск ЖК, БИН или адреса на карте').fill(seed.COMPLEXES.find(z=>z.id==='SQ-002')!.name);
  await page.getByLabel('Базовая зона риска').selectOption('red');
  await page.getByRole('button',{name:/Список ·/}).click();
  await page.locator('.map-list-body button').click();

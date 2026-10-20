@@ -42,7 +42,7 @@ test('triage retains one publication; only a case fact adds +25 after reload',as
   await expect(page.locator('.risk-score strong')).toHaveText('35');
   await page.getByLabel('Дата доказательства',{exact:true}).fill('2026-10-19');
   await page.getByLabel('Обоснование проверки факта',{exact:true}).fill('Проверена дословная просьба оплаты');
-  await page.getByRole('button',{name:'Подтвердить факт R2',exact:true}).click();
+  await page.locator('.hypothesis').filter({has:page.locator('blockquote').filter({hasText:'Депозит обязателен.'})}).getByRole('button',{name:'Подтвердить факт R2',exact:true}).click();
   await expect(page.locator('.risk-score strong')).toHaveText('25');
   await page.reload({waitUntil:'domcontentloaded'});
   await expect(page.locator('.risk-score strong')).toHaveText('25');
@@ -69,7 +69,7 @@ test('cancel/new run ignores late success and error; unmount aborts',async({page
   await settle(page,true); await expect(page.getByRole('alert')).toHaveCount(0);
   await settle(page); await expect(page.getByText('Fixture R2/R3')).toBeVisible();
   await run(page); await expect.poll(()=>page.evaluate(()=>(window as any).__tasks.length)).toBe(1);
-  await page.getByRole('link',{name:/S SAQ QURYLYS/}).click();
+  await page.getByRole('link',{name:'SAQ QURYLYS — на карту',exact:true}).click();
   await expect.poll(()=>page.evaluate(()=>(window as any).__aborted)).toBe(true);
   await settle(page,true); await expect(page.getByRole('alert')).toHaveCount(0);
 });

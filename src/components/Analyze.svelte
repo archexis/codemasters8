@@ -64,11 +64,13 @@
       active=materialIntents.get(key);
       if(!active) {
         const existing=workspace.ads.find(a=>adDedupeKey(a.zkId,a.text)===adDedupeKey(selected,text));
-        active={key,session,adId:existing?.id ?? `AD-${newCommandId()}`,existing:!!existing,adCommandId:newCommandId(),adCommand:null,adDone:!!existing,mediaId:newCommandId(),mediaCommandId:newCommandId(),media:null,mediaDone:false,artifactId:`ART-${newCommandId()}`,artifactCommandId:newCommandId(),artifactCommand:null,artifactDone:false,reviews:new Map()};
+        const sameSighting=existing && [{source:existing.platform,date:existing.date,url:existing.url},...(existing.sightings??[])].some(s=>
+          (s.source??'')===source.label && (s.date??null)===(date||null) && (s.url??'')===url);
+        active={key,session,adId:existing?.id ?? `AD-${newCommandId()}`,existing:!!existing,adCommandId:newCommandId(),adCommand:null,adDone:!!sameSighting,mediaId:newCommandId(),mediaCommandId:newCommandId(),media:null,mediaDone:false,artifactId:`ART-${newCommandId()}`,artifactCommandId:newCommandId(),artifactCommand:null,artifactDone:false,reviews:new Map()};
         // Reuse the immutable original, including its exact text and publication date.
         const original=existing ? $state.snapshot(existing) : {id:active.adId,zkId:selected,text,url,account,date:date || null,platform:source.label,captureAt:new Date().toISOString(),...(result && !stale ? {analysis:$state.snapshot(result)} : {})};
         if(hypothesis && !original.text.includes(hypothesis.quote)) throw new Error('Текст уже сохранён в иной записи. Откройте исходную публикацию и повторите анализ её точного текста.');
-        active.adCommand={type:'ad',ad:original,decision:'saved',comment:'Сохранение первоисточника без подтверждения факторов'};
+        active.adCommand={type:'ad',ad:{...original,id:existing?`AD-${newCommandId()}`:active.adId,url,account,date:date||null,platform:source.label,captureAt:new Date().toISOString()},decision:'saved',comment:existing?'Дополнительная фиксация первоисточника':'Сохранение первоисточника без подтверждения факторов'};
         active.artifactCommand={type:'artifact.register',artifact:{id:active.artifactId,complexId:selected,...(phaseId ? {phaseId} : {}),kind:'publication',source:original.platform || 'Ручной ввод',text:original.text,...(original.date ? {date:original.date} : {}),adId:original.id,...(original.url ? {url:original.url} : {})}};
         const priorArtifact=workspace.artifacts?.find(a=>a.adId===original.id && a.phaseId===(phaseId || undefined) && (!files?.[0] || !!a.mediaId));
         if(priorArtifact && !files?.[0]) {active.artifactId=priorArtifact.id;active.artifactDone=true;}
@@ -88,7 +90,7 @@
       if(!active.adDone) {
         await commit(withCommandId(active.adCommand!,active.adCommandId));
         active.adDone=true;
-        if(active.media) {active.mediaDone=true;unstageFileForCommand(active.adCommandId,active.media.path);}
+        if(active.media && !active.existing) {active.mediaDone=true;unstageFileForCommand(active.adCommandId,active.media.path);}
         assertCurrent();
       }
       if(active.existing && active.media && !active.mediaDone) {

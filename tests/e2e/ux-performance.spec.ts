@@ -9,7 +9,7 @@ test('D1 browser cached UI timing and five-cycle heap sanity', async ({ page, co
   const state = initialState(); const original = state.complexes[0]; const originalAd = state.ads[0];
   state.complexes = Array.from({ length: 100 }, (_, i) => ({ ...structuredClone(original), factors: [], events: [], id: `D1-${String(i).padStart(3, '0')}`, name: `DEMO D1 объект ${i}`, lat: 49.984 + (i % 10) * .001, lng: 82.614 + Math.floor(i / 10) * .001 }));
   state.ads = Array.from({ length: 1000 }, (_, i) => ({ ...structuredClone(originalAd), id: `D1-AD-${i}`, zkId: state.complexes[i % 100].id, text: `DEMO публикация ${i}: бронь квартиры 500000 тенге.` }));
-  state.audit = []; state.signals = {}; state.signalVersions = {}; state.cases = []; state.caseSnapshots = []; state.artifacts = []; state.claims = []; state.assertions = []; state.phases = []; state.media = [];
+  state.audit = []; state.signals = {}; state.signalVersions = {}; state.cases = []; state.caseSnapshots = []; state.artifacts = []; state.claims = []; state.assertions = []; state.phases = []; state.media = []; state.relations = [];
   state.artifacts = Array.from({ length: 10000 }, (_, i) => ({ id: `D1-EVENT-${i}`, complexId: state.complexes[i % 100].id, kind: 'observation' as const, source: 'DEMO датированный осмотр', text: `DEMO событие наблюдения ${i}; автоматическая оценка готовности отсутствует.`, date: '2026-10-01', capturedAt: '2026-10-02T10:00:00.000Z', origin: 'demo' as const }));
   loadStateFromText(JSON.stringify(state));
   await page.addInitScript(data => { localStorage.setItem('sq_svelte_demo_v2', JSON.stringify({ envelope: 1, state: data, version: 0, receipts: {} })); sessionStorage.removeItem('saq-map-view-v1'); }, state);
@@ -20,6 +20,7 @@ test('D1 browser cached UI timing and five-cycle heap sanity', async ({ page, co
   await expect(page.locator('.maplibregl-canvas,.fallback-map').first()).toBeVisible();
   await expect(page.locator('.map-wrap')).toHaveAttribute('data-map-ready', 'true', { timeout: 15000 });
   const mapRendering = await page.locator('.fallback-map').isVisible() ? 'dom-fallback' : 'maplibre-webgl';
+  await page.getByRole('button',{name:'Слои и фильтры',exact:true}).click();
   const xray = await page.evaluate(async () => {
     const samples: number[] = [];
     const buttons = [...document.querySelectorAll<HTMLButtonElement>('.xray button')];

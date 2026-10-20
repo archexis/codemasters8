@@ -12,6 +12,20 @@ function setup(){
  return state;
 }
 describe('automatic case preparation',()=>{
+ it('verifies all six demo templates against a linked immutable publication without scoring before review',()=>{
+  let state=setup();
+  for(let pass=0;pass<6;pass++){
+   const item=state.cases![0],id=`DEMO-review-${pass}`;
+   for(const command of demoPreparationCommands(state,item,id))state=applyCommand(state,command,'demo');
+   const artifact=state.artifacts!.find(a=>a.id===id)!,claim=state.claims!.find(c=>c.artifactId===id)!;
+   expect(artifact.kind).toBe('publication');
+   expect(state.ads.find(a=>a.id===artifact.adId)).toMatchObject({text:artifact.text,zkId:item.complexId,date:artifact.date});
+   expect((state.assertions??[]).filter(a=>a.claimId===claim.id)).toEqual([]);
+   for(const command of buildFactReview(state,item.id,[claim.id],'verified','Учебный оригинал сверён'))state=applyCommand(state,command,'analyst');
+   expect(state.assertions!.at(-1)).toMatchObject({claimId:claim.id,status:'verified',evidence:{adId:artifact.adId,quote:claim.quote}});
+   expect(previewCaseSignal(state,item.id).score).toBe(25);
+  }
+ });
  it('adds one different demo source and unchecked candidate per pass, including after template rotation',()=>{
   let state=setup();const texts=new Set<string>();
   for(let pass=0;pass<8;pass++){

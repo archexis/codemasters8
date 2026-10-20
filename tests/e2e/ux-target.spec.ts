@@ -1,13 +1,20 @@
+import seed from '../../src/lib/seed.json' with {type:'json'};
 import { expect, test } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 test.use({trace:'on'});
 
 test('target map: one X-Ray theme, preview, dossier and retained view', async ({ page }, info) => {
   const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
+  const target=seed.COMPLEXES.find(z=>z.id==='SQ-001')!;
+  await page.route('**/src/components/RiskMap.svelte*',async route=>{
+    const response=await route.fetch(),source=await response.text();
+    await route.fulfill({response,body:source.replace('map = new ml.Map(', 'map = window.__targetMap = new ml.Map(')});
+  });
   await page.goto('/#/map',{waitUntil:'domcontentloaded'});
   const map = page.getByRole('region', { name: 'Карта объектов', exact: true });
   await expect(map).toBeVisible();
-  await map.getByLabel('Поиск ЖК, БИН или адреса на карте').fill('Ертіс');
+  await page.getByRole('button',{name:'Слои и фильтры',exact:true}).click();
+  await map.getByLabel('Поиск ЖК, БИН или адреса на карте').fill(seed.COMPLEXES.find(z=>z.id==='SQ-001')!.name);
   const started = Date.now();
   await map.getByRole('button', { name: 'Правовой', exact: true }).click();
   await expect(map.getByRole('button', { name: 'Правовой', exact: true })).toHaveAttribute('aria-pressed', 'true');
@@ -15,24 +22,28 @@ test('target map: one X-Ray theme, preview, dossier and retained view', async ({
   await expect(map.locator('.map-legend')).toContainText('Требует проверки');
   await expect(map.locator('.map-wrap')).toHaveAttribute('data-map-ready', 'true', { timeout: 15000 });
   await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+  await page.keyboard.press('Escape');
   if (await map.locator('.fallback-map').isVisible()) await map.locator('.fallback-point').first().click();
   else {
-    // Seed SQ-001 is within 3px of the initial camera center; query leaves this one marker.
-    const canvas = map.locator('.maplibregl-canvas'); const bounds = await canvas.boundingBox();
-    await canvas.click({ position: { x: bounds!.width / 2 - 2, y: bounds!.height / 2 } });
+    // Project the actual seed location; a camera-centre pixel is not a stable marker locator.
+    await page.evaluate(({lat,lng})=>(window as any).__targetMap.jumpTo({center:[lng,lat],zoom:15}),target);
+    await expect.poll(()=>page.evaluate(()=>(window as any).__targetMap.queryRenderedFeatures({layers:['points']}).some((f:any)=>f.properties.id==='SQ-001'))).toBe(true);
+    const position=await page.evaluate(({lat,lng})=>{const p=(window as any).__targetMap.project([lng,lat]);return {x:p.x,y:p.y};},target);
+    await map.locator('.maplibregl-canvas').click({position});
   }
   const preview = map.getByRole('complementary', { name: 'Предпросмотр ЖК' });
-  await expect(preview).toContainText('Ертіс Толқыны');
+  await expect(preview).toContainText(seed.COMPLEXES.find(z=>z.id==='SQ-001')!.name);
   await expect(preview).toContainText('требует проверки');
   await expect(map.getByText('Загрузка карты…', { exact: true })).toHaveCount(0, { timeout: 15000 });
   await mkdir('test-results/score-maxxing/artifacts/ux/screenshots', { recursive: true });
   if (info.project.name === 'chromium') await page.screenshot({ path: 'test-results/score-maxxing/artifacts/ux/screenshots/desktop-map.png', fullPage: true });
   await preview.getByRole('button', { name: 'Открыть досье', exact: true }).click();
   await expect(page).toHaveURL(/#\/complexes\/SQ-001/);
-  await expect(page.getByRole('heading', { name: 'Ертіс Толқыны', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: seed.COMPLEXES.find(z=>z.id==='SQ-001')!.name, exact: true })).toBeVisible();
   await page.screenshot({ path: `test-results/score-maxxing/artifacts/ux/screenshots/${info.project.name === 'mobile' ? 'mobile' : 'desktop'}-dossier.png`, fullPage: true });
   await page.goto('/#/map',{waitUntil:'domcontentloaded'});
-  await expect(map.getByLabel('Поиск ЖК, БИН или адреса на карте')).toHaveValue('Ертіс');
+  await page.getByRole('button',{name:'Слои и фильтры',exact:true}).click();
+  await expect(map.getByLabel('Поиск ЖК, БИН или адреса на карте')).toHaveValue(seed.COMPLEXES.find(z=>z.id==='SQ-001')!.name);
   await expect(map.getByRole('button', { name: 'Правовой', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await info.attach('map-interaction-sanity', { body: JSON.stringify({ browser: info.project.name, elapsedMs: Date.now() - started, note: 'End-to-end elapsed including route changes; not p95 or FPS' }), contentType: 'application/json' });
   expect(errors).toEqual([]);
@@ -129,7 +140,7 @@ test('target vertical flow: manual publication becomes evidence and verified R2 
   await expect(page.locator('.hypothesis').filter({ hasText: quote })).toContainText('Кандидат');
   await expect(page.locator('.risk-score strong')).toHaveText('35');
   await page.getByLabel('Обоснование проверки факта', { exact: true }).fill('Дословная цитата содержит предложение платной брони.');
-  await page.getByRole('button', { name: 'Подтвердить факт R2', exact: true }).click();
+  await page.locator('.hypothesis').filter({has:page.locator('blockquote').filter({hasText:'Платная бронь квартиры 987 650'})}).getByRole('button',{name:'Подтвердить факт R2',exact:true}).click();
   await expect(page.locator('.risk-score strong')).toHaveText('25');
   await page.getByRole('button', { name: 'Предпросмотр сигнала', exact: true }).click();
   await expect(page.locator('.case-signal-sheet')).toContainText(quote);

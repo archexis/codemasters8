@@ -1,3 +1,4 @@
+import seed from '../../src/lib/seed.json' with {type:'json'};
 import { expect, test, type Page } from '@playwright/test';
 
 // Долгие сценарии (несколько сохранений + reloads): на слабых машинах
@@ -87,7 +88,7 @@ test('неизвестная дата → пусто, а не предыдуща
 test('уникальное имя — предложение; save до выбора закрыт', async ({ page }) => {
   await page.goto('/#/analyze/SQ-001',{waitUntil:'domcontentloaded'});
   await page.getByText('Импорт из CSV').click();
-  await page.getByTestId('csv-input').fill(['text,zk', '"Бронь 903 111 тенге.",Сарыарқа'].join('\n'));
+  await page.getByTestId('csv-input').fill(['text,zk', `"Бронь 903 111 тенге.",${seed.COMPLEXES.find(z=>z.id==='SQ-002')!.name}`].join('\n'));
   await page.getByTestId('csv-preview').click();
   await expect(page.getByTestId('csv-row-hint')).toContainText('Похоже на');
   await page.getByTestId('csv-select').click();

@@ -1,3 +1,4 @@
+import seed from '../../src/lib/seed.json' with {type:'json'};
 import {expect,test} from '@playwright/test';
 
 test('S6 seven direct routes, unknown IDs/routes/revisions and no-results',async({page})=>{
@@ -9,9 +10,9 @@ test('S6 seven direct routes, unknown IDs/routes/revisions and no-results',async
 });
 test('S6 WebGL failure and empty workspace retain independent list',async({page})=>{
  await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext; HTMLCanvasElement.prototype.getContext=function(this:HTMLCanvasElement,type:any,...args:any[]){if(String(type).includes('webgl'))return null;return original.apply(this,[type,...args] as any);} as any;});
- await page.goto('/#/map',{waitUntil:'domcontentloaded'}); await expect(page.getByLabel('Двумерная карта без WebGL')).toBeVisible();await page.getByRole('button',{name:/Список ·/}).click();await expect(page.locator('.map-list-body button')).toHaveCount(14);
+ await page.goto('/#/map',{waitUntil:'domcontentloaded'}); await expect(page.getByLabel('Двумерная карта без WebGL')).toBeVisible();await page.getByRole('button',{name:'Слои и фильтры',exact:true}).click();await page.getByRole('button',{name:/Список ·/}).click();await expect(page.locator('.map-list-body button')).toHaveCount(seed.COMPLEXES.length);
  await page.evaluate(()=>{const k='sq_svelte_demo_v2',e={envelope:1,version:0,receipts:{},state:{schemaVersion:3,complexes:[],ads:[],media:[],signals:{},signalVersions:{},audit:[]}}; localStorage.setItem(k,JSON.stringify(e));});
- await page.reload({waitUntil:'domcontentloaded'});if(await page.getByRole('button',{name:/Список ·/}).getAttribute('aria-expanded')==='false')await page.getByRole('button',{name:/Список ·/}).click();await expect(page.locator('.map-list-body')).toContainText('Объектов по выбранным условиям нет');await page.goto('/#/registries',{waitUntil:'domcontentloaded'});await expect(page.getByRole('button',{name:'Добавить ЖК'})).toBeVisible();
+ await page.reload({waitUntil:'domcontentloaded'});await page.getByRole('button',{name:'Слои и фильтры',exact:true}).click();if(await page.getByRole('button',{name:/Список ·/}).getAttribute('aria-expanded')==='false')await page.getByRole('button',{name:/Список ·/}).click();await expect(page.locator('.map-list-body')).toContainText('Объектов по выбранным условиям нет');await page.goto('/#/registries',{waitUntil:'domcontentloaded'});await expect(page.getByRole('button',{name:'Добавить ЖК'})).toBeVisible();
 });
 test('S6 keyboard path, visible focus, labels and safe text rendering',async({page})=>{
  await page.goto('/#/analyze/SQ-001',{waitUntil:'domcontentloaded'}); const text=page.getByLabel('Текст объявления');
@@ -38,7 +39,8 @@ test('S6 keyboard path, visible focus, labels and safe text rendering',async({pa
 test('S6 failed map tiles leave the searchable object list usable',async({page})=>{
  await page.route('https://tile.openstreetmap.org/**',r=>r.abort());
  await page.goto('/#/map',{waitUntil:'domcontentloaded'});
- await page.getByLabel('Поиск ЖК, БИН или адреса на карте').fill('Сарыарқа');
+ await page.getByRole('button',{name:'Слои и фильтры',exact:true}).click();
+ await page.getByLabel('Поиск ЖК, БИН или адреса на карте').fill(seed.COMPLEXES.find(z=>z.id==='SQ-002')!.name);
  await page.getByRole('button',{name:/Список ·/}).click();await expect(page.locator('.map-list-body button')).toHaveCount(1);
  await page.locator('.map-list-body button').click();await page.getByRole('button',{name:'Открыть досье',exact:true}).click();await expect(page.locator('.risk-score strong')).toHaveText('70');
 });

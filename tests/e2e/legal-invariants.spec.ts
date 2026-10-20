@@ -1,5 +1,5 @@
 import {expect,test} from '@playwright/test';
-import {manualCase,verifyFact} from '../helpers/case-ui';
+import {manualCase,verifyFact,manualCandidate} from '../helpers/case-ui';
 
 test('C: verified guarantee prevents R1 in a new case',async({page})=>{
  await page.goto('/#/registries',{waitUntil:'domcontentloaded'});
@@ -33,9 +33,9 @@ test('withdrawing a case fact reduces its score and keeps the review history',as
  await manualCase(page);await verifyFact(page);
  await expect(page.locator('.risk-score strong')).toHaveText('25');
  await page.getByLabel('Обоснование проверки факта',{exact:true}).fill('Повторная сверка: применимость не подтверждена');
- await page.getByRole('button',{name:'Отклонить факт',exact:true}).click();
+ await manualCandidate(page).getByRole('button',{name:'Отклонить факт',exact:true}).click();
  await expect(page.locator('.risk-score strong')).toHaveText('0');
- await page.reload({waitUntil:'domcontentloaded'});await expect(page.locator('.hypothesis')).toContainText('Факт отклонён');
+ await page.reload({waitUntil:'domcontentloaded'});await expect(manualCandidate(page)).toContainText('Факт отклонён');
  const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('sq_svelte_demo_v2')!).state);
  expect(state.assertions.map((a:any)=>a.status)).toEqual(['verified','rejected']);
 });

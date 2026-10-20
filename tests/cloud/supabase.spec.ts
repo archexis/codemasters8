@@ -59,9 +59,10 @@ test('Supabase server analysis, optimistic RPC save and session isolation (no lo
   expect(data.assertions??[]).toHaveLength(0);
   await page.goto('/#/complexes/SQ-001?tab=verification');
   await page.getByRole('button',{name:'Начать расследование',exact:true}).click();
-  await expect(page.locator('.risk-score strong')).toHaveText('0');
+  await expect(page.locator('.risk-score strong')).toHaveText('35');
+  await expect(page.getByRole('status').filter({hasText:'Показана исходная оценка'})).toContainText('35 баллов');
   await page.getByLabel('Обоснование проверки факта',{exact:true}).fill('Цитата проверена по оригиналу');
-  await page.getByRole('button',{name:'Подтвердить факт R2',exact:true}).click();
+  await page.locator('.hypothesis').filter({has:page.locator('blockquote').filter({hasText:'Депозит 456 000 тенге'})}).getByRole('button',{name:'Подтвердить факт R2',exact:true}).click();
   await expect(page.locator('.risk-score strong')).toHaveText('25');
   expect(data.caseSnapshots??[]).toHaveLength(0);
   await page.getByRole('button',{name:'Предпросмотр сигнала',exact:true}).click();
@@ -71,7 +72,9 @@ test('Supabase server analysis, optimistic RPC save and session isolation (no lo
   expect(data.caseSnapshots?.at(-1)?.score).toBe(25);
   expect(commands).toEqual(expect.arrayContaining(['ad','artifact.register','claim.propose','ai.review','case.create','case.attach','fact.review','case.decide']));
   await page.reload();
-  await expect(page.getByText('Депозит 456 000 тенге для квартиры.')).toBeVisible();
+  await page.getByRole('button',{name:'Предпросмотр сигнала',exact:true}).click();
+  await expect(page.locator('.case-signal-sheet')).toContainText('Депозит 456 000 тенге для квартиры.');
+  await expect(page.locator('.case-signal-sheet')).toContainText('Версия 1');
   // Конец сессии: серверные данные недоступны, виден локальный DEMO-конверт.
   await page.evaluate((key) => {
     localStorage.setItem('saq-test-logged-out','1');

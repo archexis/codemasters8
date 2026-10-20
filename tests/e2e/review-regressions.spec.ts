@@ -56,7 +56,7 @@ test('confirmed publication includes its attachment in exported signal materials
   await page.getByRole('button',{name:'Начать расследование',exact:true}).click();
   await page.getByLabel('Дата доказательства',{exact:true}).fill('2026-10-19');
   await page.getByLabel('Обоснование проверки факта',{exact:true}).fill('Проверены текст и скриншот');
-  await page.getByRole('button',{name:'Подтвердить факт R2',exact:true}).click();
+  await page.locator('.hypothesis').filter({has:page.locator('blockquote').filter({hasText:'Бронь квартиры — 522 000'})}).getByRole('button',{name:'Подтвердить факт R2',exact:true}).click();
   await page.getByRole('button',{name:'Предпросмотр сигнала',exact:true}).click();
   await page.getByLabel('Обоснование решения').fill('Проверены материалы сигнала');
   await page.getByRole('button',{name:'Подтвердить сигнал',exact:true}).click();
@@ -86,10 +86,10 @@ test('R3 accepts dated analyst material and retries a corrected decision with it
   await page.getByRole('button',{name:'Начать расследование',exact:true}).click();
   await page.getByLabel('Дата доказательства',{exact:true}).fill('2026-10-19');
   await page.getByLabel('Обоснование проверки факта',{exact:true}).fill('Проверка объявления без даты');
-  await page.getByRole('button',{name:'Подтвердить факт R3',exact:true}).click();
+  await page.locator('.hypothesis').filter({has:page.locator('blockquote').getByText('Продажа квартир в строящемся доме.',{exact:true})}).getByRole('button',{name:'Подтвердить факт R3',exact:true}).click();
   await expect(page.getByRole('alert')).toContainText('датированный материал');
   await page.getByLabel('Дополнительный датированный материал (для R3: состояние до ввода)').fill('2026-10-18: источник — реестр, объект не введён');
-  await page.getByRole('button',{name:'Подтвердить факт R3',exact:true}).click();
+  await page.locator('.hypothesis').filter({has:page.locator('blockquote').getByText('Продажа квартир в строящемся доме.',{exact:true})}).getByRole('button',{name:'Подтвердить факт R3',exact:true}).click();
   await expect(page.locator('.risk-score strong')).toHaveText('10');
   await page.reload({waitUntil:'domcontentloaded'});
   const env=await page.evaluate(()=>JSON.parse(localStorage.getItem('sq_svelte_demo_v2')!));

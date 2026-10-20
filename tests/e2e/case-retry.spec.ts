@@ -1,5 +1,5 @@
 import {expect,test,type Page} from '@playwright/test';
-import {manualCase,verifyFact} from '../helpers/case-ui';
+import {manualCase,verifyFact,manualCandidate} from '../helpers/case-ui';
 
 // Simulate the delivery boundary: persistence and receipt succeed, then ACK is lost.
 // The component must recover through the receipt, using the original command ID.
@@ -20,11 +20,11 @@ test('fact review retries its persisted receipt without a second assertion',asyn
  await manualCase(page);
  await page.getByLabel('Обоснование проверки факта',{exact:true}).fill('Сверено с первоисточником');
  await loseNextAck(page,'fact.review');
- const button=page.getByRole('button',{name:'Подтвердить факт R2',exact:true});
+ const button=manualCandidate(page).getByRole('button',{name:'Подтвердить факт R2',exact:true});
  await button.click();await expect(page.getByRole('alert')).toContainText('Simulated lost ACK');
  const first=await page.evaluate(()=>JSON.parse(localStorage.getItem('sq_svelte_demo_v2')!).state.assertions);
  expect(first).toHaveLength(1);
- await button.click();await expect(page.locator('.hypothesis')).toContainText('Факт проверен');
+ await button.click();await expect(manualCandidate(page)).toContainText('Факт проверен');
  const final=await page.evaluate(()=>JSON.parse(localStorage.getItem('sq_svelte_demo_v2')!).state);
  expect(final.assertions).toEqual(first);
  expect(final.audit.filter((a:any)=>a.action==='fact.review')).toHaveLength(1);
@@ -86,7 +86,7 @@ test('stale attachment can retry saved delivery after its original button is dis
  await expect(page.getByRole('button',{name:'В деле',exact:true}).first()).toBeDisabled();
  const retry=page.getByRole('button',{name:'Повторить доставку прежнего действия',exact:true});
  await expect(retry).toBeEnabled();await retry.click();await expect(retry).toHaveCount(0);
- await verifyFact(page);await expect(page.locator('.hypothesis')).toContainText('Факт проверен');
+ await verifyFact(page);await expect(manualCandidate(page)).toContainText('Факт проверен');
  const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('sq_svelte_demo_v2')!).state);
  expect(state.audit.filter((a:any)=>a.action==='case.attach')).toHaveLength(attachesBefore+1);
  expect(state.assertions).toHaveLength(1);
@@ -97,7 +97,7 @@ test('explicit fact batch resumes after its second ACK is lost without duplicate
  const manual=page.locator('details').filter({has:page.getByText('Выделить утверждение вручную',{exact:true})});
  await manual.getByLabel('Точная цитата',{exact:true}).fill('612 000 тенге.');
  await manual.getByRole('button',{name:'Создать кандидата',exact:true}).click();
- const boxes=page.getByRole('checkbox',{name:/Выбрать факт R2/});
+ const boxes=page.locator('.hypothesis').filter({has:page.locator('blockquote').filter({hasText:'612 000'})}).getByRole('checkbox',{name:/Выбрать факт R2/});
  await expect(boxes).toHaveCount(2);
  await expect(boxes.nth(0)).not.toBeChecked();await expect(boxes.nth(1)).not.toBeChecked();
  await boxes.nth(0).check();await boxes.nth(1).check();
@@ -131,7 +131,7 @@ test('automatic preparation survives navigation and retries its original deliver
  await expect(region.getByRole('alert')).toContainText('Simulated lost ACK');
  const caseUrl=page.url();
  const first=await page.evaluate(()=>JSON.parse(localStorage.getItem('sq_svelte_demo_v2')!).state.artifacts);
- expect(first).toHaveLength(1);
+ const delivered=first.find((a:any)=>a.id.startsWith('ART-'));expect(delivered).toBeDefined();
  await page.evaluate(()=>{location.hash='#/registries';});
  await expect(region).toHaveCount(0);
  await page.evaluate(url=>{location.hash=new URL(url).hash;},caseUrl);
@@ -139,7 +139,7 @@ test('automatic preparation survives navigation and retries its original deliver
  // The remounted dossier delivers the same pending command and discovers its persisted receipt.
  await expect(region.getByRole('status')).toContainText('Подготовка завершена');
  const after=await page.evaluate(()=>JSON.parse(localStorage.getItem('sq_svelte_demo_v2')!).state);
- expect(after.artifacts.filter((a:any)=>a.adId===first[0].adId&&a.phaseId===first[0].phaseId)).toHaveLength(1);
+ expect(after.artifacts.filter((a:any)=>a.id===delivered.id)).toHaveLength(1);
  expect(after.assertions??[]).toHaveLength(0);
  expect(after.cases).toHaveLength(1);
 });

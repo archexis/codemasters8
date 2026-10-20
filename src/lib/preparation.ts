@@ -21,10 +21,13 @@ export function demoPreparationCommands(state:AppState,item:InvestigationCase,ma
     {source:'Предложение о покупке',kind:'document' as const,quote:`Аванс ${amount} тенге необходимо перечислить для оформления квартиры.`},
   ];
   const example=examples[(sequence-1)%examples.length];
-  const artifact=existing??{id:materialId,complexId:item.complexId,...(item.phaseId?{phaseId:item.phaseId}:{}),kind:example.kind,
+  const adId=existing?.adId??`AD-${materialId}`;
+  const artifact=existing??{id:materialId,complexId:item.complexId,...(item.phaseId?{phaseId:item.phaseId}:{}),kind:'publication' as const,adId,
     source:`DEMO · ${example.source} · №${sequence}`,text:`Демонстрационный материал №${sequence}.\n${example.quote}`,
     date:item.period?.from??new Date().toISOString().slice(0,10),origin:'demo' as const};
   const commands:Command[]=[];
+  if(!existing && !state.ads.some(ad=>ad.id===adId))commands.push({type:'ad',ad:{id:adId,zkId:item.complexId,text:artifact.text,
+    platform:artifact.source,account:'DEMO · учебный источник',url:'',date:artifact.date??null,captureAt:new Date().toISOString()},decision:'saved',comment:'DEMO · учебная публикация, требует проверки аналитиком'});
   if(!existing)commands.push({type:'artifact.register',artifact});
   if(!item.artifactIds.includes(materialId))commands.push({type:'case.attach',caseId:item.id,artifactId:materialId});
   if(!(state.claims??[]).some(c=>c.artifactId===materialId))commands.push({type:'claim.propose',claim:{id:`CL-${newCommandId()}`,complexId:item.complexId,

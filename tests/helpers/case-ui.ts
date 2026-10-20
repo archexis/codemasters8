@@ -18,7 +18,10 @@ export async function manualCase(page:Page, complexId='SQ-003', quote='Плат�
   await manual.getByRole('button',{name:'Создать кандидата',exact:true}).click();
   await expect(page.locator('.hypothesis').filter({hasText:quote})).toContainText('Кандидат');
 }
+export function manualCandidate(page:Page) {
+  return page.locator('.hypothesis').filter({has:page.locator('blockquote').filter({hasText:'Платная бронь квартиры 612 000 тенге.'})});
+}
 export async function verifyFact(page:Page, code='R2', attachment=false) {
   await page.getByLabel('Обоснование проверки факта',{exact:true}).fill('Сверено с первоисточником');
-  await page.getByRole('button',{name:`Подтвердить факт ${code}`,exact:true}).click();
+  await (code==='R2'?manualCandidate(page):page.locator('.hypothesis').filter({has:page.getByRole('button',{name:`Подтвердить факт ${code}`,exact:true})})).getByRole('button',{name:`Подтвердить факт ${code}`,exact:true}).click();
 }

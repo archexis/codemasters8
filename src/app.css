@@ -223,7 +223,7 @@ footer { display: flex; gap: 24px; justify-content: space-between; padding: 22px
 .evidence-row {padding:16px 2px;border:0;border-bottom:1px solid var(--line-soft);background:transparent;animation:rise 300ms var(--spring) backwards;}
 .selected-evidence {background:#f5f5f7;border-radius:12px;padding-left:14px;padding-right:14px;}
 .publication-split {display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,380px);gap:18px;align-items:start;}
-.publication-inspector {position:sticky;top:76px;max-height:85vh;overflow:auto;border-radius:var(--radius);box-shadow:var(--shadow-sheet);border:1px solid rgba(0,0,0,0.05);animation:sheet-in 320ms var(--spring);}
+.publication-inspector {scroll-margin-top:88px;position:sticky;top:76px;max-height:85vh;overflow:auto;border-radius:var(--radius);box-shadow:var(--shadow-sheet);border:1px solid rgba(0,0,0,0.05);animation:sheet-in 320ms var(--spring);}
 .check-label {display:flex;flex-direction:row;align-items:center;gap:8px;}
 .check-label input {width:auto;accent-color:var(--accent);}
 .relation-graph {width:100%;max-height:480px;border-radius:14px;background:#f5f5f7;}
