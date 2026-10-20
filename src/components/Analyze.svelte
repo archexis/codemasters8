@@ -284,6 +284,19 @@
     {#if error}<p class="error" role="alert">{error}</p>{/if}
     {#if result}
       <span class="badge">{result.engine}</span>
+      <p class="muted text-xs">{result.realAI ? 'Анализ выполнен внешней AI-моделью. Решение принимает аналитик.' : 'Учебный разбор локальным парсером. Внешняя AI-модель не вызывалась.'}</p>
+      {#if result.realAI && result.runId}
+        <details>
+          <summary>Сведения об анализе</summary>
+          <dl class="text-xs mt-3">
+            <dt>Модель</dt><dd>{result.engine}</dd>
+            <dt>Состояние</dt><dd>Завершён</dd>
+            <dt>Запуск</dt><dd class="break-all">{result.runId}</dd>
+            <dt>Версия инструкции</dt><dd>{result.promptVersion || 'Не указана'}</dd>
+            <dt>Хеш исходного материала</dt><dd class="break-all">{result.inputHash || 'Не указан'}</dd>
+          </dl>
+        </details>
+      {/if}
       {#if stale}<p class="notice">Ввод изменён — повторите анализ перед сохранением.</p>{/if}
       {#each result.hypotheses as h}<article class="hypothesis"><b>{h.code} · гипотеза</b><blockquote>«{h.quote}»</blockquote><p>{h.reason}</p><label>Обоснование аналитика<input required placeholder="Почему принимаете/отклоняете гипотезу" bind:value={comments[h.id ?? h.code]}/></label><div class="actions"><button disabled={busy || !!reviewed[h.id ?? h.code] || stale} onclick={() => saveMaterial(h, 'accepted')}>Принять гипотезу {h.code}</button><button disabled={busy || !!reviewed[h.id ?? h.code] || stale} onclick={() => saveMaterial(h, 'rejected')}>Отклонить гипотезу</button></div></article>{/each}
       {#if !result.hypotheses.length}<p>Платёжных признаков не обнаружено. Это не подтверждает безопасность объекта.</p>{/if}

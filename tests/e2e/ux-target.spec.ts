@@ -13,6 +13,10 @@ test('target map: one X-Ray theme, preview, dossier and retained view', async ({
   await page.goto('/#/map',{waitUntil:'domcontentloaded'});
   const map = page.getByRole('region', { name: 'Карта объектов', exact: true });
   await expect(map).toBeVisible();
+  await expect(map.getByLabel('Поиск ЖК, БИН или адреса на карте')).toBeVisible();
+  await expect(page.getByRole('button',{name:'Слои и фильтры',exact:true})).toHaveAttribute('aria-expanded','false');
+  await map.getByLabel('Поиск ЖК, БИН или адреса на карте').fill(target.name);
+  await expect(map.getByRole('button',{name:'Список · 1',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Слои и фильтры',exact:true}).click();
   await map.getByLabel('Поиск ЖК, БИН или адреса на карте').fill(seed.COMPLEXES.find(z=>z.id==='SQ-001')!.name);
   const started = Date.now();
@@ -139,7 +143,7 @@ test('target vertical flow: manual publication becomes evidence and verified R2 
   await page.getByRole('button', { name: 'Создать кандидата', exact: true }).click();
   await expect(page.locator('.hypothesis').filter({ hasText: quote })).toContainText('Кандидат');
   await expect(page.locator('.risk-score strong')).toHaveText('35');
-  await page.getByLabel('Обоснование проверки факта', { exact: true }).fill('Дословная цитата содержит предложение платной брони.');
+  await page.locator('.hypothesis').filter({has:page.locator('blockquote').filter({hasText:'Платная бронь квартиры 987 650'})}).getByLabel('Обоснование проверки факта', { exact: true }).fill('Дословная цитата содержит предложение платной брони.');
   await page.locator('.hypothesis').filter({has:page.locator('blockquote').filter({hasText:'Платная бронь квартиры 987 650'})}).getByRole('button',{name:'Подтвердить факт R2',exact:true}).click();
   await expect(page.locator('.risk-score strong')).toHaveText('25');
   await page.getByRole('button', { name: 'Предпросмотр сигнала', exact: true }).click();

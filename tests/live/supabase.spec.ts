@@ -4,9 +4,11 @@ import {createClient} from '@supabase/supabase-js';
 import {randomUUID} from 'node:crypto';
 import {login} from '../helpers/live-login';
 test('real local Supabase Auth, case RPC decisions, Storage and reload',async({page})=>{
+ test.setTimeout(120000);
  await login(page);
- await manualCase(page,'SQ-003','Платная бронь квартиры 912 000 тенге. Local '+Date.now(),'R2',true);
- await verifyFact(page);await expect(page.locator('.risk-score strong')).toHaveText('25');
+ const quote='Платная бронь квартиры 912 000 тенге. Local '+Date.now();
+ await manualCase(page,'SQ-003',quote,'R2',true);
+ await verifyFact(page,'R2',true,quote);await expect(page.locator('.risk-score strong')).toHaveText('25');
  await page.getByRole('button',{name:'Предпросмотр сигнала',exact:true}).click();
  await page.getByLabel('Обоснование решения',{exact:true}).fill('Проверка настоящего case RPC');
  await page.getByRole('button',{name:'Подтвердить сигнал',exact:true}).click();

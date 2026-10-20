@@ -87,10 +87,20 @@ function memoryStorage(): Storage {
 }
 
 let fallbackStore: Storage | null = null;
+export class StorageWriteError extends Error {
+  constructor(public reason: 'quota' | 'unavailable', public cause: unknown) {
+    super(reason === 'quota'
+      ? 'Локальное хранилище заполнено. Изменения не сохранены; сохраните резервную копию и освободите место.'
+      : 'Локальное хранилище недоступно. Изменения не сохранены; разрешите хранение данных в браузере.');
+    this.name = 'StorageWriteError';
+  }
+}
 function store(): Storage {
   try {
     if (typeof localStorage !== 'undefined' && localStorage !== null) return localStorage;
-  } catch { /* недоступно — ниже память */ }
+  } catch (e) { throw new StorageWriteError('unavailable', e); }
+  // Memory is only for non-browser consumers (unit tests / CLI).
+  if (typeof window !== 'undefined') throw new StorageWriteError('unavailable', undefined);
   if (!fallbackStore) fallbackStore = memoryStorage();
   return fallbackStore;
 }
@@ -99,7 +109,11 @@ function getItem(key: string): string | null {
   try { return store().getItem(key); } catch { return null; }
 }
 function setItem(key: string, value: string): void {
-  try { store().setItem(key, value); } catch { /* хранилище недоступно */ }
+  try { store().setItem(key, value); } catch (e) {
+    if (e instanceof StorageWriteError) throw e;
+    const name = (e as { name?: string })?.name;
+    throw new StorageWriteError(name === 'QuotaExceededError' || name === 'NS_ERROR_DOM_QUOTA_REACHED' ? 'quota' : 'unavailable', e);
+  }
 }
 function removeItem(key: string): void {
   try { store().removeItem(key); } catch { /* ignore */ }
@@ -268,7 +282,7 @@ function isEnvelope(value: unknown): value is DemoEnvelope {
 }
 
 function readDemoEnvelope(fallback: AppState): DemoEnvelope {
-  const raw = getItem(KEY);
+  let raw = getItem(KEY);
   if (!raw) return { envelope: 1, state: fallback, version: 0, receipts: {} };
   let parsed: unknown;
   try {
@@ -277,12 +291,32 @@ function readDemoEnvelope(fallback: AppState): DemoEnvelope {
     stashRawBackup(raw);
     throw new Error('Сохранённый workspace повреждён: не JSON. Исходник сохранён отдельно.');
   }
+  // A previous demo refresh could leave a historical copy attached to new text.
+  // Preserve that copy (and claims quoting it), but detach it from the changed ad
+  // BEFORE strict validation, otherwise the repair can never be reached.
+  const candidate = (isEnvelope(parsed) ? parsed.state : parsed) as Partial<AppState> | null;
+  let repaired = false;
+  if (candidate && candidate.schemaVersion === fallback.schemaVersion && Array.isArray(candidate.artifacts) && Array.isArray(candidate.ads)) {
+    for (const artifact of candidate.artifacts) {
+      if (artifact.origin !== 'demo' || !artifact.adId) continue;
+      const ad = candidate.ads.find(item => item.id === artifact.adId && item.zkId === artifact.complexId);
+      const bundled = fallback.ads.find(item => item.id === ad?.id && item.zkId === ad?.zkId);
+      if (!ad || !bundled || artifact.text === ad.text) continue;
+      if (ad.text !== bundled.text && !/^demo_project_\d+$/.test(ad.account)) continue;
+      delete artifact.adId;
+      repaired = true;
+    }
+  }
+  if (repaired) {
+    setItem('sq_demo_before_artifact_repair_20261020', raw);
+    raw = JSON.stringify(parsed);
+  }
   try {
     if (isEnvelope(parsed)) {
       if (!Number.isSafeInteger(parsed.version) || parsed.version < 0) throw new Error('Некорректная версия DEMO-конверта');
       const loaded = loadStateFromText(JSON.stringify(parsed.state));
       const env = { ...parsed, state: loaded.state, receipts: parsed.receipts ?? {} };
-      if (loaded.migrated) {
+      if (loaded.migrated || repaired) {
         stashRawBackup(raw);
         writeDemoEnvelope(env);
       }
@@ -298,7 +332,7 @@ function readDemoEnvelope(fallback: AppState): DemoEnvelope {
     if (migrated && notes.length > 0 && typeof console !== 'undefined') {
       console.info('[S2.1] миграция workspace v2→v3:', notes.join(' '));
     }
-    if (migrated) {
+    if (migrated || repaired) {
       stashRawBackup(raw);
       // Мигрированное — сразу в рабочий ключ сырым состоянием v3 (ту же форму
       // читает loadState; в конверт превратится при первой записи).
@@ -313,6 +347,56 @@ function readDemoEnvelope(fallback: AppState): DemoEnvelope {
 
 function writeDemoEnvelope(env: DemoEnvelope): void {
   setItem(KEY, JSON.stringify(env));
+}
+
+/** Refresh retired bundled publications without replacing user-created records. */
+async function loadCurrentDemo(): Promise<DemoEnvelope> {
+  const current = initialState();
+  const needsRefresh = (env: DemoEnvelope) => env.state.ads.some(ad =>
+    current.ads.some(fresh => fresh.id === ad.id && fresh.zkId === ad.zkId) &&
+    (/^demo_project_\d+$/.test(ad.account) ||
+      (ad.url.startsWith('https://example.invalid/projects/') && ad.text.startsWith('ВЫМЫШЛЕННЫЙ МАТЕРИАЛ.'))));
+  const saved = readDemoEnvelope(current);
+  if (!needsRefresh(saved)) return saved;
+  return withDemoLock(() => {
+    const env = readDemoEnvelope(current);
+    if (!needsRefresh(env)) return env;
+    const raw = getItem(KEY);
+    if (raw) setItem('sq_demo_before_publication_refresh_20261020', raw);
+    const replaced = new Set<string>();
+    env.state.ads = env.state.ads.map(ad => {
+      const fresh = current.ads.find(item => item.id === ad.id && item.zkId === ad.zkId);
+      if (!fresh || !(/^demo_project_\d+$/.test(ad.account) ||
+        (ad.url.startsWith('https://example.invalid/projects/') && ad.text.startsWith('ВЫМЫШЛЕННЫЙ МАТЕРИАЛ.')))) return ad;
+      replaced.add(ad.id);
+      return fresh;
+    });
+    env.state.artifacts = env.state.artifacts?.map(artifact => {
+      if (!artifact.adId || !replaced.has(artifact.adId)) return artifact;
+      const ad = env.state.ads.find(item => item.id === artifact.adId)!;
+      if (artifact.text === ad.text) return artifact;
+      const historical = { ...artifact };
+      delete historical.adId;
+      return historical;
+    });
+    // Old decisions cannot silently become grounded in a different publication.
+    for (const complex of env.state.complexes) {
+      for (const factor of complex.factors) {
+        const evidence = factor.evidence;
+        if (!evidence?.adId || !replaced.has(evidence.adId)) continue;
+        const ad = env.state.ads.find(item => item.id === evidence.adId);
+        if (evidence.quote && !ad?.text.includes(evidence.quote)) {
+          if (factor.status === 'confirmed') factor.status = 'needs-verification';
+          evidence.text = `${evidence.text ?? ''}\nЦитата из предыдущей версии DEMO: ${evidence.quote}`.trim();
+          delete evidence.quote;
+          delete evidence.adId;
+        }
+      }
+    }
+    env.version += 1;
+    writeDemoEnvelope(env);
+    return env;
+  });
 }
 
 async function withDemoLock<T>(work: () => Promise<T> | T): Promise<T> {
@@ -348,8 +432,7 @@ export function isDemoLockDegraded(): boolean {
  */
 export async function loadState(): Promise<AppState> {
   if (!supabase) {
-    await removeRetiredDemoDataset();
-    const env = readDemoEnvelope(initialState());
+    const env = await loadCurrentDemo();
     version = env.version;
     return env.state;
   }
@@ -357,11 +440,10 @@ export async function loadState(): Promise<AppState> {
   const { data: { session } } = await supabase.auth.getSession();
   if (sessionGeneration !== startedGeneration) throw new SessionSupersededError();
   if (!session) {
-    await removeRetiredDemoDataset();
     // Регистрации нет: без сессии — DEMO-конверт по умолчанию, а не пустая заглушка.
     userId = '';
     trackAuthSession(null);
-    const env = readDemoEnvelope(initialState());
+    const env = await loadCurrentDemo();
     version = env.version;
     return env.state;
   }
@@ -386,26 +468,6 @@ export async function loadState(): Promise<AppState> {
   }
 }
 
-/** One-time replacement of the retired demo, including its saved attachments.
- * Match old seed identities, so subsequent edits to the new dataset persist.
- */
-async function removeRetiredDemoDataset(): Promise<void> {
-  const raw = getItem(KEY);
-  if (!raw) return;
-  let value: unknown;
-  try { value = JSON.parse(raw); } catch { return; }
-  if (!value || typeof value !== 'object') return;
-  const saved = value as Record<string, unknown>;
-  const state = (saved.envelope === 1 ? saved.state : saved) as Record<string, unknown> | null;
-  if (!state || !Array.isArray(state.complexes)) return;
-  const retiredNames = new Set(['Ертіс Толқыны', 'Сарыарқа Парк', 'Достық Үйі', 'Altai Residence', 'Наурыз Квартал', 'Жастар Сити', 'Көктем Шаңырағы', 'Шығыс Жұлдызы']);
-  const retired = state.complexes.some((z: Record<string, unknown>) =>
-    z && ((typeof z.id === 'string' && /^SQ-R0[1-8]$/.test(z.id) && z.origin === 'public-snapshot') ||
-    (typeof z.id === 'string' && /^SQ-00[1-8]$/.test(z.id) && retiredNames.has(String(z.name)))));
-  if (!retired) return;
-  await resetDemo();
-  for (const key of [V1_STORAGE_KEY, RAW_BACKUP_KEY, V1_IMPORT_BACKUP_KEY]) removeItem(key);
-}
 export async function initializeWorkspace(): Promise<AppState> {
   if (!supabase) return resetDemo();
   const generation = sessionGeneration;
@@ -571,6 +633,11 @@ async function commitDemo(base: AppState, payload: Command, commandId: string, r
     if (cleanPayload.type === 'media') {
       standaloneFull = sanitizeMediaForStore(cleanPayload.media);
       localPayload = { type: 'media', media: stripIntegrity(cleanPayload.media) };
+    }
+    // A different tab may have imported the same preview after it was prepared.
+    // Creation intents must never turn into updates of an analyst's existing card.
+    if (localPayload.type==='complex' && commandId.startsWith('registry-create-') && env.state.complexes.some(z=>z.id===localPayload.complex.id)) {
+      throw new Error('Объект уже создан в другой вкладке. Получите новый предпросмотр импорта.');
     }
     const next = applyCommand(env.state, localPayload, reviewer, { commandId, sourceVersion: env.version });
     if (cleanPayload.type === 'artifact.register') {

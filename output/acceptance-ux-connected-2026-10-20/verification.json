@@ -1,0 +1,88 @@
+{
+  "status": "PASS",
+  "verifiedAt": "2026-10-20T15:11:40.945327+00:00",
+  "baseHead": "f2ebbaf4686fd9ddcbcbd9f8e3edf5e030938dae",
+  "branch": "codex/product-audit-fixes",
+  "trackedWorktreeClean": false,
+  "sourceFiles": 210,
+  "sourceHashesUnchanged": true,
+  "e2e": {
+    "startTime": "2026-10-20T14:59:24.981Z",
+    "duration": 704509.8910000001,
+    "expected": 166,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "e2eCommand": "npx playwright test --workers=1 (full desktop/mobile suite)",
+  "cloud": {
+    "startTime": "2026-10-20T14:04:56.715Z",
+    "duration": 47050.835,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "unit": {
+    "passed": 387,
+    "files": 37,
+    "failed": 0
+  },
+  "api": {
+    "passed": 47,
+    "failed": 0
+  },
+  "edge": {
+    "passed": 3,
+    "failed": 0
+  },
+  "check": "0 errors, 0 warnings",
+  "build": "PASS",
+  "live": {
+    "passed": 8,
+    "failed": 0,
+    "auth": "real local Supabase",
+    "database": "real local PostgreSQL/RLS",
+    "storage": "real private Storage",
+    "api": "real FastAPI"
+  },
+  "ai": {
+    "browser": "PASS",
+    "providerCallsInFinalRun": 2,
+    "model": "deepseek-flash",
+    "runs": [
+      {
+        "id": "p99970853d596506339ab174b5a6a9f6e2da2c493a59c845d628c3f8b12f08886",
+        "status": "succeeded",
+        "inputHash": "debc73e0e0006de00d82242ed142feba1dd4bba8e51281495a0825973ddcf1ad",
+        "promptVersion": "s4-r2r3-v3"
+      },
+      {
+        "id": "7ee3959a-0b75-4bd5-94f0-2c8784b2281e",
+        "status": "succeeded",
+        "inputHash": "2e3a9b958bfd85ab8f53e832167579dcdc216ace5f413347488088c99c7cdad8",
+        "promptVersion": "s4-r2r3-v3"
+      }
+    ],
+    "caseId": "CASE-2f32d005-954a-4370-a908-e66eb37f60c9",
+    "sourceIsSynthetic": true
+  },
+  "pdf": {
+    "pages": 2,
+    "noBlankPages": true,
+    "byteIdenticalAfterReconsideration": true,
+    "score25": true,
+    "runId": true,
+    "quote": true,
+    "fileHash": true,
+    "actor": true,
+    "sourceNamed": true,
+    "sha256": "0378269aabe7e33e2a08d22b6da549f28864519b72311ecce03fc2c87783c477"
+  },
+  "limitations": [
+    "Working-copy acceptance; existing uncommitted user changes preserved.",
+    "No public deployment or Git commit performed.",
+    "Local real Supabase infrastructure and external LLM; synthetic source material.",
+    "Historical 12-case eval was not rerun; final current browser case uses two new provider calls."
+  ]
+}

@@ -86,6 +86,20 @@ def test_zero_after_rejection_is_not_replaced_by_legacy_factors(workspace):
     assert client.get('/api/complexes/z1/dossier').json()['complex']['score'] == 0
 
 
+def test_case_projection_uses_requested_case_not_latest_scope_assessment(workspace):
+    data = workspace['data']
+    data['cases'].append({'id': 'new', 'complexId': 'z1', 'status': 'draft', 'artifactIds': [], 'updatedAt': '2026-10-20'})
+    data['assertions'].append({**data['assertions'][0], 'caseId': 'new', 'status': 'rejected'})
+    old = client.get('/api/cases/c1').json()
+    assert old['complex']['score'] == 25
+    assert old['complex']['zone'] == 'yellow'
+    assert old['assertions'][0]['status'] == 'verified'
+    assert client.get('/api/cases/new').json()['complex']['score'] == 0
+    assert client.get('/api/complexes/z1/dossier').json()['complex']['score'] == 0
+    data['cases'].append({'id': 'empty', 'complexId': 'z1', 'status': 'draft', 'artifactIds': [], 'updatedAt': '2026-10-21'})
+    assert client.get('/api/cases/empty').json()['complex']['score'] == 0
+
+
 def test_snapshot_pdf_is_reproducible_unicode_and_independent_of_current_state(workspace):
     path = "/api/cases/c1/snapshots/snap1/pdf"
     before = client.get(path)
@@ -122,6 +136,7 @@ def test_pdf_null_phase_and_long_unicode_source(workspace):
     assert result.status_code == 200
     pdf = PdfReader(BytesIO(result.content))
     assert len(pdf.pages) > 1
+    assert all(page.extract_text().strip() for page in pdf.pages)
     text = '\n'.join(page.extract_text() for page in pdf.pages)
     assert 'Құрылыс жүріп жатыр' in text and 'Весь объект' in text
     assert ''.join(text.split()).count('Проверкадлинногоматериала.') == 160

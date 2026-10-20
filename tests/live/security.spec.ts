@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { createClient } from '@supabase/supabase-js';
 import { randomUUID,createHmac } from 'node:crypto';
 import {readFileSync,writeFileSync} from 'node:fs';
+import seed from '../../src/lib/seed.json' with {type:'json'};
 
 test('S6 actual Auth/RPC/Storage/API/Edge negative matrix', async () => {
   const url=process.env.SAQ_LIVE_SUPABASE_URL!, key=process.env.SAQ_LIVE_SUPABASE_KEY!;
@@ -102,10 +103,10 @@ test('S6 browser offline/expired save preserves form; no server secrets in stora
  for(const p of ['.env.edge','.temp/s4-repair/edge.env']) {try{const m=readFileSync(p,'utf8').match(/^LLM_API_KEY=(.+)$/m);if(m)needles.push(m[1].trim().replace(/^['"]|['"]$/g,''));}catch{}}
  const findings:{type:string;present:boolean}[]=[];let requests=0;
  page.on('request',r=>{requests++; const text=JSON.stringify(r.headers())+(r.postData()??'')+r.url();if(needles.some(s=>s&&text.includes(s)))findings.push({type:'request/server secret',present:true});});
- await page.goto('/',{waitUntil:'domcontentloaded'}); await page.getByRole('button',{name:'Демо-аналитик',exact:true}).click();
+ await page.goto('/',{waitUntil:'domcontentloaded'}); await page.getByRole('button',{name:'Войти оператору',exact:true}).click();
  await page.getByLabel('Email',{exact:true}).fill(process.env.SAQ_LIVE_EMAIL!); await page.getByLabel('Пароль',{exact:true}).fill(process.env.SAQ_LIVE_PASSWORD!);
- await page.getByRole('button',{name:'Войти',exact:true}).last().click(); await expect(page.getByRole('button',{name:process.env.SAQ_LIVE_EMAIL!,exact:true})).toBeVisible();
- await page.goto('/#/detail/SQ-002',{waitUntil:'domcontentloaded'});
+ await page.getByRole('button',{name:'Войти',exact:true}).last().click(); await expect(page.getByLabel('Режим работы')).toContainText(process.env.SAQ_LIVE_EMAIL!);
+ await page.goto('/#/complexes/SQ-002',{waitUntil:'domcontentloaded'});
  await page.getByText('Зафиксировать документальную готовность',{exact:true}).click();await page.getByLabel('Дата наблюдения',{exact:true}).fill('2026-10-19');
  const value=page.getByLabel('Готовность по документу, %'),source=page.getByLabel('Источник измеренной готовности');await value.fill('17');await source.fill('S6 offline observation');
  await page.evaluate(async()=>{const path='/src/lib/supabase.ts';const {supabase}=await import(/* @vite-ignore */ path);const r=await supabase.auth.refreshSession();if(r.error)throw r.error;});
@@ -130,7 +131,7 @@ test('S6 real A logout/B login discards an in-flight A workspace response',async
    const c=createClient(url,key,{auth:{persistSession:false}});expect((await c.auth.signInWithPassword({email,password})).error).toBeNull();const w=await c.rpc('initialize_workspace');expect(w.error).toBeNull();
    if(n===0){const complex={...w.data.data.complexes[0],id:'S6-PRIVATE',name:'S6 A private case',origin:'manual',factors:[]};expect((await c.rpc('apply_command',{command:{type:'complex',complex},expected_version:1,command_id:randomUUID()})).error).toBeNull();}
   }
-  await page.goto('/#/registries',{waitUntil:'domcontentloaded'});await expect(page.locator('tbody tr')).toHaveCount(16);
+  await page.goto('/#/registries',{waitUntil:'domcontentloaded'});await expect(page.locator('tbody tr')).toHaveCount(seed.COMPLEXES.length);
   await page.evaluate(async({email,password})=>{const path='/src/lib/supabase.ts';const {supabase}=await import(/* @vite-ignore */path);const r=await supabase.auth.signInWithPassword({email,password});if(r.error)throw r.error;},{email:users[0].email,password});
   await expect(page.getByText('S6 A private case',{exact:true})).toBeVisible();
   await page.route('**/rest/v1/workspaces?*',async route=>{
@@ -139,7 +140,7 @@ test('S6 real A logout/B login discards an in-flight A workspace response',async
   await page.evaluate(async()=>{const path='/src/lib/repository.ts';const repo=await import(/* @vite-ignore */path);void repo.loadState().then(()=>(window as any).__s6late='LEAK').catch((e:Error)=>(window as any).__s6late=e.name);});
   await expect.poll(()=>captured).toBe(true);
   await page.evaluate(async({email,password})=>{const path='/src/lib/supabase.ts';const {supabase}=await import(/* @vite-ignore */path);await supabase.auth.signOut();const r=await supabase.auth.signInWithPassword({email,password});if(r.error)throw r.error;},{email:users[1].email,password});
-  await expect(page.getByRole('button',{name:users[1].email,exact:true})).toBeVisible();await expect(page.locator('tbody tr')).toHaveCount(16);
+  await expect(page.getByLabel('Режим работы')).toContainText(users[1].email);await expect(page.locator('tbody tr')).toHaveCount(seed.COMPLEXES.length);
   release();await expect.poll(()=>page.evaluate(()=>(window as any).__s6late)).toBe('SessionSupersededError');
   await expect(page.getByText('S6 A private case',{exact:true})).toHaveCount(0);
  }finally{release();for(const u of users)expect((await admin.auth.admin.deleteUser(u.id)).error).toBeNull();}

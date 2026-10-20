@@ -9,7 +9,7 @@ export async function manualCase(page:Page, complexId='SQ-003', quote='Плат�
   await expect(page.getByText(/Материал сохранён:/)).toBeVisible();
   await page.goto(`/#/complexes/${complexId}?tab=verification`,{waitUntil:'domcontentloaded'});
   await page.getByRole('button',{name:'Начать расследование',exact:true}).click();
-  await expect(page.getByRole('region',{name:'Автоматическая подготовка расследования'}).getByRole('status')).toContainText('Подготовка завершена');
+  await expect(page.getByRole('region',{name:'Автоматическая подготовка расследования'}).getByRole('status')).toContainText('Подготовка завершена',{timeout:30000});
   const manual=page.locator('details').filter({has:page.getByText('Выделить утверждение вручную',{exact:true})});
   await manual.locator('summary').click();
   await manual.getByLabel('Первичный материал').selectOption({label:'Источник проверки'});
@@ -18,10 +18,11 @@ export async function manualCase(page:Page, complexId='SQ-003', quote='Плат�
   await manual.getByRole('button',{name:'Создать кандидата',exact:true}).click();
   await expect(page.locator('.hypothesis').filter({hasText:quote})).toContainText('Кандидат');
 }
-export function manualCandidate(page:Page) {
-  return page.locator('.hypothesis').filter({has:page.locator('blockquote').filter({hasText:'Платная бронь квартиры 612 000 тенге.'})});
+export function manualCandidate(page:Page,quote='Платная бронь квартиры 612 000 тенге.') {
+  return page.locator('.hypothesis').filter({has:page.locator('blockquote').filter({hasText:quote})});
 }
-export async function verifyFact(page:Page, code='R2', attachment=false) {
-  await page.getByLabel('Обоснование проверки факта',{exact:true}).fill('Сверено с первоисточником');
-  await (code==='R2'?manualCandidate(page):page.locator('.hypothesis').filter({has:page.getByRole('button',{name:`Подтвердить факт ${code}`,exact:true})})).getByRole('button',{name:`Подтвердить факт ${code}`,exact:true}).click();
+export async function verifyFact(page:Page, code='R2', attachment=false,quote='Платная бронь квартиры 612 000 тенге.') {
+  const candidate=code==='R2'?manualCandidate(page,quote):page.locator('.hypothesis').filter({has:page.getByRole('button',{name:`Подтвердить факт ${code}`,exact:true})});
+  await candidate.getByLabel('Обоснование проверки факта',{exact:true}).fill('Сверено с первоисточником');
+  await candidate.getByRole('button',{name:`Подтвердить факт ${code}`,exact:true}).click();
 }

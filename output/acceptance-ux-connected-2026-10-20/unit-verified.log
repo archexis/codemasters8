@@ -1,0 +1,43 @@
+
+> saq-qurylys@2.0.0 test
+> vitest run --reporter=dot
+
+
+ RUN  v5.0.5 C:/Users/BIGra/codemasters8
+
+·······························································································································stdout | tests/unit/state-migration.test.ts > S2.1 repository loadState > v2 мигрирует и сохраняется, исходник — в backup
+[S2.1] миграция workspace v2→v3: signalVersions: создан пустой задел C6 (версии появятся с S2.4). Все confirmed-решения подкреплены материалами; снятий не было.
+
+stderr | tests/unit/connected-regressions.test.ts > review: connected storage and network boundaries > S6 no Web Locks means read-only DEMO, without lost form/data promises
+[S6] Web Locks недоступны: DEMO доступен только для чтения/экспорта.
+
+·····················································································································································································································································stdout | tests/unit/map-model.test.ts > map summaries preserve uncertainty and evidence boundaries > D1 sanity: projects 100 complexes and 1000 publications without fetching dossier details
+D1 map read-model sanity: 100 complexes / 1000 publications in 2.45 ms (Node; not browser FPS)
+
+··············stdout | tests/unit/probe-tmp.test.ts > probe
+E09 len=257 pay=true want=true chan=true phones=[+7 701 123 45 67->+77011234567] money=[500000]
+  OK E09
+E10 len=69 pay=true want=true chan=false phones=[] money=[500000]
+  OK E10
+E11 len=78 pay=true want=true chan=false phones=[8(701)123-45-67->+77011234567] money=[300000]
+  OK E11
+E12 len=33 pay=true want=true chan=false phones=[] money=[500000]
+  OK E12
+E13 len=66 pay=true want=true chan=false phones=[+7 701 123 45 67->+77011234567|8(701)765-43-21->+77017654321] money=[200000]
+  OK E13
+E14 len=71 pay=true want=true chan=false phones=[] money=[1500000]
+  OK E14
+E08 len=27 pay=false want=false chan=false phones=[] money=[]
+  OK E08
+NEM len=45 pay=true want=true chan=false phones=[] money=[500000]
+  OK NEM
+
+·
+
+ Test Files  37 passed (37)
+      Tests  387 passed (387)
+   Start at  19:06:20
+   Duration  225.41s (tests 81%, transform 10%, import 9%)
+
+    Isolate  37 workers spawned · ~404ms startup each (spawn + environment, per file)
+             at least ~14.54s faster with isolate: false — reuses workers across files instead of one per file

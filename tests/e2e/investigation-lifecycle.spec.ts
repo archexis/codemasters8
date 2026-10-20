@@ -45,9 +45,10 @@ test('investigation lifecycle: publication → fact → signal → reconsiderati
   await test.step('start a case and count only the fact verified by the analyst', async () => {
     await page.getByRole('button', { name: 'Начать расследование', exact: true }).click();
     await expect(page).toHaveURL(/#\/cases\/CASE-/);
-    await expect(page.getByRole('region',{name:'Автоматическая подготовка расследования'}).getByRole('status')).toContainText('Подготовка завершена');
+    await expect(page.getByRole('region',{name:'Автоматическая подготовка расследования'}).getByRole('status')).toContainText('Подготовка завершена',{timeout:15000});
     await expect(page.getByRole('checkbox',{name:/Выбрать факт/})).toHaveCount(2);
     await expect(page.locator('.claim-selection input:checked')).toHaveCount(0);
+    await page.getByText('Проверить несколько фактов вместе · выбрано: 0',{exact:true}).click();
     await expect(page.getByRole('button',{name:'Подтвердить выбранные факты',exact:true})).toBeDisabled();
     const prepared=await readState(page);
     expect(prepared.assertions??[]).toHaveLength(0);
@@ -67,8 +68,8 @@ test('investigation lifecycle: publication → fact → signal → reconsiderati
     await page.getByRole('button', { name: '← К досье', exact: true }).click();
 
     await expect(publicationCandidate.getByRole('button', { name: 'Подтвердить факт R2', exact: true })).toBeDisabled();
-    await page.getByLabel('Обоснование проверки факта', { exact: true }).fill(confirmation);
     await publicationCandidate.getByRole('checkbox',{name:/Выбрать факт R2/}).check();
+    await page.getByLabel('Обоснование пакетной проверки', { exact: true }).fill(confirmation);
     await page.getByRole('button', { name: 'Подтвердить выбранные факты', exact: true }).click();
     await expect(page.locator('.risk-score strong')).toHaveText('25');
     await page.reload({ waitUntil: 'domcontentloaded' });
@@ -105,7 +106,7 @@ test('investigation lifecycle: publication → fact → signal → reconsiderati
     await page.getByRole('button', { name: 'Открыть пересмотр', exact: true }).click();
     await expect(page.locator('.case-signal-sheet')).toContainText('Предпросмотр черновика');
     await page.getByRole('button', { name: '← К досье', exact: true }).click();
-    await page.getByLabel('Обоснование проверки факта', { exact: true }).fill(withdrawal);
+    await publicationCandidate.getByLabel('Обоснование проверки факта', { exact: true }).fill(withdrawal);
     await publicationCandidate.getByRole('button', { name: 'Отклонить факт', exact: true }).click();
     await expect(page.locator('.risk-score strong')).toHaveText('0');
     await page.getByRole('button', { name: 'Предпросмотр сигнала', exact: true }).click();

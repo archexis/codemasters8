@@ -19,7 +19,7 @@ export async function analyze(input: AiRunInput, opts: {runId:string; signal:Abo
   }
   const result = schema.parse(data);
   if (result.runId !== opts.runId || result.status!=='succeeded' || result.hypotheses.some(h => !h.id || !input.text.includes(h.quote))) throw new Error('Некорректный доверенный результат модели');
-  return result;
+  return { ...result, ...(typeof data.prompt_version === 'string' ? { promptVersion: data.prompt_version } : {}) };
 }
 
 /* ------------------------------------------------------------------ */

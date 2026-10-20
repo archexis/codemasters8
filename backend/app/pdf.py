@@ -122,6 +122,9 @@ def render_signal(snapshot: dict) -> bytes:
     line("Ограничения", "Heading2")
     for limitation in snapshot.get("limitations", []):
         line(limitation)
+    # A trailing spacer alone can overflow onto an otherwise empty final page.
+    if body and isinstance(body[-1], Spacer):
+        body.pop()
     result = BytesIO()
     doc = SimpleDocTemplate(result, title=f"SAQ signal {snapshot['id']}", author="SAQ QURYLYS", invariant=1)
     doc.build(body)

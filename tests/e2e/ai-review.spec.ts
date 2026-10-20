@@ -40,8 +40,9 @@ test('triage retains one publication; only a case fact adds +25 after reload',as
   await page.goto('/#/complexes/SQ-001?tab=verification',{waitUntil:'domcontentloaded'});
   await page.getByRole('button',{name:'Начать расследование',exact:true}).click();
   await expect(page.locator('.risk-score strong')).toHaveText('35');
-  await page.getByLabel('Дата доказательства',{exact:true}).fill('2026-10-19');
-  await page.getByLabel('Обоснование проверки факта',{exact:true}).fill('Проверена дословная просьба оплаты');
+  await page.locator('.hypothesis').filter({has:page.locator('blockquote').filter({hasText:'Депозит обязателен.'})}).getByText('Дата и дополнительные сведения',{exact:true}).click();
+  await page.locator('.hypothesis').filter({has:page.locator('blockquote').filter({hasText:'Депозит обязателен.'})}).getByLabel('Дата доказательства',{exact:true}).fill('2026-10-19');
+  await page.locator('.hypothesis').filter({has:page.locator('blockquote').filter({hasText:'Депозит обязателен.'})}).getByLabel('Обоснование проверки факта',{exact:true}).fill('Проверена дословная просьба оплаты');
   await page.locator('.hypothesis').filter({has:page.locator('blockquote').filter({hasText:'Депозит обязателен.'})}).getByRole('button',{name:'Подтвердить факт R2',exact:true}).click();
   await expect(page.locator('.risk-score strong')).toHaveText('25');
   await page.reload({waitUntil:'domcontentloaded'});

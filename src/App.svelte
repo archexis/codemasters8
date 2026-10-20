@@ -5,7 +5,7 @@
   import type { Command } from './lib/domain';
   import { initialState } from './lib/domain';
   import { computeScore } from './lib/scoring';
-  import { supabase, demoMode } from './lib/supabase';
+  import { supabase } from './lib/supabase';
   import { loadState, saveCommand, resetDemo, initializeWorkspace, StaleConflictError } from './lib/repository';
   import {parseSignalRevision, signalRevisionError} from './lib/signal-revision';
   import { buildExport, exportFilename } from './lib/export';
@@ -18,11 +18,16 @@
   import ComplexDossier from './components/ComplexDossier.svelte';
   import {normalizedRoute, dossierTabs, type DossierTab} from './lib/navigation';
   import {dossierReadModel} from './lib/read-models';
+  import {canNavigate} from './lib/navigation-guard';
   let workspace = $state<AppState>(initialState());
   const readRoute = () => normalizedRoute(location.hash);
   let route = $state(readRoute());
   let loading = $state(true); let error = $state(''); let notice = $state('');
-  let menu = $state(false); const reviewer = 'Аналитик';
+  let menu = $state(false);
+  let sessionEmail = $state(''); let connected = $state(false);
+  let loginOpen = $state(false); let email = $state(''); let password = $state('');
+  let authBusy = $state(false); let authError = $state('');
+  const reviewer = $derived(sessionEmail || 'Аналитик');
   let creating = $state(false);
   let mapToolsOpen = $state(false);
   const baseRoute = $derived(route.split('?')[0]);
@@ -43,13 +48,17 @@
   $effect(() => { document.title = `${titles[page] || 'Страница не найдена'} · SAQ QURYLYS`; });
   let reloadGeneration = 0;
   async function reload() { const generation = ++reloadGeneration; loading = true; error = ''; try { const state = await loadState(); if (generation === reloadGeneration) workspace = state; } catch (e) { if (generation === reloadGeneration) error = e instanceof Error ? e.message : String(e); } finally { if (generation === reloadGeneration) loading = false; } }
+  async function refreshImportedWorkspace() { const generation=++reloadGeneration;const state=await loadState();if(generation!==reloadGeneration)throw new Error('Рабочее пространство сменилось. Откройте реестры заново.');workspace=state; }
   onMount(() => {
-    const update = () => { route = readRoute(); menu = false; creating = false; window.scrollTo(0,0); };
+    const update = () => {
+      if (!canNavigate(location.hash)) { history.replaceState(history.state, '', `#/${route}`); return; }
+      route = readRoute(); menu = false; creating = false; window.scrollTo(0,0);
+    };
     window.addEventListener('hashchange', update);
     void reload();
-    // Сессия влияет только на источник данных (серверный workspace или локальный
-    // DEMO-конверт). Входа в интерфейсе нет: рабочее место открыто сразу.
     const listener = supabase?.auth.onAuthStateChange((_event, session) => {
+      connected = !!session;
+      sessionEmail = session?.user.email ?? '';
       const nextUser = session?.user.id ?? null;
       const changedUser = getSessionUser() !== nextUser;
       trackAuthSession(nextUser);
@@ -66,10 +75,27 @@
     return () => { window.removeEventListener('hashchange', update); listener?.data.subscription.unsubscribe(); };
   });
   async function commit(command: Command) {
+    notice = '';
     try { workspace = await saveCommand($state.snapshot(workspace), $state.snapshot(command), reviewer); notice = 'Изменения сохранены'; }
     catch (e) { if (e instanceof StaleConflictError) workspace = e.serverState; throw e; }
   }
-  // Входа и регистрации нет: рабочее место открыто сразу, автор решений — «Аналитик».
+  async function signIn(e: SubmitEvent) {
+    e.preventDefault(); if (!supabase || authBusy) return;
+    authBusy = true; authError = '';
+    try {
+      const { error: failure } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (failure) throw failure;
+      password = ''; loginOpen = false;
+    } catch (e) { authError = e instanceof Error ? e.message : String(e); }
+    finally { authBusy = false; }
+  }
+  async function signOut() {
+    if (!supabase || authBusy) return;
+    authBusy = true; authError = '';
+    try { const { error: failure } = await supabase.auth.signOut(); if (failure) throw failure; }
+    catch (e) { authError = e instanceof Error ? e.message : String(e); }
+    finally { authBusy = false; }
+  }
   async function initialize() { try { workspace = await initializeWorkspace(); } catch (e) { error = String(e); } }
   async function reset() { try { workspace = await resetDemo(); error = ''; notice = 'Демоданные сброшены'; } catch (e) { error = String(e); } }
   // S4.4. Скачивание сигнальной карточки (signal-card/v1): только
@@ -88,6 +114,9 @@
 <svelte:window onkeydown={e => { if (e.key === 'Escape') { menu = false; mapToolsOpen = false; } }}/><a class="skip-link" href="#main">К содержанию</a>
 <header class="topbar no-print"><a class="brand" href="#/map" aria-label="SAQ QURYLYS — на карту"><span class="brand-symbol">S</span><span>SAQ QURYLYS</span></a><button class="mobile-menu" aria-expanded={menu} aria-controls="navigation" onclick={() => menu = !menu}>Меню</button><nav id="navigation" class:open={menu} aria-label="Основная навигация">{#each ['map','publications','registries'] as key}<a href="#/{key}" class:active={page === key || (key==='publications'&&page==='analyze')} aria-current={page===key?'page':undefined}>{titles[key]}</a>{/each}</nav>{#if page === 'map'}<div class="account"><button class="small map-tools-toggle" aria-expanded={mapToolsOpen} aria-controls="map-tools" onclick={() => mapToolsOpen = !mapToolsOpen}>Слои и фильтры</button></div>{/if}</header>
 <main id="main">
+<div class="actions no-print mb-4" aria-label="Режим работы"><span role="status">{connected ? `Подключённый режим · ${sessionEmail || 'оператор'}` : 'DEMO · данные сохраняются в этом браузере'}</span>{#if supabase}{#if connected}<button class="small" disabled={authBusy} onclick={signOut}>Выйти</button>{:else}<button class="small" onclick={()=>loginOpen=!loginOpen}>Войти оператору</button>{/if}{/if}</div>
+{#if authError}<p class="error mb-4" role="alert">{authError}</p>{/if}
+{#if loginOpen&&!connected}<form class="panel space-y-4 mb-4" aria-label="Вход оператора" onsubmit={signIn}><h2>Вход оператора</h2><label>Email<input type="email" autocomplete="username" required bind:value={email}/></label><label>Пароль<input type="password" autocomplete="current-password" required bind:value={password}/></label><button class="primary" disabled={authBusy}>Войти</button></form>{/if}
 {#if error}<div class="error mb-5" role="alert">{error}<button class="small ml-3" onclick={reload}>Повторить загрузку</button></div>{/if}
 {#if notice}<div class="notice no-print mb-5" role="status">{notice}<button class="small ml-3" onclick={() => notice = ''}>Закрыть</button></div>{/if}
 {#if loading}<p role="status">Загрузка рабочего пространства…</p>
@@ -95,7 +124,7 @@
 <div class="map-page"><RiskMap toolsOpen={mapToolsOpen} complexes={shown} ads={workspace.ads} geometry={workspace.geometries??[]} relations={(workspace.relations??[]).filter(r=>r.fromId.startsWith('complex:')&&r.toId.startsWith('complex:')).map(r=>({fromId:r.fromId.slice(8),toId:r.toId.slice(8),verified:r.verificationStatus==='verified'}))}/></div>
 {:else if page==='publications'||page==='analyze'}
 <div class="pub-page"><Publications {workspace} {commit} adding={page==='analyze'||params.has('add')} initialText={params.get('text')||''} complexId={page==='analyze'?zkId:params.get('complex')||''}/></div>
-{:else if page==='registries'}<RegistryCatalog workspace={scopedWorkspace} {commit}/>
+{:else if page==='registries'}<RegistryCatalog workspace={scopedWorkspace} {commit} onImported={refreshImportedWorkspace}/>
 {:else if page==='complexes'||page==='cases'}
 {#if selected&&(page!=='cases'||selectedCase)&&(!phaseId||workspace.phases?.some(p=>p.id===phaseId&&p.complexId===zkId))}
 {#key `${zkId}-${phaseId??''}-${selectedCase?.id??''}`}<ComplexDossier {workspace} getWorkspace={()=> $state.snapshot(workspace)} complexId={zkId} {phaseId} caseId={selectedCase?.id} tab={activeTab} evidenceId={params.get('evidence')||''} scoreDetail={params.get('score')||''} {commit}/>{/key}
@@ -106,4 +135,4 @@
 {:else}<section class="panel"><h1>Страница не найдена</h1><a href="#/map">Открыть карту</a></section>{/if}
 {#if !loading&&!workspace.complexes.length}<section class="panel mt-5"><h2>Начните работу</h2><div class="actions"><button onclick={initialize}>Загрузить демоданные</button><button onclick={()=>creating=true}>Создать объект</button></div>{#if creating}<ComplexForm onsave={async complex=>{await commit({type:'complex',complex});creating=false;}} oncancel={()=>creating=false}/>{/if}</section>{/if}
 </main>
-<footer class="no-print"><div class="footer-brand"><b>SAQ QURYLYS</b><span>Решение принимает человек. Система не устанавливает факт правонарушения.</span></div><div class="footer-actions"><a class="footer-link" href="#/backup">Резервная копия</a>{#if demoMode}<button class="footer-link" onclick={reset}>Сбросить демо</button>{/if}</div></footer>
+<footer class="no-print"><div class="footer-brand"><b>SAQ QURYLYS</b><span>Решение принимает человек. Система не устанавливает факт правонарушения.</span></div><div class="footer-actions"><a class="footer-link" href="#/backup">Резервная копия</a>{#if !connected}<button class="footer-link" onclick={reset}>Сбросить демо</button>{/if}</div></footer>

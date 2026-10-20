@@ -1,7 +1,9 @@
 import {expect,test} from '@playwright/test';
 import {createClient} from '@supabase/supabase-js';
 import {randomUUID} from 'node:crypto';
+import {writeFile} from 'node:fs/promises';
 import {login} from '../helpers/live-login';
+import seed from '../../src/lib/seed.json' with {type:'json'};
 
 test('real external LLM current case review, immutable snapshot and PDF',async({page},info)=>{
  test.setTimeout(180000);
@@ -11,12 +13,18 @@ test('real external LLM current case review, immutable snapshot and PDF',async({
  await login(page);
  await page.screenshot({path:info.outputPath('01-login.png'),fullPage:true});
  const tag=randomUUID();
- const text='Продаём квартиры в строящемся ЖК Новый Берег. Дом ещё не введён в эксплуатацию, сдача в 2028 году. Депозит 654 000 тенге обязателен для бронирования квартиры. Проверка '+tag;
+ const complex=seed.COMPLEXES.find(z=>z.id==='SQ-001')!;
+ const text=`Продаём квартиры в строящемся ЖК «${complex.name}». Дом ещё не введён в эксплуатацию, сдача в 2028 году. Депозит 654 000 тенге обязателен для бронирования квартиры. Проверка полного пути ${tag}`;
  await page.goto('/#/publications?add=1&complex=SQ-001',{waitUntil:'domcontentloaded'});
  await page.getByLabel('Текст объявления',{exact:true}).fill(text);
- await page.getByLabel('Дата публикации (пусто — не указана)',{exact:true}).fill('2026-10-19');
+ await page.getByLabel('Площадка',{exact:true}).fill('Контрольный материал · синтетическая публикация');
+ await page.getByLabel('Аккаунт',{exact:true}).fill('acceptance-test');
+ await page.getByLabel('Дата публикации (пусто — не указана)',{exact:true}).fill('2026-10-20');
+ await page.getByLabel('Скриншот / документ').setInputFiles({name:'fresh-ai-proof.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')});
  await page.getByRole('button',{name:'Проанализировать',exact:true}).click();
- await expect(page.getByText(process.env.SAQ_LIVE_MODEL!,{exact:true})).toBeVisible({timeout:60000});
+ await expect(page.locator('.badge')).toHaveText(process.env.SAQ_LIVE_MODEL!,{timeout:60000});
+ await page.getByText('Сведения об анализе',{exact:true}).click();
+ await expect(page.getByText('s4-r2r3-v3',{exact:true})).toBeVisible();
  const h2=page.locator('.hypothesis').filter({hasText:'R2 · гипотеза'});
  const h3=page.locator('.hypothesis').filter({hasText:'R3 · гипотеза'});
  await page.screenshot({path:info.outputPath('02-real-hypotheses.png'),fullPage:true});
@@ -27,16 +35,26 @@ test('real external LLM current case review, immutable snapshot and PDF',async({
  await h3.getByRole('button',{name:'Отклонить гипотезу',exact:true}).click();
  await expect(page.locator('.ai-review-history')).toContainText('Нет независимого материала о вводе');
  await page.goto('/#/complexes/SQ-001?tab=verification',{waitUntil:'domcontentloaded'});
+ await page.getByText('Период применимости нового дела',{exact:true}).click();
+ await page.getByLabel('Проверяемый период с',{exact:true}).fill('2026-10-20');
+ await page.getByLabel('Проверяемый период по',{exact:true}).fill('2026-10-20');
  await page.getByRole('button',{name:'Начать расследование',exact:true}).click();
  await expect(page).toHaveURL(/\/cases\//);
  const caseId=page.url().split('/cases/')[1].split('?')[0];
- await expect(page.locator('.risk-score strong')).toHaveText('0');
+ await expect(page.getByRole('region',{name:'Автоматическая подготовка расследования'}).getByRole('status')).toContainText('Подготовка завершена',{timeout:60000});
+ await page.getByRole('button',{name:'Предпросмотр сигнала',exact:true}).click();
+ await expect(page.locator('.case-signal-sheet .risk-score strong')).toHaveText('0');
+ await page.getByRole('button',{name:'← К досье',exact:true}).click();
  await page.screenshot({path:info.outputPath('03-triage-score-zero.png'),fullPage:true});
  const before=(await client.from('workspaces').select('data').single()).data!.data;
  expect(before.assertions.filter((a:any)=>a.caseId===caseId)).toHaveLength(0);
  expect(before.caseSnapshots.filter((s:any)=>s.caseId===caseId)).toHaveLength(0);
- await page.getByLabel('Обоснование проверки факта',{exact:true}).fill('Источник оплаты проверен человеком');
- await page.getByRole('button',{name:'Подтвердить факт R2',exact:true}).click();
+ expect(before.claims.some((c:any)=>c.triage==='accepted'&&c.code==='R2')).toBe(true);
+ // Preparation creates a separate grounded claim scoped to this case's period.
+ // The earlier unscoped triage must not bypass the period guard.
+ const candidate=page.locator('.hypothesis').filter({has:page.getByRole('button',{name:'Подтвердить факт R2',exact:true})}).filter({hasText:'LLM ·'});
+ await candidate.getByLabel('Обоснование проверки факта',{exact:true}).fill('Источник оплаты проверен человеком');
+ await candidate.getByRole('button',{name:'Подтвердить факт R2',exact:true}).click();
  await expect(page.locator('.risk-score strong')).toHaveText('25');
  await page.screenshot({path:info.outputPath('04-reviewed-score-25.png'),fullPage:true});
  await page.getByRole('button',{name:'Предпросмотр сигнала',exact:true}).click();
@@ -51,13 +69,17 @@ test('real external LLM current case review, immutable snapshot and PDF',async({
  const v1=current.caseSnapshots.find((s:any)=>s.caseId===caseId);expect(v1.score).toBe(25);
  const fact=current.assertions.find((a:any)=>a.caseId===caseId && a.status==='verified');
  const claim=current.claims.find((c:any)=>c.id===fact.claimId);
- expect(claim.triage).toBe('accepted');expect(claim.runId).toBeTruthy();expect(fact.evidence.runId).toBe(claim.runId);
+ expect(claim.period).toEqual({from:'2026-10-20',to:'2026-10-20'});
+ expect(claim.runId).toBeTruthy();expect(fact.evidence.runId).toBe(claim.runId);
+ expect(v1.mediaManifest).toHaveLength(1);
+ const media=current.media.find((m:any)=>m.id===v1.mediaManifest[0].id);
+ expect((await client.storage.from('evidence').download(media.path)).error).toBeNull();
  const run=(await client.from('analysis_runs').select('id,input_hash,model,prompt_version,status,input_snapshot,hypotheses').eq('id',claim.runId).single()).data!;
  expect(run.status).toBe('succeeded');expect(run.input_snapshot.text).toBe(text);
  expect(run.hypotheses.every((h:any)=>text.includes(h.quote))).toBe(true);
  await page.getByLabel('Обоснование решения',{exact:true}).fill('Повторная сверка');await page.getByRole('button',{name:'Открыть пересмотр',exact:true}).click();
  await page.getByRole('button',{name:'← К досье',exact:true}).click();
- await page.getByLabel('Обоснование проверки факта',{exact:true}).fill('Применимость оплаты отозвана');await page.getByRole('button',{name:'Отклонить факт',exact:true}).first().click();
+ await candidate.getByLabel('Обоснование проверки факта',{exact:true}).fill('Применимость оплаты отозвана');await candidate.getByRole('button',{name:'Отклонить факт',exact:true}).click();
  await expect(page.locator('.risk-score strong')).toHaveText('0');
  await page.getByRole('button',{name:'Предпросмотр сигнала',exact:true}).click();await page.getByLabel('Обоснование решения',{exact:true}).fill('Нужна дополнительная проверка');await page.getByRole('button',{name:'Вернуть на проверку',exact:true}).click();
  await page.reload({waitUntil:'domcontentloaded'});await page.getByRole('button',{name:'Предпросмотр сигнала',exact:true}).click();
@@ -68,6 +90,8 @@ test('real external LLM current case review, immutable snapshot and PDF',async({
  await (await historicalDownload).saveAs(info.outputPath('server-case-v1-after-return.pdf'));
  const final=(await client.from('workspaces').select('data').single()).data!.data;
  expect(final.caseSnapshots.find((s:any)=>s.id===v1.id)).toEqual(v1);
- await info.attach('ai-case-evidence',{body:JSON.stringify({caseId,claimId:claim.id,run,v1,latest:final.caseSnapshots.at(-1)}),contentType:'application/json'});
+ const evidence={verifiedAt:new Date().toISOString(),caseId,claimId:claim.id,run,fact,media,v1,latest:final.caseSnapshots.at(-1)};
+ await writeFile(info.outputPath('ai-case-evidence.json'),JSON.stringify(evidence,null,2));
+ await info.attach('ai-case-evidence',{body:JSON.stringify(evidence),contentType:'application/json'});
  await client.auth.signOut();
 });

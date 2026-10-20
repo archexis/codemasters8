@@ -257,10 +257,11 @@ $s14apply$;
 }
 
 function parseArgs(argv) {
-  const args = { seed: join(REPO, 'src', 'lib', 'seed.json'), out: null };
+  const args = { seed: join(REPO, 'src', 'lib', 'seed.json'), out: null, seedOnly: false };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--out' && argv[i + 1]) args.out = resolve(argv[++i]);
     else if (argv[i] === '--seed' && argv[i + 1]) args.seed = resolve(argv[++i]);
+    else if (argv[i] === '--seed-only') args.seedOnly = true;
   }
   return args;
 }
@@ -274,6 +275,8 @@ if (isMain) {
   }
   const seed = JSON.parse(readFileSync(args.seed, 'utf8'));
   const envelope = buildSeedEnvelope(seed);
-  writeFileSync(args.out, migrationSql(JSON.stringify(envelope)));
+  writeFileSync(args.out, args.seedOnly
+    ? `-- Generated from src/lib/seed.json; existing workspaces and history are preserved.\nbegin;\nupdate public.app_seed set data = $seed$${JSON.stringify(envelope)}$seed$::jsonb where id = true;\ncommit;\n`
+    : migrationSql(JSON.stringify(envelope)));
   console.log(`wrote ${args.out} (${envelope.complexes.length} complexes, ${envelope.ads.length} ads)`);
 }

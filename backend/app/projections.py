@@ -50,8 +50,13 @@ def case_model(data: dict, case_id: str) -> dict | None:
     case = next((c for c in data.get("cases", []) if c["id"] == case_id), None)
     if case is None:
         return None
-    complex_ = next((z for z in data["complexes"] if z["id"] == case["complexId"]), None)
     scoped = scope_model(data, case['complexId'], case.get('phaseId'))
+    if scoped:
+        # A case response must explain its own facts, including historical cases.
+        scoped['complex'].update(risk([
+            {"code": a["code"], "status": "confirmed" if a["status"] == "verified" else "needs-verification"}
+            for a in latest_assertions(data, case_id)
+        ]))
     return {"investigation": deepcopy(case), "complex": scoped['complex'] if scoped else None,
             "assertions": latest_assertions(data, case_id),
             "artifacts": [a for a in data.get("artifacts", []) if a["id"] in case["artifactIds"]],

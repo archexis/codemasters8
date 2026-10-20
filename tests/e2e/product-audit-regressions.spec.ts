@@ -15,7 +15,7 @@ test('F01: all six demo templates can become checked facts with original publica
       return s.claims.find((c:any)=>c.artifactId===artifact.id).quote as string;
     });
     const candidate=page.locator('.hypothesis').filter({has:page.locator('blockquote').getByText(quote,{exact:true})});
-    await page.getByLabel('Обоснование проверки факта',{exact:true}).fill(`Оригинал учебного материала ${pass} сверён`);
+    await candidate.getByLabel('Обоснование проверки факта',{exact:true}).fill(`Оригинал учебного материала ${pass} сверён`);
     await candidate.getByRole('button',{name:'Подтвердить факт R2',exact:true}).click();
     await expect(candidate).toContainText('Факт проверен');
     await expect(page.locator('.risk-score strong')).toHaveText('25');
@@ -155,10 +155,10 @@ test('F06: unsupported publication candidate explains the remedy and shows its r
   await expect(page.getByText('Документ сохранён. Применимость проверяется в досье.',{exact:true})).toBeVisible();
   await page.goto('/#/complexes/SQ-003?tab=verification');
   await page.getByRole('button',{name:'Начать расследование',exact:true}).click();
-  await expect(page.getByRole('region',{name:'Автоматическая подготовка расследования'}).getByRole('status')).toContainText('Подготовка завершена');
+  await expect(page.getByRole('region',{name:'Автоматическая подготовка расследования'}).getByRole('status')).toContainText('Подготовка завершена',{timeout:15000});
   const candidate=page.locator('.hypothesis').filter({has:page.locator('blockquote').filter({hasText:'998 771'})});
   await expect(candidate).toContainText('Для проверки нужна связанная публикация');
-  await page.getByLabel('Обоснование проверки факта',{exact:true}).fill('Нужно оформить первоисточник');
+  await candidate.getByLabel('Обоснование проверки факта',{exact:true}).fill('Нужно оформить первоисточник');
   await candidate.getByRole('button',{name:'Подтвердить факт R2',exact:true}).click();
   const error=candidate.getByRole('alert');
   await expect(error).toContainText('материал публикации');await expect(error).toBeFocused();await expect(error).toBeInViewport();

@@ -1,4 +1,4 @@
-import catalog from './construction-images.json';
+import catalog from './construction-images.json' with { type: 'json' };
 import type { Complex } from './types';
 
 export interface ConstructionFrame {
@@ -18,8 +18,8 @@ export function constructionFrames(complex: Pick<Complex, 'id' | 'name' | 'demo'
     .map(frame => ({
       ...frame,
       id: `illustration-${frame.complexId}-${frame.date}`,
-      image: `${import.meta.env.BASE_URL}${frame.image}`,
-      thumbnail: `${import.meta.env.BASE_URL}${frame.thumbnail}`,
+      image: `${import.meta.env?.BASE_URL ?? '/'}${frame.image}`,
+      thumbnail: `${import.meta.env?.BASE_URL ?? '/'}${frame.thumbnail}`,
     }))
     .sort((a, b) => a.date.localeCompare(b.date));
 }

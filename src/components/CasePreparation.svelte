@@ -43,7 +43,8 @@
    const input={text:artifact.text.slice(0,20000),zkId:c.complexId,url:original?.url??artifact.url??'',account:original?.account??'',date:original?original.date:artifact.date??null,platform:original?.platform??artifact.source};
    if(artifact.text.length>20000)note(`Материал ${artifact.source}: разобраны первые 20 000 символов, оставшийся текст требует дополнительного разбора.`);
    const hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(`${caseId}\n${canonicalRunInput(input)}`));
-   const runId=freshAnalysis?newRunId():`prep-${Array.from(new Uint8Array(hash),b=>b.toString(16).padStart(2,'0')).join('')}`;
+   // The Edge and persisted-run contract allows at most 65 characters.
+   const runId=freshAnalysis?newRunId():`p${Array.from(new Uint8Array(hash),b=>b.toString(16).padStart(2,'0')).join('')}`;
    const result=await analyze(input,{runId,signal:AbortSignal.timeout(50000)});
    current();
    await deliver(claimsForMaterial(getWorkspace(),c,artifact,result));

@@ -106,22 +106,27 @@ describe('S1.4 seed integrity (TS)', () => {
 });
 
 describe('S1.4 seed integrity (SQL)', () => {
-  it('замена удаляет старое досье и версии сигналов из существующего workspace', async () => {
+  it('новый seed сохраняет существующий workspace, историю и версии сигналов', async () => {
     const tdb = await createTestDatabase();
     db = tdb.db;
     const retired = { ...envelope(), audit: [{ id: 'old-event' }], signals: { old: {} },
       signalVersions: { old: [{}] }, geometries: [{ complexId: 'SQ-R01' }] };
     await db.query('insert into public.workspaces(owner_id, data, version) values ($1, $2::jsonb, 7)',
       [userA, JSON.stringify(retired)]);
-    await db.exec(readFileSync('supabase/migrations/20261019194027_real_site_demo_reset.sql', 'utf8'));
+    await db.query("insert into public.command_receipts(owner_id,command_id,payload,result_version) values ($1,'saved-command','{}',7)", [userA]);
+    await db.query("insert into public.analysis_runs(id,owner_id,zk_id,input_snapshot,input_hash) values ('saved-run',$1,'SQ-001','{}','hash')", [userA]);
+    await db.exec(`set request.jwt.claim.sub = '${userA}'`);
+    await db.query("insert into public.document_jobs(id,owner_id,complex_id,kind,input_path) values ('22222222-2222-4222-8222-222222222222',$1,'SQ-001','pdf-text',$2)",
+      [userA, `${userA}/SQ-001/22222222-2222-4222-8222-222222222222.pdf`]);
+    await db.exec(readFileSync('supabase/migrations/20261020000200_sync_seed_preserve_workspaces.sql', 'utf8'));
     const result = await db.query<{ data: unknown; version: number }>('select data, version from public.workspaces');
-    expect(result.rows[0].data).toEqual(envelope());
-    expect(result.rows[0].version).toBe(8);
+    expect(result.rows[0].data).toEqual(retired);
+    expect(result.rows[0].version).toBe(7);
     const guard = await db.query<{ tgenabled: string }>("select tgenabled from pg_trigger where tgname = 'workspaces_history_append_only'");
     expect(guard.rows[0].tgenabled).toBe('O');
     const counts = await db.query<{ receipts: number; runs: number; jobs: number }>(
       'select (select count(*)::int from public.command_receipts) as receipts, (select count(*)::int from public.analysis_runs) as runs, (select count(*)::int from public.document_jobs) as jobs');
-    expect(counts.rows[0]).toEqual({ receipts: 0, runs: 0, jobs: 0 });
+    expect(counts.rows[0]).toEqual({ receipts: 1, runs: 1, jobs: 1 });
   });
 
   async function setupSql() {

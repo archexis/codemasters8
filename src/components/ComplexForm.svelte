@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { untrack } from 'svelte';
+  import { untrack, onMount } from 'svelte';
+  import { registerNavigationGuard } from '../lib/navigation-guard';
   import type { Complex, LegalBasisType } from '../lib/types';
   let { value, onsave, oncancel }: { value?: Complex; onsave: (z: Complex) => Promise<void>; oncancel: () => void } = $props();
   let form = $state<Complex>(untrack(() => structuredClone(value ? $state.snapshot(value) : { id: `SQ-${crypto.randomUUID().slice(0, 8)}`, name: '', city: 'Өскемен', address: '', developer: '', bin: null, lat: null, lng: null, origin: 'manual', stage: '', readinessClaimed: null, readinessConfirmed: null, readinessSources: [], readinessClaimedSource: null, legalBasis: { type: 'unknown', status: 'unknown', source: '', checkedAt: '', reviewText: '' }, note: '', factors: [], events: [], sources: [] })));
@@ -14,6 +15,19 @@
   let claimedSourceText = $state(untrack(() => form.readinessClaimedSource?.source ?? ''));
   let claimedDate = $state(untrack(() => form.readinessClaimedSource?.date ?? new Date().toISOString().slice(0,10)));
   let busy = $state(false); let error = $state('');
+  const initialDraft = untrack(() => JSON.stringify([form, variant, claimedSourceText, claimedDate]));
+  const dirty = $derived(JSON.stringify([form, variant, claimedSourceText, claimedDate]) !== initialDraft);
+  onMount(() => {
+    const scope = (hash: string) => {
+      const [path, query] = hash.split('?');
+      return `${path}:${new URLSearchParams(query).get('phase') ?? ''}`;
+    };
+    const initialScope = scope(location.hash);
+    const unload = (event: BeforeUnloadEvent) => { if (dirty) { event.preventDefault(); event.returnValue = ''; } };
+    const unregister = registerNavigationGuard(next => !dirty || scope(next) === initialScope || window.confirm('Есть несохранённые сведения объекта. Уйти и удалить черновик?'));
+    window.addEventListener('beforeunload', unload);
+    return () => { window.removeEventListener('beforeunload', unload); unregister(); };
+  });
   async function submit(e: SubmitEvent) {
     e.preventDefault(); busy = true; error = '';
     try {

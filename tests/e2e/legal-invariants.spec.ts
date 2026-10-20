@@ -32,7 +32,7 @@ test('new publication and verified R2 add 25 only within the active case',async(
 test('withdrawing a case fact reduces its score and keeps the review history',async({page})=>{
  await manualCase(page);await verifyFact(page);
  await expect(page.locator('.risk-score strong')).toHaveText('25');
- await page.getByLabel('Обоснование проверки факта',{exact:true}).fill('Повторная сверка: применимость не подтверждена');
+ await manualCandidate(page).getByLabel('Обоснование проверки факта',{exact:true}).fill('Повторная сверка: применимость не подтверждена');
  await manualCandidate(page).getByRole('button',{name:'Отклонить факт',exact:true}).click();
  await expect(page.locator('.risk-score strong')).toHaveText('0');
  await page.reload({waitUntil:'domcontentloaded'});await expect(manualCandidate(page)).toContainText('Факт отклонён');

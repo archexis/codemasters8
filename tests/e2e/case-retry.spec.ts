@@ -18,7 +18,7 @@ async function loseNextAck(page:Page,action:string){
 }
 test('fact review retries its persisted receipt without a second assertion',async({page})=>{
  await manualCase(page);
- await page.getByLabel('Обоснование проверки факта',{exact:true}).fill('Сверено с первоисточником');
+ await manualCandidate(page).getByLabel('Обоснование проверки факта',{exact:true}).fill('Сверено с первоисточником');
  await loseNextAck(page,'fact.review');
  const button=manualCandidate(page).getByRole('button',{name:'Подтвердить факт R2',exact:true});
  await button.click();await expect(page.getByRole('alert')).toContainText('Simulated lost ACK');
@@ -101,7 +101,7 @@ test('explicit fact batch resumes after its second ACK is lost without duplicate
  await expect(boxes).toHaveCount(2);
  await expect(boxes.nth(0)).not.toBeChecked();await expect(boxes.nth(1)).not.toBeChecked();
  await boxes.nth(0).check();await boxes.nth(1).check();
- await page.getByLabel('Обоснование проверки факта',{exact:true}).fill('Оба фрагмента сверены с оригиналом');
+ await page.getByLabel('Обоснование пакетной проверки',{exact:true}).fill('Оба фрагмента сверены с оригиналом');
  await page.evaluate(async()=>{
   const modulePath='/src/lib/repository.ts';const {UnknownCommitResultError}=await import(modulePath);
   const original=navigator.locks.request.bind(navigator.locks);let delivered=0;
@@ -116,7 +116,8 @@ test('explicit fact batch resumes after its second ACK is lost without duplicate
  const first=await page.evaluate(()=>JSON.parse(localStorage.getItem('sq_svelte_demo_v2')!).state.assertions);
  expect(first).toHaveLength(2);
  await page.getByRole('button',{name:'Повторить доставку прежнего действия',exact:true}).click();
- await expect(page.getByText('Выбрано: 0',{exact:true})).toBeVisible();
+ await expect(boxes.nth(0)).not.toBeChecked();await expect(boxes.nth(1)).not.toBeChecked();
+ await expect(page.getByText('Проверить несколько фактов вместе · выбрано: 0',{exact:true})).toBeVisible();
  const after=await page.evaluate(()=>JSON.parse(localStorage.getItem('sq_svelte_demo_v2')!).state);
  expect(after.assertions).toEqual(first);
  expect(after.audit.filter((a:any)=>a.action==='fact.review')).toHaveLength(2);

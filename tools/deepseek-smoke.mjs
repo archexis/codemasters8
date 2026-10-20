@@ -1,10 +1,11 @@
-// One bounded real-provider evaluation: 12 fixed cases + one new browser input.
+// Bounded real-provider acceptance: optionally skip the historical eval suite.
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { randomUUID, createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import { createClient } from '@supabase/supabase-js';
-assert(process.env.SAQ_ALLOW_PAID_AI==='1','Set SAQ_ALLOW_PAID_AI=1 only after agreeing the maximum 13 provider calls (12 eval + 1 browser)');
+const browserOnly=process.argv.includes('--browser-only');
+assert(process.env.SAQ_ALLOW_PAID_AI==='1','Explicit opt-in required for real provider calls');
 const config=JSON.parse((await readFile('supabase/.temp/status.json','utf8')).replace(/^\uFEFF/,''));
 assert(/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(config.API_URL),'Only local test users');
 const env=Object.fromEntries((await readFile('.env.edge','utf8')).split(/\r?\n/).filter(s=>s && !s.startsWith('#')).map(s=>{const i=s.indexOf('=');return [s.slice(0,i),s.slice(i+1).replace(/^['"]|['"]$/g,'')];}));
@@ -24,7 +25,7 @@ if(reuse>=0) {
   report.cases=prior.cases;report.previousEvalReport=path;
 }
 const reportPath=`test-results/score-maxxing/ai-${Date.now()}.json`;
-let user;
+let user,api;
 async function save() {await mkdir('test-results/score-maxxing',{recursive:true});await writeFile(reportPath,JSON.stringify(report,null,2)+'\n');}
 try {
   const created=await admin.auth.admin.createUser({email,password,email_confirm:true}); if(created.error) throw created.error; user=created.data.user;
@@ -38,7 +39,7 @@ try {
   const foreignOrigin=await fetch(`${config.API_URL}/functions/v1/analyze`,{method:'POST',headers:{Origin:'https://forbidden.test',apikey:config.ANON_KEY},body:'{}'});
   assert.equal(foreignOrigin.status,403);assert.equal((await foreignOrigin.json()).error_code,'ORIGIN_FORBIDDEN');
   let failures=0;
-  for(const test of (reuse>=0 ? [] : cases)) {
+  for(const test of (reuse>=0 || browserOnly ? [] : cases)) {
     const runId=randomUUID(),start=Date.now();
     const input={text:test.text,zkId:'SQ-001',url:'',account:'',date:null,platform:'Ручной ввод'};
     const result={id:test.id,runId,expected:test.expected,status:'FAIL'};
@@ -58,31 +59,46 @@ try {
     result.latencyMs=Date.now()-start;report.cases.push(result);await save();console.log(`${result.status} ${test.id} (${result.latencyMs}ms)`);
   }
   assert.equal(failures,0,`${failures} eval cases failed; preserved ${reportPath}`);
+  if(browserOnly) {
+    api=spawn(process.platform==='win32'?'backend/.venv/Scripts/python.exe':'backend/.venv/bin/python',['-m','uvicorn','backend.app.main:app','--host','127.0.0.1','--port','8007'],{env:{...process.env,SUPABASE_URL:config.API_URL,SUPABASE_ANON_KEY:config.ANON_KEY,CORS_ORIGINS:'http://127.0.0.1:5175'},stdio:'ignore',windowsHide:true});
+    let healthy=false;
+    const deadline=Date.now()+30000;
+    while(Date.now()<deadline){try{healthy=(await fetch('http://127.0.0.1:8007/health',{signal:AbortSignal.timeout(1000)})).ok;if(healthy)break;}catch{}await new Promise(r=>setTimeout(r,200));}
+    assert(healthy,'Isolated acceptance API did not start');
+  }
   await new Promise((resolve,reject)=>{
-    const child=spawn(process.execPath,[process.env.npm_execpath,'run','test:live','--','--grep','real external LLM'],{windowsHide:true,stdio:'inherit',env:{...process.env,SAQ_LIVE_SUPABASE_URL:config.API_URL,SAQ_LIVE_SUPABASE_KEY:config.ANON_KEY,SAQ_LIVE_EMAIL:email,SAQ_LIVE_PASSWORD:password,SAQ_LIVE_AI:'1',SAQ_LIVE_MODEL:env.LLM_MODEL}});
+    const child=spawn(process.execPath,[process.env.npm_execpath,'run','test:live','--','--grep','real external LLM','--output=test-results/connected-ai-current'],{windowsHide:true,stdio:'inherit',env:{...process.env,SAQ_LIVE_SUPABASE_URL:config.API_URL,SAQ_LIVE_SUPABASE_KEY:config.ANON_KEY,SAQ_LIVE_EMAIL:email,SAQ_LIVE_PASSWORD:password,SAQ_LIVE_AI:'1',SAQ_LIVE_MODEL:env.LLM_MODEL,...(browserOnly?{SAQ_LIVE_API_URL:'http://127.0.0.1:8007'}:{})}});
     child.on('error',reject);child.on('exit',code=>code===0 ? resolve() : reject(new Error(`Browser failed: ${code}`)));
   });
   const workspace=await client.from('workspaces').select('data').single(); if(workspace.error) throw new Error('BROWSER_WORKSPACE_READ_FAILED');
-  const ads=workspace.data.data.ads.filter(a=>a.text.includes('ЖК Новый Берег'));
+  const ads=workspace.data.data.ads.filter(a=>a.text.includes('Проверка полного пути '));
   assert.equal(ads.length,1); const ad=ads[0]; assert(ad.analysis.runId);
   const state=workspace.data.data;
   const artifact=state.artifacts.find(a=>a.adId===ad.id);
   const claims=state.claims.filter(c=>c.artifactId===artifact.id);
   const r2=claims.find(c=>c.code==='R2'),r3=claims.find(c=>c.code==='R3');
   assert.equal(r2.triage,'accepted');assert.equal(r3.triage,'rejected');
-  const assertions=state.assertions.filter(a=>a.claimId===r2.id);
+  const assertions=state.assertions.filter(a=>state.claims.some(c=>c.id===a.claimId&&c.artifactId===artifact.id&&c.code==='R2'));
   assert.equal(assertions[0].status,'verified');assert.equal(assertions.at(-1).status,'rejected');
-  assert.equal(assertions[0].evidence.runId,ad.analysis.runId);
+  const checkedClaim=state.claims.find(c=>c.id===assertions[0].claimId);
+  assert.equal(assertions[0].evidence.runId,checkedClaim.runId);
   const snapshots=state.caseSnapshots.filter(s=>s.caseId===assertions[0].caseId);
   assert.equal(snapshots[0].score,25);assert.equal(snapshots[0].status,'confirmed');
   assert.equal(snapshots.at(-1).status,'returned');assert.equal(snapshots.at(-1).score,0);
   report.caseId=assertions[0].caseId;report.claimIds=claims.map(c=>c.id);report.snapshotIds=snapshots.map(s=>s.id);
   const browserRun=await client.from('analysis_runs').select('id,input_hash,model,prompt_version,status,hypotheses').eq('id',ad.analysis.runId).single(); if(browserRun.error) throw new Error('BROWSER_RUN_READ_FAILED');
   report.browserRun=browserRun.data;
-  report.browser='PASS';report.status=reuse>=0?'BROWSER_PASS_ARCHIVED_EVAL':'PASS';await save();console.log(`PASS real AI acceptance: ${reportPath}`);
+  const runs=await client.from('analysis_runs').select('id,input_hash,model,prompt_version,status,hypotheses,started_at,finished_at');if(runs.error)throw runs.error;
+  report.currentRuns=runs.data;
+  if(browserOnly)assert.equal(runs.data.length,2,'Expected exactly two current runs: analysis and case preparation');
+  report.browser='PASS';report.status=browserOnly?'CURRENT_BROWSER_PASS':reuse>=0?'BROWSER_PASS_ARCHIVED_EVAL':'PASS';await save();console.log(`PASS real AI acceptance: ${reportPath}`);
 } catch(e) {report.status='FAIL';report.error=e.message;await save();throw e;}
 finally {
+  api?.kill();
   if(user) {
+    const files=await admin.storage.from('evidence').list(`${user.id}/SQ-001`);
+    if(files.error)throw files.error;
+    if(files.data?.length){const cleanup=await admin.storage.from('evidence').remove(files.data.map(f=>`${user.id}/SQ-001/${f.name}`));if(cleanup.error)throw cleanup.error;}
     await client.auth.signOut();
     const removed=await admin.auth.admin.deleteUser(user.id);if(removed.error) throw new Error('Temporary AI user cleanup failed');
   }

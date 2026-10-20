@@ -1,7 +1,7 @@
 <script lang="ts">
  import type {AppState,Command} from '../lib/types';
  import {previewCaseSignal} from '../lib/investigation';
- import {WEIGHTS,FACTOR_META,zoneLabel} from '../lib/scoring';
+ import {FACTOR_META,scoreBreakdown} from '../lib/scoring';
  import {legalBasisLabel,verificationLabel,relationLabel,decisionTime} from '../lib/presentation';
  import {safeUrl} from '../lib/domain';
  import {supabase} from '../lib/supabase';
@@ -13,6 +13,7 @@
  const versions=$derived((workspace.caseSnapshots??[]).filter(s=>s.caseId===caseId));
  const saved=$derived(revision ? versions.find(s=>String(s.revision)===revision) : investigation.status==='draft'?undefined:versions[versions.length-1]);
  const vm=$derived(saved ?? previewCaseSignal($state.snapshot(workspace),caseId));
+ const counted=$derived(scoreBreakdown(vm.complex.factors).components.filter(c=>c.counted));
  let decisionIntent=$state.raw<{key:string;session:number;command:Command}|undefined>();
  async function retryDecision(){
   if(!decisionIntent)return;
@@ -59,21 +60,22 @@
 <p>Статус: {saved ? saved.status==='confirmed'?'Подтверждён':'Возвращён':'Черновик; решение не принято'}</p>{#if saved}<p>Решение: {saved.actor} · {decisionTime(saved.at)}</p>
 <p>Обоснование: {saved.comment}</p>{/if}<div class="risk-score {vm.zone}">
 <strong>{vm.score}</strong>
-<span class="zone-total">из 100</span><span class="formula">{vm.complex.factors.filter(f=>f.status==='confirmed').map(f=>`${f.code} +${WEIGHTS[f.code]}`).join(' + ') || 'нет подтверждённых факторов'}</span>
+<span class="zone-total">из 100</span><span class="formula">{counted.map(f=>`${f.code} +${f.weight}`).join(' + ') || 'нет подтверждённых факторов'}</span>
 </div>
 <p>Застройщик: {vm.complex.developer||'неизвестен'} · БИН: {vm.complex.bin||'неизвестен'} · стадия: {vm.complex.stage||'неизвестна'}</p>
 <p>Период применимости: {vm.period ? vm.period.from+' — '+(vm.period.to??'открытый') : 'не установлен'}</p>
 <h2>Применимое правовое основание</h2>
 <p>{legalBasisLabel(vm.complex.legalBasis.type)} · {verificationLabel(vm.complex.legalBasis.status)} · {vm.complex.legalBasis.source||'Источник неизвестен'} · {vm.complex.legalBasis.checkedAt||'Дата неизвестна'}</p>
 <p>{vm.complex.legalBasis.reviewText}</p>
-<h2>Подтверждённые факторы</h2>{#each vm.complex.factors.filter(f=>f.status==='confirmed') as f}<section class="factor-print">
-<h3>{f.code} +{WEIGHTS[f.code]} · {FACTOR_META[f.code].title}</h3>
+<h2>Подтверждённые факторы</h2>{#each counted as component}<section class="factor-print">
+<h3>{component.code} +{component.weight} · {FACTOR_META[component.code].title}</h3>
+{#each vm.complex.factors.filter(f=>f.status==='confirmed'&&f.code===component.code) as f}
 <p>{f.evidence?.source} · {f.evidence?.date}</p>
 <blockquote>{f.evidence?.quote}</blockquote>
 <p>{f.evidence?.text}</p>
 <p class="muted">Проверил: {f.reviewer} · {decisionTime(f.updatedAt)}</p>
 <p>Материал: {f.evidence?.id} · публикация: {f.evidence?.adId||'нет'} · AI run: {f.evidence?.runId||'ручной факт'}</p>
-</section>{:else}<p>Факты этого дела ещё не подтверждены. Нулевой балл не доказывает безопасность; добавьте материал и проверьте факт в досье.</p>{/each}<h2>Обоснования проверки фактов</h2>
+{/each}</section>{:else}<p>Факты этого дела ещё не подтверждены. Нулевой балл не доказывает безопасность; добавьте материал и проверьте факт в досье.</p>{/each}<h2>Обоснования проверки фактов</h2>
 {#each vm.assertions as assertion}<section class="factor-print"><p>{assertion.code} · {verificationLabel(assertion.status)} · {assertion.actor} · {decisionTime(assertion.at)}</p><p>{assertion.comment}</p>
 {#if assertion.evidence.beforeCommissioning}<p>Материал о невводе: {assertion.evidence.beforeCommissioning.source} · {assertion.evidence.beforeCommissioning.date}</p><p>{assertion.evidence.beforeCommissioning.text}</p>{/if}</section>{/each}
 <h2>Использованные материалы</h2>{#each vm.artifacts as a}<section class="factor-print">

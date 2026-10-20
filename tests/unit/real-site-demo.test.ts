@@ -24,18 +24,21 @@ describe('replacement real-location demo', () => {
       .toEqual(locations.map(({ id, lat, lng }) => ({ id, lat, lng })));
     expect(new Set(state.complexes.map(z => `${z.lat},${z.lng}`)).size).toBe(8);
     expect(state.complexes.every(z => z.demo && z.origin === 'scenario' && z.bin === null)).toBe(true);
-    expect(state.ads.every(ad => ad.text.includes('ВЫМЫШЛЕННЫЙ МАТЕРИАЛ') && ad.url.startsWith('https://example.invalid/'))).toBe(true);
+    expect(state.ads.every(ad => ad.text.includes('ВЫМЫШЛЕННЫЙ МАТЕРИАЛ') && /^https:\/\//.test(ad.url) && !ad.url.includes('example.invalid'))).toBe(true);
   });
 
-  it.each([false, true])('removes the retired dataset and pending data (envelope=%s)', async envelope => {
+  it.each([false, true])('preserves retired dossiers, custom records, pending data and backups (envelope=%s)', async envelope => {
     const saved = storage();
     const old = initialState();
     old.complexes[0].name = 'Ертіс Толқыны';
+    old.ads.push({...old.ads[0], id: 'USER-AD', text: 'Публикация пользователя'});
     saved.set('sq_svelte_demo_v2', JSON.stringify(envelope ? { envelope: 1, state: old, version: 7 } : old));
     for (const key of ['sq_pending_command_v1', 'sq_staged_files_v1', 'sq_cleanup_retry_v1', 'sq_svelte_demo_v2_raw_backup', 'sq_state_v1']) saved.set(key, 'retired');
     const state = await loadState();
-    expect(state).toEqual(initialState());
-    expect(saved.size).toBe(0);
+    expect(state).toEqual(old);
+    expect(saved.size).toBe(6);
+    expect(saved.get('sq_svelte_demo_v2_raw_backup')).toBe('retired');
+    expect(saved.get('sq_pending_command_v1')).toBe('retired');
   });
 
   it('keeps edits made after replacement on repeated loads', async () => {

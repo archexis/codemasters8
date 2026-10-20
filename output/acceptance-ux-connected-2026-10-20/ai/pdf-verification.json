@@ -1,0 +1,12 @@
+{
+  "pages": 2,
+  "noBlankPages": true,
+  "byteIdenticalAfterReconsideration": true,
+  "score25": true,
+  "runId": true,
+  "quote": true,
+  "fileHash": true,
+  "actor": true,
+  "sourceNamed": true,
+  "sha256": "0378269aabe7e33e2a08d22b6da549f28864519b72311ecce03fc2c87783c477"
+}

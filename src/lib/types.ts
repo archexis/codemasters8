@@ -112,7 +112,7 @@ export interface Hypothesis {
   /** S2.1 (C5-задел, поток S4): стабильный ID гипотезы внутри analysis run. */
   id?: string;
 }
-export interface Analysis { input?: unknown; runId?: string; inputHash?: string; status?: 'succeeded'; engine: string; realAI: boolean; hypotheses: Hypothesis[] }
+export interface Analysis { input?: unknown; runId?: string; inputHash?: string; promptVersion?: string; status?: 'succeeded'; engine: string; realAI: boolean; hypotheses: Hypothesis[] }
 export interface Media {
   id: string; zkId: string; name: string; kind: string; date: string; note: string; ready: number | null; path: string;
   /**
