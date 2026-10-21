@@ -1,0 +1,18 @@
+{
+  "title": "Cinematic Tension 002",
+  "artist": "Sascha Ende",
+  "sourcePage": "https://ende.app/en/song/12249-cinematic-tension-002",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "sourceInSeconds": 6.5,
+  "musicEndsAtSeconds": 12.5,
+  "sourceQuality": "128 kbps MP3 publicly supplied by the composer",
+  "gains": {
+    "music": 0.7076033144357841,
+    "atmosphere": 0.10614049716536761,
+    "mechanics": 0.5307024858268381,
+    "impacts": 0.7076033144357841
+  },
+  "mixedPeakDbFS": -1.2096149476276294,
+  "edits": "Excerpt, level automation, fade in, cut at 12.5 seconds, mixed with original sound effects."
+}

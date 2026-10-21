@@ -7,6 +7,8 @@
 | Скрипт | Строк | Назначение |
 | --- | --- | --- |
 | `run-api-tests.mjs` | 7 | Шим `npm run test:api`: ищет Python (SAQ_PYTHON, иначе backend/.venv, иначе PATH) и гоняет `pytest backend/tests`. |
+| `import-city-buildings.py` | 5 | Шим парсера официальной этажности Өскемена; модуль `building_registry.py`, тесты `tools/tests/test_building_registry.py`. |
+| `tile-city-buildings.mjs` | 53 | Подготовка локальных векторных тайлов из полной выгрузки. Источники и обновление: `docs/city-buildings.md`. |
 | `source-manifest.mjs` | 13 | Библиотека: sha256-манифест исходников в скоупе (git ls-files, без секретов и артефактов). Используется приёмкой. |
 | `verify-no-server-secrets.mjs` | 16 | Байтовый скан: LLM_API_KEY и SERVICE_ROLE_KEY не должны встречаться в трекнутых файлах, бандле dist и отчётах. Пишет PASS в `docs/acceptance/s4-repair/secrets.json`. |
 | `migrate-safe.mjs` | 23 | Безопасное применение миграций (порядок, dry-run). |

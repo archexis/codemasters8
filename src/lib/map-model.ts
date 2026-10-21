@@ -14,6 +14,27 @@ export interface MapSummary {
   label: string; color: string; source: string; date: string; publications: number | null;
 }
 export const UNKNOWN_COLOR = '#687b90';
+export interface MapRect { left: number; top: number; right: number; bottom: number }
+/** Largest unobstructed rectangle, in map-local pixels. */
+export function freeMapCenter(width: number, height: number, obstacles: MapRect[]): [number, number] {
+  const boxes = obstacles.map(r => ({ left: Math.max(0, r.left), right: Math.min(width, r.right), top: Math.max(0, r.top), bottom: Math.min(height, r.bottom) })).filter(r => r.left < r.right && r.top < r.bottom);
+  const edges = [...new Set([0, width, ...boxes.flatMap(r => [r.left, r.right])])].sort((a, b) => a - b);
+  let bestArea = 0;
+  let best: [number, number] = [width / 2, height / 2];
+  for (let i = 0; i < edges.length - 1; i++) {
+    for (let j = i + 1; j < edges.length; j++) {
+      const left = edges[i], right = edges[j];
+      const blocked = boxes.filter(r => r.left < right && r.right > left).sort((a, b) => a.top - b.top);
+      let top = 0;
+      for (const r of [...blocked, { top: height, bottom: height }]) {
+        const area = (right - left) * (r.top - top);
+        if (area > bestArea) { bestArea = area; best = [(left + right) / 2, (top + r.top) / 2]; }
+        top = Math.max(top, r.bottom);
+      }
+    }
+  }
+  return best;
+}
 export const ZONE_COLORS = { green: '#388068', yellow: '#b47b11', red: '#bf453e' };
 export function hasCoordinates(z: Complex): z is Complex & { lng: number; lat: number } {
   return typeof z.lng === 'number' && Number.isFinite(z.lng) && Math.abs(z.lng) <= 180 && typeof z.lat === 'number' && Number.isFinite(z.lat) && Math.abs(z.lat) <= 85.051129;

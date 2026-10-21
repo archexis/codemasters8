@@ -320,8 +320,10 @@ async def research_worker(settings):
                             else:
                                 configured = [d.strip() for d in settings.research_domains.split(',') if d.strip()]
                                 target['domains'] = configured if selected is None else [d for d in selected if d in configured]
-                                async with asyncio.timeout(100):
-                                    result = await collect_sources(target, settings.tavily_api_key, target['domains'], client)
+                                result = await asyncio.wait_for(
+                                    collect_sources(target, settings.tavily_api_key, target['domains'], client),
+                                    timeout=100,
+                                )
                                 failed = all(s['status'] == 'failed' for s in result['searches'])
                                 store.finish(job_id, lease, result, 'Внешний поиск недоступен; повторите позже.' if failed else None)
                         except Exception as exc:

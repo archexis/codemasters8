@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import type { Map as MapType, GeoJSONSource, FillExtrusionLayerSpecification } from 'maplibre-gl';
   import type { Ad, Complex } from '../lib/types';
   import { constructionFrames, frameDate } from '../lib/construction-images';
-  import { hasCoordinates, summarizeMap, buildingShapes, worldPoint, worldCoordinates, relatedMapPlaces, UNKNOWN_COLOR, type XRayTheme, type MapGeometry, type MapRelation } from '../lib/map-model';
+  import { cityBuildingSource, type CityBuildingManifest } from '../lib/city-buildings';
+  import { hasCoordinates, summarizeMap, buildingShapes, worldPoint, worldCoordinates, relatedMapPlaces, freeMapCenter, UNKNOWN_COLOR, type XRayTheme, type MapGeometry, type MapRelation } from '../lib/map-model';
   import 'maplibre-gl/dist/maplibre-gl.css';
   let { toolsOpen = false, complexes, ads, geometry = [], relations = [], liveRegistryAvailable = false, onOpenDossier, onShowRelatedPlaces }: {
     toolsOpen?: boolean; complexes: Complex[]; ads?: Ad[]; geometry?: MapGeometry[]; relations?: MapRelation[]; liveRegistryAvailable?: boolean;
@@ -17,6 +18,9 @@
   let warning = $state('');
   let satellite = $state(false);
   let city3d = $state(false);
+  const cityHeightScale = 2.5;
+  let cityManifest = $state<CityBuildingManifest>();
+  let cityRequest: AbortController | undefined;
   let theme = $state<XRayTheme>('off');
   let query = $state('');
   let zone = $state('all');
@@ -48,7 +52,34 @@
     return result;
   });
   const fallbackPoints = $derived(visible.map(z => { const p = worldPoint(z.lng, z.lat, Math.floor(camera.zoom)); return { ...z, x: p[0] - center[0] + width / 2, y: p[1] - center[1] + height / 2 }; }).filter(p => p.x >= 0 && p.x <= width && p.y >= 0 && p.y <= height));
-  function select(id: string, phase?: string) { selectedId = id; selectedPhase = phase || undefined; listOpen = false; }
+  async function select(id: string, phase?: string) {
+    selectedId = id; selectedPhase = phase || undefined; listOpen = false;
+    const site = summaries.find(z => z.id === id);
+    if (!site) return;
+    const ring = phase ? footprints.features.find(f => f.properties.id === id && f.properties.phaseId === phase)?.geometry.coordinates[0] : undefined;
+    const target: [number, number] = ring?.length ? [
+      (Math.min(...ring.map(p => p[0])) + Math.max(...ring.map(p => p[0]))) / 2,
+      (Math.min(...ring.map(p => p[1])) + Math.max(...ring.map(p => p[1]))) / 2,
+    ] : [site.lng, site.lat];
+    // Measure after the preview opens and the list closes, using their actual responsive layout.
+    await tick();
+    if (!container?.isConnected || selectedId !== id || selectedPhase !== (phase || undefined)) return;
+    const bounds = container.getBoundingClientRect();
+    const overlays = container.parentElement!.querySelectorAll<HTMLElement>('.map-preview, .map-quick-search, .map-float-top, .map-list-panel, .map-about-float, .map-caption, .map-legend, .map-status, .maplibregl-ctrl, .fallback-controls, .attribution');
+    const obstacles = [...overlays].filter(el => el.getClientRects().length && getComputedStyle(el).visibility !== 'hidden').map(el => {
+      const r = el.getBoundingClientRect();
+      return { left: r.left - bounds.left - 12, right: r.right - bounds.left + 12, top: r.top - bounds.top - 12, bottom: r.bottom - bounds.top + 12 };
+    });
+    const [x, y] = freeMapCenter(bounds.width, bounds.height, obstacles);
+    const offset: [number, number] = [x - bounds.width / 2, y - bounds.height / 2];
+    if (map && !fallback) {
+      map.easeTo({ center: target, offset, duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 600 });
+    } else {
+      const point = worldPoint(target[0], target[1], Math.floor(camera.zoom));
+      const position = worldCoordinates(point[0] - offset[0], point[1] - offset[1], Math.floor(camera.zoom));
+      camera = { ...camera, lng: position[0], lat: position[1] };
+    }
+  }
   function open(tab?: string) {
     if (!selected) return;
     if (onOpenDossier && !tab) onOpenDossier(selected.id, selectedPhase);
@@ -74,9 +105,27 @@
       // Esri coverage around Öskemen stops at z17. Enlarge those images at higher
       // zooms instead of requesting tiles containing "Map data not yet available".
       map.addSource('esri', { type: 'raster', tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'], tileSize: 256, maxzoom: 17, attribution: 'Esri World Imagery' });
-      const raster = { id: 'satellite', type: 'raster' as const, source: 'esri' };
+      const raster = { id: 'satellite', type: 'raster' as const, source: 'esri', paint: {
+        'raster-saturation': -0.12, 'raster-contrast': 0.06,
+        'raster-brightness-min': 0.02, 'raster-brightness-max': 0.98,
+        'raster-resampling': 'linear' as const, 'raster-fade-duration': 180,
+      } };
       map.addLayer(raster, 'footprints-flat');
     } catch { /* Спутник недоступен — базовая карта продолжает работать. */ }
+  }
+  function applyBuildingAppearance() {
+    if (!map || !loaded) return;
+    const photo = satellite && !!map.getLayer('satellite');
+    map.setLight(photo
+      ? { anchor: 'map', position: [1.15, 215, 55], color: '#fffaf2', intensity: 0.52 }
+      : { anchor: 'viewport', position: [1.15, 210, 35], color: '#fffaf2', intensity: 0.22 });
+    if (map.getLayer('city3d-buildings')) {
+      // Neutral architectural materials for imagery; colours are stylistic, not surveyed roof data.
+      map.setPaintProperty('city3d-buildings', 'fill-extrusion-color', photo
+        ? ['interpolate', ['linear'], ['coalesce', ['get', 'floors'], ['/', ['coalesce', ['get', 'render_height'], 6], 3.2]],
+          1, '#c2c6c5', 3, '#cdd1ce', 9, '#d8dad3', 16, '#e1e2da']
+        : '#deded5');
+    }
   }
   $effect(() => {
     if (!loaded || !map) return;
@@ -84,14 +133,45 @@
     const showSatellite = satellite && !!map.getLayer('satellite');
     if (map.getLayer('satellite')) map.setLayoutProperty('satellite', 'visibility', showSatellite ? 'visible' : 'none');
     map.setLayoutProperty('osm', 'visibility', showSatellite ? 'none' : 'visible');
+    applyBuildingAppearance();
   });
-  function ensureCity3D() {
-    if (!map || map.getSource('openmaptiles')) return;
+  async function ensureCity3D() {
+    if (!map || map.getLayer('city3d-buildings') || cityRequest) return;
+    const active = map;
+    const controller = new AbortController();
+    cityRequest = controller;
     try {
-      map.addSource('openmaptiles', { type: 'vector', url: 'https://tiles.openfreemap.org/planet' });
-      const city: FillExtrusionLayerSpecification = { id: 'city3d-buildings', type: 'fill-extrusion', source: 'openmaptiles', 'source-layer': 'building', filter: ['>', ['coalesce', ['get', 'render_height'], 0], 0], paint: { 'fill-extrusion-color': '#ccd6cb', 'fill-extrusion-height': ['coalesce', ['get', 'render_height'], 12], 'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], 0], 'fill-extrusion-opacity': 0.88, 'fill-extrusion-vertical-gradient': true } };
-      try { map.addLayer(city, 'buildings'); } catch { try { map.addLayer(city); } catch { /* Настоящие 3D-дома недоступны — остаются условные коробки. */ } }
-    } catch { /* Настоящие 3D-дома недоступны — остаются условные коробки. */ }
+      const url = new URL(`${import.meta.env.BASE_URL}city-buildings/manifest.json`, location.href).href;
+      const response = await fetch(url, { signal: controller.signal });
+      if (!response.ok) throw new Error(`City data HTTP ${response.status}`);
+      const { manifest, source } = cityBuildingSource(await response.json(), url);
+      if (map !== active || controller.signal.aborted) return;
+      active.addSource('city-official', source);
+      active.addLayer({ id: 'city3d-buildings', type: 'fill-extrusion', source: 'city-official', 'source-layer': manifest.sourceLayer,
+        layout: { visibility: city3d ? 'visible' : 'none' }, filter: ['>', ['get', 'height'], 0],
+        paint: { 'fill-extrusion-color': '#deded5', 'fill-extrusion-height': ['*', cityHeightScale, ['get', 'height']], 'fill-extrusion-base': 0,
+          'fill-extrusion-opacity': 1, 'fill-extrusion-vertical-gradient': true } }, 'buildings');
+      // Unknown floor counts remain footprints, never fictitious towers.
+      active.addLayer({ id: 'city3d-unknown', type: 'fill', source: 'city-official', 'source-layer': manifest.sourceLayer,
+        layout: { visibility: city3d ? 'visible' : 'none' }, filter: ['==', ['get', 'height'], 0],
+        paint: { 'fill-color': '#c4c6bd', 'fill-opacity': 0.6 } }, 'city3d-buildings');
+      cityManifest = manifest;
+    } catch {
+      if (map !== active || controller.signal.aborted) return;
+      // Keep the map usable if a deployment is missing the official tile export.
+      warning = 'Слой официальной этажности недоступен. Показаны приблизительные здания OpenFreeMap.';
+      if (!active.getSource('openmaptiles')) active.addSource('openmaptiles', { type: 'vector', url: 'https://tiles.openfreemap.org/planet' });
+      const city: FillExtrusionLayerSpecification = { id: 'city3d-buildings', type: 'fill-extrusion', source: 'openmaptiles', 'source-layer': 'building',
+        layout: { visibility: city3d ? 'visible' : 'none' },
+        filter: ['all', ['!=', ['get', 'hide_3d'], true], ['>', ['coalesce', ['get', 'render_height'], 0], 0]],
+        paint: { 'fill-extrusion-color': '#deded5', 'fill-extrusion-height': ['*', cityHeightScale, ['max', 0, ['coalesce', ['get', 'render_height'], 0]]],
+          'fill-extrusion-base': ['*', cityHeightScale, ['max', 0, ['min', ['coalesce', ['get', 'render_min_height'], 0], ['coalesce', ['get', 'render_height'], 0]]]],
+          'fill-extrusion-opacity': 1, 'fill-extrusion-vertical-gradient': true } };
+      if (!active.getLayer('city3d-buildings')) active.addLayer(city, 'buildings');
+    } finally {
+      if (map === active && !controller.signal.aborted) applyBuildingAppearance();
+      if (cityRequest === controller) cityRequest = undefined;
+    }
   }
   $effect(() => {
     if (loaded && map) {
@@ -99,18 +179,23 @@
       try {
         if (city3d) {
           // Render both building layers at their native scale on one flat ground plane.
-          ensureCity3D();
+          void ensureCity3D();
           try { map.setTerrain(null); } catch { /* Keep buildings aligned with the base map. */ }
           try { (map as unknown as { setSky?: (s: object) => void }).setSky?.({ 'sky-color': '#8db4dd', 'horizon-color': '#e8eef0', 'fog-color': '#dfe6ea', 'sky-horizon-blend': 0.5, 'horizon-fog-blend': 0.5, 'fog-ground-blend': 0.5 }); } catch { /* Без неба. */ }
           if (map.getLayer('city3d-buildings')) map.setLayoutProperty('city3d-buildings', 'visibility', 'visible');
-          map.easeTo({ pitch: 50, bearing: 0, zoom: Math.max(map.getZoom(), 15), duration: reduce ? 0 : 600 });
+          if (map.getLayer('city3d-unknown')) map.setLayoutProperty('city3d-unknown', 'visibility', 'visible');
+          map.easeTo({ pitch: 45, bearing: 0, zoom: Math.max(map.getZoom(), 15), duration: reduce ? 0 : 600 });
         } else {
           try { map.setTerrain(null); } catch { /* Рельефа и не было. */ }
           try { (map as unknown as { setSky?: (s?: object) => void }).setSky?.(); } catch { /* Неба и не было. */ }
           if (map.getLayer('city3d-buildings')) map.setLayoutProperty('city3d-buildings', 'visibility', 'none');
+          if (map.getLayer('city3d-unknown')) map.setLayoutProperty('city3d-unknown', 'visibility', 'none');
           map.easeTo({ pitch: 0, bearing: 0, duration: reduce ? 0 : 450 });
         }
         map.setLayoutProperty('buildings', 'visibility', city3d ? 'visible' : 'none');
+        // A quieter ground palette helps solid buildings sit naturally on raster tiles.
+        map.setPaintProperty('osm', 'raster-saturation', city3d ? -0.35 : 0);
+        map.setPaintProperty('osm', 'raster-contrast', city3d ? -0.12 : 0);
         const pts = city3d ? 'none' : 'visible';
         for (const layer of ['points', 'clusters']) map.setLayoutProperty(layer, 'visibility', pts);
         map.setLayoutProperty('footprints-flat', 'visibility', city3d ? 'none' : 'visible');
@@ -153,8 +238,11 @@
       try {
         // Vite relocates the main module; its original relative worker URL cannot survive prebundling.
         ml.setWorkerUrl(worker.default);
-        map = new ml.Map({ container, center: [camera.lng, camera.lat], zoom: camera.zoom, bearing: camera.bearing, maxPitch: 68, fadeDuration: 100, maxTileCacheSize: 80, style: {
-          version: 8, sources: {
+        map = new ml.Map({ container, center: [camera.lng, camera.lat], zoom: camera.zoom, bearing: camera.bearing, maxPitch: 68, fadeDuration: 100, maxTileCacheSize: 80, canvasContextAttributes: { antialias: true }, style: {
+          version: 8,
+          // Low directional contrast keeps the volume readable without harsh dark faces.
+          light: { anchor: 'viewport', position: [1.15, 210, 35], color: '#fffaf2', intensity: 0.22 },
+          sources: {
             osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, maxzoom: 19, attribution: '© OpenStreetMap contributors' },
           }, layers: [{ id: 'osm', type: 'raster', source: 'osm', layout: { visibility: satellite ? 'none' : 'visible' } }],
         } });
@@ -168,7 +256,7 @@
           map.addSource('complexes', { type: 'geojson', data: geojson, cluster: true, clusterMaxZoom: 14, clusterRadius: 45 });
           map.addSource('footprints', { type: 'geojson', data: footprints });
           map.addLayer({ id: 'footprints-flat', type: 'fill', source: 'footprints', filter:['==',['get','approximateFootprint'],false], paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.45 } });
-          map.addLayer({ id: 'buildings', type: 'fill-extrusion', source: 'footprints', layout: { visibility: city3d ? 'visible' : 'none' }, paint: { 'fill-extrusion-color': ['get', 'color'], 'fill-extrusion-height': ['get', 'height'], 'fill-extrusion-opacity': 0.9, 'fill-extrusion-vertical-gradient':true } });
+          map.addLayer({ id: 'buildings', type: 'fill-extrusion', source: 'footprints', layout: { visibility: city3d ? 'visible' : 'none' }, paint: { 'fill-extrusion-color': ['interpolate', ['linear'], 0.72, 0, '#f0eee8', 1, ['get', 'color']], 'fill-extrusion-height': ['get', 'height'], 'fill-extrusion-opacity': 1, 'fill-extrusion-vertical-gradient':true } });
           map.addLayer({ id: 'clusters', type: 'circle', source: 'complexes', filter: ['has', 'point_count'], paint: { 'circle-color': '#183e33', 'circle-radius': ['step', ['get', 'point_count'], 17, 10, 23], 'circle-stroke-color': '#fff', 'circle-stroke-width': 3 } });
           map.addLayer({ id: 'points', type: 'circle', source: 'complexes', filter: ['!', ['has', 'point_count']], paint: { 'circle-color': ['get', 'color'], 'circle-radius': 9, 'circle-stroke-color': '#fff', 'circle-stroke-width': 3 } });
           for (const layer of ['points', 'footprints-flat', 'buildings']) {
@@ -187,6 +275,7 @@
       } catch { releaseWebGL('WebGL недоступен. Включена функциональная 2D-карта.'); }
     }).catch(() => { if (!disposed) releaseWebGL('Картографический модуль недоступен. Включена 2D-карта.'); });
     return () => {
+      cityRequest?.abort();
       try { sessionStorage.setItem('saq-map-view-real-sites-v1', JSON.stringify({ center: [camera.lng, camera.lat], zoom: camera.zoom, bearing: camera.bearing, theme, zone, query, selectedId, selectedPhase, satellite, city3d })); } catch { /* Best-effort view persistence, no dossier data. */ }
       disposed = true; observer.disconnect(); window.clearInterval(settle); window.removeEventListener('resize', onWindowResize); document.removeEventListener('visibilitychange', visibility); loaded = false; map?.stop(); map?.remove(); map = undefined;
       window.clearTimeout(startupTimer);
@@ -205,6 +294,7 @@
       <div class="segmented" aria-label="Подложка"><button aria-pressed={!satellite || fallback} onclick={() => satellite = false}>Карта</button><button disabled={fallback} aria-pressed={satellite && !fallback} onclick={() => satellite = true}>Спутник</button></div>
       <div class="segmented" aria-label="Размерность карты"><button title="Плоская карта: метки и контуры" aria-pressed={!city3d} onclick={() => { city3d = false; }}>2D</button><button title="Объёмные здания" disabled={fallback} aria-pressed={city3d} onclick={() => { city3d = true; }}>3D</button></div>
       <div class="segmented xray" aria-label="Тема X-Ray"><span>X-Ray</span>{#each themes as t}<button aria-pressed={theme === t.id} onclick={() => theme = t.id}>{t.title}</button>{/each}</div>
+      {#if city3d}<button class="small" aria-expanded={aboutOpen} onclick={() => aboutOpen = !aboutOpen}>О высотах</button>{/if}
     </div>
     <div bind:this={container} class="map" aria-label="Карта объектов Өскемена"></div>
     {#if fallback}
@@ -257,6 +347,11 @@
         <div class="map-disclosure">
           {#if summaries.some(s => s.demo)}<p>DEMO: сведения об объектах вымышлены. Реальны только координаты стройплощадок.</p>{/if}
           <p>{city3d ? '3D: здания по данным карты. Непроверенные контуры и высоты показаны условно.' : '2D: метки объектов и проверенные контуры.'} Метка не обозначает границы участка.</p>
+          {#if cityManifest}
+            <p>Городские здания: <a href={cityManifest.source} target="_blank" rel="noopener noreferrer">официальная этажность КПСиСУ</a> · {cityManifest.featureCount.toLocaleString('ru-RU')} контуров. Выгрузка {new Date(cityManifest.retrievedAt).toLocaleDateString('ru-RU')}.</p>
+            <p>Высота для 3D расчётная: этажность × {cityManifest.metersPerFloor} м; визуальное увеличение ×{cityHeightScale}, не измерение. Без этажности: {cityManifest.unknownFloors.toLocaleString('ru-RU')} — показаны плоским контуром.</p>
+            {#if satellite}<p>Материалы и освещение зданий стилизованы под спутниковый снимок. Фототекстуры фасадов и крыш не подключены.</p>{/if}
+          {/if}
           {#if !liveRegistryAvailable}<p>Автоматическая сверка реестров не подключена.</p>{/if}
           {#if complexes.length > summaries.length}<p>Без координат: {complexes.length - summaries.length}.</p>{/if}
           <p>Дата спутникового снимка неизвестна. Нулевой балл не подтверждает безопасность.</p>

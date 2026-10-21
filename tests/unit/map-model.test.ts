@@ -1,7 +1,32 @@
 import { describe, expect, it } from 'vitest';
 import seed from '../../src/lib/seed.json';
 import type { Complex } from '../../src/lib/types';
-import { hasCoordinates, summarizeMap, buildingShapes, validGeometry, worldPoint, worldCoordinates, relatedMapPlaces, UNKNOWN_COLOR, type MapGeometry } from '../../src/lib/map-model';
+import { hasCoordinates, summarizeMap, buildingShapes, validGeometry, worldPoint, worldCoordinates, relatedMapPlaces, freeMapCenter, UNKNOWN_COLOR, type MapGeometry } from '../../src/lib/map-model';
+
+describe('free map center', () => {
+  it('uses the full map when no panels overlap it', () => {
+    expect(freeMapCenter(1000, 600, [])).toEqual([500, 300]);
+  });
+  it('centers beside the desktop preview and below the search', () => {
+    expect(freeMapCenter(1000, 600, [
+      { left: 0, top: 0, right: 300, bottom: 600 },
+      { left: 300, top: 0, right: 1000, bottom: 80 },
+    ])).toEqual([650, 340]);
+  });
+  it('centers above a mobile bottom sheet, between top and bottom overlays', () => {
+    expect(freeMapCenter(400, 700, [
+      { left: -10, top: 400, right: 410, bottom: 720 },
+      { left: 0, top: 0, right: 400, bottom: 80 },
+    ])).toEqual([200, 240]);
+  });
+  it('handles overlapping panels and ignores hidden off-map rectangles', () => {
+    expect(freeMapCenter(1000, 600, [
+      { left: 0, top: 0, right: 300, bottom: 450 },
+      { left: 0, top: 400, right: 300, bottom: 600 },
+      { left: 1200, top: 0, right: 1400, bottom: 600 },
+    ])).toEqual([650, 300]);
+  });
+});
 
 const complex = () => structuredClone(seed.COMPLEXES[0]) as Complex & { lng: number; lat: number };
 describe('map summaries preserve uncertainty and evidence boundaries', () => {

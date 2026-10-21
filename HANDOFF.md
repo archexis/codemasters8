@@ -52,6 +52,11 @@ Baseline proof for #1: `git stash push`, run pytest (expect same 5/42),
 - `test_research.py::test_worker_prepares_candidates_without_browser_and_recovers_provider_failure`:
   `assert 'failed' == 'succeeded'` + logged `AttributeError` in
   `research_worker/collect_sources`. Real pre-existing bug, out of scope here.
+  UPDATE after this handoff: fixed in working tree — `asyncio.timeout(100)`
+  (3.11+) replaced with `asyncio.wait_for(..., timeout=100)` for Python 3.10
+  compat in `backend/app/research.py`. After the fix: `4 failed, 43 passed`,
+  remainder is reportlab env-only. Details for judges are summarized positively
+  in `README.md` (Архитектурные решения); this file keeps the full audit.
 
 ## 4. Environment traps (read before running anything)
 

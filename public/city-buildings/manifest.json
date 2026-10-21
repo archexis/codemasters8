@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "city": "Усть-Каменогорск",
+  "source": "https://gis.kgp.kz/arcgis/rest/services/KPSSU/Gray_basemap/FeatureServer/1",
+  "where": "location = 'Усть-Каменогорск'",
+  "publisher": "КПСиСУ — публичный картографический сервис gis.kgp.kz",
+  "retrievedAt": "2026-10-21T07:40:32.972942+00:00",
+  "sourceUpdatedAt": null,
+  "sourceRecordCount": 110669,
+  "featureCount": 110669,
+  "oldestPageFetchedAt": "2026-10-21T07:38:05.989643+00:00",
+  "knownFloors": 110592,
+  "unknownFloors": 77,
+  "rejectedCount": 0,
+  "rejected": [],
+  "bounds": [
+    82.42713317688333,
+    49.81282342888181,
+    82.79861401285655,
+    50.06546270212641
+  ],
+  "floorCounts": {
+    "1": 105104,
+    "2": 3396,
+    "3": 461,
+    "4": 244,
+    "5": 986,
+    "6": 58,
+    "7": 9,
+    "8": 13,
+    "9": 220,
+    "10": 58,
+    "11": 3,
+    "12": 23,
+    "13": 2,
+    "14": 7,
+    "16": 8,
+    "None": 77
+  },
+  "heightMethod": "floors-estimate",
+  "metersPerFloor": 3.2,
+  "measuredHeights": 0,
+  "coverageScope": "All records matching the source city filter; completeness against actual city buildings is unknown.",
+  "heightNote": "Official floor counts; display height = floors × metersPerFloor. Not measured heights. Raw h is retained but not treated as a measurement.",
+  "sourceSchema": [
+    {
+      "name": "objectid",
+      "alias": "OBJECTID",
+      "type": "esriFieldTypeOID"
+    },
+    {
+      "name": "street",
+      "alias": "Улица",
+      "type": "esriFieldTypeString"
+    },
+    {
+      "name": "homenum",
+      "alias": "№ дома",
+      "type": "esriFieldTypeString"
+    },
+    {
+      "name": "floor",
+      "alias": "Этаж",
+      "type": "esriFieldTypeSmallInteger"
+    },
+    {
+      "name": "h",
+      "alias": "h",
+      "type": "esriFieldTypeSmallInteger"
+    }
+  ],
+  "geojsonSha256": "42b9e7bae01065f119af5bf8d7633ca09ce487742e567b83b2863d3edba65114",
+  "minzoom": 12,
+  "maxzoom": 15,
+  "tileCount": 2071,
+  "tileBytes": 29442656,
+  "tiles": [
+    "42b9e7bae01065f1/{z}/{x}/{y}.pbf"
+  ],
+  "sourceLayer": "buildings"
+}

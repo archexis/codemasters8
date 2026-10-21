@@ -22,6 +22,8 @@
     "test:local": "node tools/local-smoke.mjs",
     "test:deepseek": "node tools/deepseek-smoke.mjs",
     "test:api": "node tools/run-api-tests.mjs",
+    "buildings:fetch": "python tools/import-city-buildings.py",
+    "buildings:tiles": "node tools/tile-city-buildings.mjs",
     "migrate:safe": "node tools/migrate-safe.mjs",
     "verify:score": "node tools/score-maxxing-verify.mjs",
     "verify-all": "npm run check && npm test && npm run build && npm run test:e2e && npm run test:cloud && npm run test:api && npm run test:edge",
@@ -37,6 +39,8 @@
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.10",
     "@eslint/js": "^10.0.1",
+    "@maplibre/geojson-vt": "6.3.0",
+    "@maplibre/vt-pbf": "4.3.2",
     "@playwright/test": "^1.56.0",
     "@sveltejs/vite-plugin-svelte": "^6.0.0",
     "@tailwindcss/vite": "^4.0.0",

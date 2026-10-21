@@ -1,0 +1,16 @@
+{
+  "fps": 30,
+  "durationInFrames": 450,
+  "events": [
+    { "frame": 12, "kind": "distant", "gain": 0.24 },
+    { "frame": 75, "kind": "impact", "gain": 0.68 },
+    { "frame": 135, "kind": "click", "gain": 0.33 },
+    { "frame": 180, "kind": "impact", "gain": 0.46 },
+    { "frame": 198, "kind": "click", "gain": 0.36 },
+    { "frame": 213, "kind": "click", "gain": 0.42 },
+    { "frame": 240, "kind": "impact", "gain": 0.42 },
+    { "frame": 312, "kind": "impact", "gain": 0.86 },
+    { "frame": 351, "kind": "reverse", "gain": 0.25 },
+    { "frame": 381, "kind": "brand", "gain": 0.81 }
+  ]
+}
